@@ -8,30 +8,30 @@ var myLib = {
         Module.allocateString = (str) => allocateUTF8(str);
         Module.convertStringResult = (strPtr) => UTF8ToString(strPtr);
 
-        // Setup callback registerer
+        // Setup callback registerer, This allows to create javascript callbacks that can be called from C#
         Module.createCallback = (callback, signature) => {
             var ptr = addFunction(callback, signature);
             return ptr;
         };
 
-        // Setup the function that allows to serialize any GCHandle registerer value
+        // Given a managed C# object pointer, return a serialized JSON object
         Module.getJsonValueFromGCHandlePtr = (ptrToGcHandle) => {
             const resPtr = dynCall("ii", getIntPtrValueMethodPtr, [ptrToGcHandle]);
-            console.log("Json is "+UTF8ToString(resPtr));
             const asJsonObject = JSON.parse(UTF8ToString(resPtr));
             return asJsonObject;
         };
 
+        // Allocate memory for an array of type Float64Array, Float32Array, Int32Array, etc.
+        // After allocating memory, one must make sure to free it using Module._free
         Module.allocateMemoryForArray = (data) => {
+
+            // Ensure data is an array like Float64Array, Float32Array, Int32Array, etc.
+            if (!data.BYTES_PER_ELEMENT) {
+                throw new Error("Data must be an array like Float64Array, Float32Array, Int32Array, etc.");
+            }
             var nDataBytes = data.length * data.BYTES_PER_ELEMENT;
             var dataPtr = _malloc(nDataBytes);
-
             HEAPF64.set(data, dataPtr / data.BYTES_PER_ELEMENT);
-            console.log("Size is "+nDataBytes + " and size per element"+data.BYTES_PER_ELEMENT);
-          
-            // Set the values of the double array in the Emscripten heap
-            //var dataHeap = new Uint8Array(HEAPU8.buffer, dataPtr, nDataBytes);
-            //dataHeap.set(new Uint8Array(data.buffer));
             return dataPtr;
         };
 
@@ -77,18 +77,14 @@ var myLib = {
 
             // Ensure all args are PointerToNativeObject, if not, throw an error
             for (var i = 0; i < targetArgs.length; i++) {
-                if (targetArgs[i] instanceof Module.PointerToNativeObject) {
+                if (targetArgs[i] instanceof Module.PointerToNativeObject)
                     targetArgs[i] = targetArgs[i].targetGcHandleObjectPtr;
-                }
-                else{
+                else
                     throw new Error("All arguments must be instances of PointerToNativeObject. Argument at index " + i + " is not.");
-                }
             }
 
             // Add function name pointer string as the first element
             targetArgs.unshift(allocateUTF8(functionNameAsString));
-
-            console.log("Sent target array to" + functionNameAsString, targetArgs);
 
             // Call the function
             const resPtr = dynCall(signatureAsString, functionPtr, targetArgs);

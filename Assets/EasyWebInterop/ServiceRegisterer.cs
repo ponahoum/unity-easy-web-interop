@@ -29,7 +29,7 @@ namespace PoNah.EasyWebInterop
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<double, IntPtr>>(GetDoubleFromPtr), nameof(GetDoubleFromPtr), "id");
 
             // Register get double array from ptr
-            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<double[], int, IntPtr>>(GetDoubleArrayFromptr), nameof(GetDoubleArrayFromptr), "iii");
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<double[], int, IntPtr>>(GetDoubleArrayFromPtr), nameof(GetDoubleArrayFromPtr), "iii");
         }
 
         public delegate void V();
@@ -53,7 +53,6 @@ namespace PoNah.EasyWebInterop
         {
             III asDelegate = (IntPtr inputA, IntPtr inputB) =>
             {
-
                 object objA = GCHandle.FromIntPtr(inputA).Target;
                 object objB = GCHandle.FromIntPtr(inputB).Target;
                 object result = method.Invoke((T)objA, (U)objB);
@@ -64,7 +63,6 @@ namespace PoNah.EasyWebInterop
             };
 
             methodsRegistry.Add(name, asDelegate);
-
             IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr, IntPtr>>(RegistryIII);
             RegisterMethodInRegistry(registryCallPtr, name, "iiii");
         }
@@ -79,16 +77,12 @@ namespace PoNah.EasyWebInterop
                 IntPtr ptr = GCHandle.ToIntPtr(handle);
                 return ptr;
             };
-            methodsRegistry.Add(name, asDelegate);
 
+            methodsRegistry.Add(name, asDelegate);
             IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr>>(RegistryII);
             RegisterMethodInRegistry(registryCallPtr, name, "iii");
         }
 
-        /// <summary>
-        /// Register a method that returns a value of type T with no parameters
-        /// Signature: i
-        /// </summary>
         public static void RegisterMethod<T>(string name, Func<T> method)
         {
             I asDelegate = () =>
@@ -131,7 +125,7 @@ namespace PoNah.EasyWebInterop
         }
 
         [MonoPInvokeCallback]
-        static IntPtr GetDoubleArrayFromptr([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] managedArray, int size)
+        static IntPtr GetDoubleArrayFromPtr([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] managedArray, int size)
         {
             GCHandle handle = GCHandle.Alloc(managedArray);
             return GCHandle.ToIntPtr(handle);
