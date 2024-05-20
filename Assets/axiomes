@@ -1,0 +1,9 @@
+- Tout méthode renvoi soit rien, soit un objet
+- Tout objet est représenté en JS comme un vrai object csharp wrappé, on génère tous les types pour chacun des objets, sous la forme de pointeur
+- Les méthodes syncrones retournent directement l'objet sous sa version sérialisée ptr
+- Tous les objets retournés à JS ont un unique id qui les lie à csharp
+- csharp garde tous les objets retournés dans une liste statique, et ils sont néttoyés quand collecté coté js
+- les champs publics des objets ont un get, qui permet de récupérer la valeur sérialisée à un instant t ??
+- Les méthodes asynchrones ??
+- Les actions de tout type sont déjà enregs ??
+-
