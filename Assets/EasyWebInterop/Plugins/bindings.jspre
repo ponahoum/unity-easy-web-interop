@@ -68,7 +68,7 @@ Module.GetManagedDoubleArray = (array) => {
     var dataPtr = Module.internalJs.allocateMemoryForArray(float64Array);
 
     // Call internal function that will return a pointer to the array
-    var ptrToManagedData = Module.internal.GetDoubleArrayFromPtr(dataPtr, float64Array.length);
+    var ptrToManagedData = Module.internal.GetManagedDoubleArrayFromPtr(dataPtr, float64Array.length);
 
     // Return a PointerToNativeObject that will be collected by the garbage collector
     return ptrToManagedData;

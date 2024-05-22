@@ -2,6 +2,8 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace PoNah.EasyWebInterop
 {
@@ -26,14 +28,14 @@ namespace PoNah.EasyWebInterop
             Setup(Marshal.GetFunctionPointerForDelegate<II>(GetSerializedValueFromPtr));
 
             // Register get double from ptr
-            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<double, IntPtr>>(GetDoubleFromPtr), nameof(GetDoubleFromPtr), "id");
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<double, IntPtr>>(GetManagedDoubleFromPtr), nameof(GetManagedDoubleFromPtr), "id");
 
             // Register get double array from ptr
-            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<double[], int, IntPtr>>(GetDoubleArrayFromPtr), nameof(GetDoubleArrayFromPtr), "iii");
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<double[], int, IntPtr>>(GetManagedDoubleArrayFromPtr), nameof(GetManagedDoubleArrayFromPtr), "iii");
 
             // Register get element at index from ptr array
-            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, int, IntPtr>>(GetElementAtIndexFromPtrArray), nameof(GetElementAtIndexFromPtrArray), "iii");
-        
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, int, IntPtr>>(GetManagedElementAtIndexFromManagedPtrArray), nameof(GetManagedElementAtIndexFromManagedPtrArray), "iii");
+
             // Register element get Type from ptr
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetManagedElementType), nameof(GetManagedElementType), "ii");
         }
@@ -64,7 +66,6 @@ namespace PoNah.EasyWebInterop
         }
         public static void RegisterMethod<TIn, UOut>(string name, Func<TIn, UOut> method)
         {
-
             II asDelegate = (IntPtr inputA) => RegisterAndInvoke(method, inputA);
             methodsRegistry.Add(name, asDelegate);
             IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr>>(RegistryII);
@@ -118,17 +119,17 @@ namespace PoNah.EasyWebInterop
         }
 
         [MonoPInvokeCallback]
-        static IntPtr GetDoubleFromPtr([MarshalAs(UnmanagedType.R8)] double managedDouble)=> NewManagedObject(managedDouble);
+        static IntPtr GetManagedDoubleFromPtr([MarshalAs(UnmanagedType.R8)] double managedDouble) => NewManagedObject(managedDouble);
 
         [MonoPInvokeCallback]
-        static IntPtr GetDoubleArrayFromPtr([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] managedArray, int size) => NewManagedObject(managedArray);
+        static IntPtr GetManagedDoubleArrayFromPtr([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] managedArray, int size) => NewManagedObject(managedArray);
 
         /// <summary>
         /// Given an array ptr and an index, return the element at the index
         /// </summary>
         /// <param name="arrayPtr">The pointer to the managed array</param>
         [MonoPInvokeCallback]
-        static IntPtr GetElementAtIndexFromPtrArray(IntPtr arrayPtr, int index)
+        static IntPtr GetManagedElementAtIndexFromManagedPtrArray(IntPtr arrayPtr, int index)
         {
             // Get object from ptr
             object array = GetManagedObjectFromPtr(arrayPtr);
@@ -158,21 +159,18 @@ namespace PoNah.EasyWebInterop
         }
 
         static object GetManagedObjectFromPtr(IntPtr targetObject) => GCHandle.FromIntPtr(targetObject).Target;
-        
 
         public static void RegisterGetActionStringFromPtr()
         {
             [MonoPInvokeCallback]
             static IntPtr RegisterGetActionStringFromPtr_internal(IntPtr _, IntPtr actionAsPtr)
             {
-                var targetAct = Marshal.GetDelegateForFunctionPointer<VI>(actionAsPtr);
+                VI targetAct = Marshal.GetDelegateForFunctionPointer<VI>(actionAsPtr);
                 Action<string> targetActAsActionString = (string value) =>
                 {
-                    GCHandle handle = GCHandle.Alloc(value);
-                    targetAct.Invoke(GCHandle.ToIntPtr(handle));
+                    targetAct.Invoke(NewManagedObject(value));
                 };
-                GCHandle handle = GCHandle.Alloc(targetActAsActionString);
-                return GCHandle.ToIntPtr(handle); ;
+                return NewManagedObject(targetActAsActionString) ;
             }
 
             IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<III>(RegisterGetActionStringFromPtr_internal);
