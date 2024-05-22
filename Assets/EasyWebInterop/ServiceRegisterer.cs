@@ -30,6 +30,12 @@ namespace PoNah.EasyWebInterop
 
             // Register get double array from ptr
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<double[], int, IntPtr>>(GetDoubleArrayFromPtr), nameof(GetDoubleArrayFromPtr), "iii");
+
+            // Register get element at index from ptr array
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, int, IntPtr>>(GetElementAtIndexFromPtrArray), nameof(GetElementAtIndexFromPtrArray), "iii");
+        
+            // Register element get Type from ptr
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetManagedElementType), nameof(GetManagedElementType), "ii");
         }
 
         public delegate void V();
@@ -49,54 +55,48 @@ namespace PoNah.EasyWebInterop
         [MonoPInvokeCallback]
         static IntPtr RegistryIII([MarshalAs(UnmanagedType.LPStr)] string serviceKey, IntPtr inputA, IntPtr inputB) => (methodsRegistry[serviceKey] as III)(inputA, inputB);
 
-        public static void RegisterMethod<T, U, V>(string name, Func<T, U, V> method)
+        public static void RegisterMethod<T>(string name, Func<T> method)
         {
-            III asDelegate = (IntPtr inputA, IntPtr inputB) =>
-            {
-                object objA = GCHandle.FromIntPtr(inputA).Target;
-                object objB = GCHandle.FromIntPtr(inputB).Target;
-                object result = method.Invoke((T)objA, (U)objB);
-                var handle = GCHandle.Alloc(result);
-                IntPtr ptr = GCHandle.ToIntPtr(handle);
-                Debug.Log("Called method and generated intptr with id " + ptr);
-                return ptr;
-            };
+            I asDelegate = () => RegisterAndInvoke(method);
+            methodsRegistry.Add(name, asDelegate);
+            IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr>>(RegistryI);
+            RegisterMethodInRegistry(registryCallPtr, name, "ii");
+        }
+        public static void RegisterMethod<TIn, UOut>(string name, Func<TIn, UOut> method)
+        {
 
+            II asDelegate = (IntPtr inputA) => RegisterAndInvoke(method, inputA);
+            methodsRegistry.Add(name, asDelegate);
+            IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr>>(RegistryII);
+            RegisterMethodInRegistry(registryCallPtr, name, "iii");
+        }
+        public static void RegisterMethod<T, U, VOut>(string name, Func<T, U, VOut> method)
+        {
+            III asDelegate = (IntPtr inputA, IntPtr inputB) => RegisterAndInvoke(method, inputA, inputB);
             methodsRegistry.Add(name, asDelegate);
             IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr, IntPtr>>(RegistryIII);
             RegisterMethodInRegistry(registryCallPtr, name, "iiii");
         }
 
-        public static void RegisterMethod<TIn, UOut>(string name, Func<TIn, UOut> method)
+        private static IntPtr RegisterAndInvoke(Delegate method, params IntPtr[] args)
         {
-            II asDelegate = (IntPtr inputA) =>
+            try
             {
-                object objA = GCHandle.FromIntPtr(inputA).Target;
-                UOut result = method.Invoke((TIn)objA);
+                object[] argsCasted = new object[args.Length];
+                for (int i = 0; i < args.Length; i++)
+                    argsCasted[i] = GCHandle.FromIntPtr(args[i]).Target;
+
+                object result = method.DynamicInvoke(argsCasted);
                 GCHandle handle = GCHandle.Alloc(result);
                 IntPtr ptr = GCHandle.ToIntPtr(handle);
                 return ptr;
-            };
-
-            methodsRegistry.Add(name, asDelegate);
-            IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr>>(RegistryII);
-            RegisterMethodInRegistry(registryCallPtr, name, "iii");
-        }
-
-        public static void RegisterMethod<T>(string name, Func<T> method)
-        {
-            I asDelegate = () =>
+            }
+            catch (Exception e)
             {
-                T result = method.Invoke();
-                GCHandle handle = GCHandle.Alloc(result);
-                IntPtr ptr = GCHandle.ToIntPtr(handle);
-                return ptr;
-            };
+                Debug.LogError(e);
+                throw e;
+            }
 
-            // Register method to the dictionary
-            methodsRegistry.Add(name, asDelegate);
-            IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr>>(RegistryI);
-            RegisterMethodInRegistry(registryCallPtr, name, "ii");
         }
 
         /// <summary>
@@ -118,18 +118,47 @@ namespace PoNah.EasyWebInterop
         }
 
         [MonoPInvokeCallback]
-        static IntPtr GetDoubleFromPtr([MarshalAs(UnmanagedType.R8)] double managedDouble)
-        {
-            GCHandle handle = GCHandle.Alloc(managedDouble);
-            return GCHandle.ToIntPtr(handle);
-        }
+        static IntPtr GetDoubleFromPtr([MarshalAs(UnmanagedType.R8)] double managedDouble)=> NewManagedObject(managedDouble);
 
         [MonoPInvokeCallback]
-        static IntPtr GetDoubleArrayFromPtr([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] managedArray, int size)
+        static IntPtr GetDoubleArrayFromPtr([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] managedArray, int size) => NewManagedObject(managedArray);
+
+        /// <summary>
+        /// Given an array ptr and an index, return the element at the index
+        /// </summary>
+        /// <param name="arrayPtr">The pointer to the managed array</param>
+        [MonoPInvokeCallback]
+        static IntPtr GetElementAtIndexFromPtrArray(IntPtr arrayPtr, int index)
         {
-            GCHandle handle = GCHandle.Alloc(managedArray);
-            return GCHandle.ToIntPtr(handle);
+            // Get object from ptr
+            object array = GetManagedObjectFromPtr(arrayPtr);
+
+            // Check array is array
+            if (!array.GetType().IsArray)
+                throw new Exception("The object is not an array");
+
+            Array asArray = (Array)array;
+            if (index >= asArray.Length)
+                throw new IndexOutOfRangeException("Index out of range");
+
+            // Get element at index
+            return NewManagedObject(asArray.GetValue(index));
         }
+
+        /// <summary>
+        /// Returns the type of the managed element from the ptr
+        /// </summary>
+        [MonoPInvokeCallback]
+        static IntPtr GetManagedElementType(IntPtr targetObject) => NewManagedObject(GetManagedObjectFromPtr(targetObject).GetType().ToString());
+
+        static IntPtr NewManagedObject(object targetObject)
+        {
+            GCHandle elementHandle = GCHandle.Alloc(targetObject);
+            return GCHandle.ToIntPtr(elementHandle);
+        }
+
+        static object GetManagedObjectFromPtr(IntPtr targetObject) => GCHandle.FromIntPtr(targetObject).Target;
+        
 
         public static void RegisterGetActionStringFromPtr()
         {
