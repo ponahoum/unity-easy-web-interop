@@ -40,6 +40,9 @@ namespace PoNah.EasyWebInterop
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetManagedElementType), nameof(GetManagedElementType), "ii");
         }
 
+
+        static Dictionary<string, Delegate> methodsRegistry = new();
+        
         public delegate void V();
         public delegate void VI(IntPtr A);
         public delegate void VII(IntPtr A, IntPtr B);
@@ -47,36 +50,35 @@ namespace PoNah.EasyWebInterop
         public delegate IntPtr II(IntPtr A);
         public delegate IntPtr III(IntPtr inputA, IntPtr inputB);
 
-        static Dictionary<string, Delegate> methodsRegistry = new();
-
         [MonoPInvokeCallback]
         static IntPtr RegistryI([MarshalAs(UnmanagedType.LPStr)] string serviceKey) => (methodsRegistry[serviceKey] as I)();
+        static IntPtr registryICallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr>>(RegistryI);
+
         [MonoPInvokeCallback]
         static IntPtr RegistryII([MarshalAs(UnmanagedType.LPStr)] string serviceKey, IntPtr inputA) => (methodsRegistry[serviceKey] as II)(inputA);
+        static IntPtr registryIICallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr>>(RegistryII);
 
         [MonoPInvokeCallback]
         static IntPtr RegistryIII([MarshalAs(UnmanagedType.LPStr)] string serviceKey, IntPtr inputA, IntPtr inputB) => (methodsRegistry[serviceKey] as III)(inputA, inputB);
+        static IntPtr registryIIICallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr, IntPtr>>(RegistryIII);
 
         public static void RegisterMethod<T>(string name, Func<T> method)
         {
             I asDelegate = () => RegisterAndInvoke(method);
             methodsRegistry.Add(name, asDelegate);
-            IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr>>(RegistryI);
-            RegisterMethodInRegistry(registryCallPtr, name, "ii");
+            RegisterMethodInRegistry(registryICallPtr, name, "ii");
         }
         public static void RegisterMethod<TIn, UOut>(string name, Func<TIn, UOut> method)
         {
             II asDelegate = (IntPtr inputA) => RegisterAndInvoke(method, inputA);
             methodsRegistry.Add(name, asDelegate);
-            IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr>>(RegistryII);
-            RegisterMethodInRegistry(registryCallPtr, name, "iii");
+            RegisterMethodInRegistry(registryIICallPtr, name, "iii");
         }
         public static void RegisterMethod<T, U, VOut>(string name, Func<T, U, VOut> method)
         {
             III asDelegate = (IntPtr inputA, IntPtr inputB) => RegisterAndInvoke(method, inputA, inputB);
             methodsRegistry.Add(name, asDelegate);
-            IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<Func<string, IntPtr, IntPtr, IntPtr>>(RegistryIII);
-            RegisterMethodInRegistry(registryCallPtr, name, "iiii");
+            RegisterMethodInRegistry(registryIIICallPtr, name, "iiii");
         }
 
         private static IntPtr RegisterAndInvoke(Delegate method, params IntPtr[] args)
@@ -85,19 +87,16 @@ namespace PoNah.EasyWebInterop
             {
                 object[] argsCasted = new object[args.Length];
                 for (int i = 0; i < args.Length; i++)
-                    argsCasted[i] = GCHandle.FromIntPtr(args[i]).Target;
+                    argsCasted[i] = GetManagedObjectFromPtr(args[i]);
 
                 object result = method.DynamicInvoke(argsCasted);
-                GCHandle handle = GCHandle.Alloc(result);
-                IntPtr ptr = GCHandle.ToIntPtr(handle);
-                return ptr;
+                return NewManagedObject(result);
             }
             catch (Exception e)
             {
                 Debug.LogError(e);
                 throw e;
             }
-
         }
 
         /// <summary>
@@ -108,7 +107,7 @@ namespace PoNah.EasyWebInterop
         static IntPtr GetSerializedValueFromPtr(IntPtr targetObject)
         {
             // Gather the object from the GCHandle
-            object obj = GCHandle.FromIntPtr(targetObject).Target;
+            object obj = GetManagedObjectFromPtr(targetObject);
 
             // Serialize the object
             string json = ObjectSerializer.ToJson(obj);
@@ -152,13 +151,29 @@ namespace PoNah.EasyWebInterop
         [MonoPInvokeCallback]
         static IntPtr GetManagedElementType(IntPtr targetObject) => NewManagedObject(GetManagedObjectFromPtr(targetObject).GetType().ToString());
 
+        /// <summary>
+        /// Given an object, return a GCHandle ptr to the object
+        /// </summary>
         static IntPtr NewManagedObject(object targetObject)
         {
+            // Handle null case
+            if (targetObject == null)
+                return IntPtr.Zero;
+
             GCHandle elementHandle = GCHandle.Alloc(targetObject);
             return GCHandle.ToIntPtr(elementHandle);
         }
 
-        static object GetManagedObjectFromPtr(IntPtr targetObject) => GCHandle.FromIntPtr(targetObject).Target;
+        /// <summary>
+        /// Returns the managed object from the GCHandle ptr
+        /// </summary>
+        static object GetManagedObjectFromPtr(IntPtr targetObject)
+        {
+            if (targetObject == IntPtr.Zero)
+                return null;
+
+            return GCHandle.FromIntPtr(targetObject).Target;
+        }
 
         public static void RegisterGetActionStringFromPtr()
         {
@@ -170,7 +185,7 @@ namespace PoNah.EasyWebInterop
                 {
                     targetAct.Invoke(NewManagedObject(value));
                 };
-                return NewManagedObject(targetActAsActionString) ;
+                return NewManagedObject(targetActAsActionString);
             }
 
             IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<III>(RegisterGetActionStringFromPtr_internal);
