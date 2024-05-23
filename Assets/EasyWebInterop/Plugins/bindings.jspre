@@ -70,6 +70,9 @@ Module.GetManagedDoubleArray = (array) => {
     // Call internal function that will return a pointer to the array
     var ptrToManagedData = Module.internal.GetManagedDoubleArrayFromPtr(dataPtr, float64Array.length);
 
+    // Free ptr
+    _free(dataPtr);
+
     // Return a PointerToNativeObject that will be collected by the garbage collector
     return ptrToManagedData;
 }
