@@ -37,7 +37,7 @@ var easyWebInteropLib = {
     RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr) {
         var functionNameAsString = UTF8ToString(functionNamePtr);
         var signatureAsString = UTF8ToString(functionParamSignaturePtr);
-
+        
         Module[functionNameAsString] = (...args) => {
             // Assign params of the fuction to a variable that's we'll play with afterwards
             var targetArgs = [...args];
