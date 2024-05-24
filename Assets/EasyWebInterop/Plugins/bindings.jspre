@@ -7,7 +7,6 @@ if (!Module["internal"])
 if (!Module["internalJs"])
     Module["internalJs"] = {};
 
-
 // Declare class that holds references
 Module.PointerToNativeObject = class PointerToNativeObject {
     // Constructor to initialize the private integer field
@@ -21,7 +20,6 @@ Module.PointerToNativeObject = class PointerToNativeObject {
 }
 
 // Declare a wrapper around a C# object pointer that will be collected by the garbage collector
-
 Module.internalJs.HandleResPtr = function (resPtr) {
     if (resPtr === undefined)
         return undefined;

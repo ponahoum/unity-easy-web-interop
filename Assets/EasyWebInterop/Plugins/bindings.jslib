@@ -34,9 +34,18 @@ var easyWebInteropLib = {
             return Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
         }
     },
-    RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr) {
+    RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr, parametersNamesPtr, parametersNamesPtrSize) {
         var functionNameAsString = UTF8ToString(functionNamePtr);
         var signatureAsString = UTF8ToString(functionParamSignaturePtr);
+
+        // Get each parameter in parametersNamesPtr string array
+        var parametersNames = [];
+        for (var i = 0; i < parametersNamesPtrSize; i++) {
+            var ptr = parametersNamesPtr + i * 4;
+            var str = UTF8ToString(Module.HEAPU32[ptr >> 2]);
+            parametersNames.push(str);
+        }
+        console.log("ParametersNames: " + parametersNames);
         
         Module[functionNameAsString] = (...args) => {
             // Assign params of the fuction to a variable that's we'll play with afterwards

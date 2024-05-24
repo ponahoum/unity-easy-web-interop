@@ -18,7 +18,7 @@ namespace PoNah.EasyWebInterop
         /// Allows to pass a delegate pointer to the JS side so it can be invoked from there
         /// </summary>
         [DllImport("__Internal")]
-        internal static extern void RegisterMethodInRegistry(IntPtr methodPtr, string functionName, string functionSignature);
+        internal static extern void RegisterMethodInRegistry(IntPtr methodPtr, string functionName, string functionSignature, string[] parameterNames, int parameterCount);
 
         // Keep reference to all exposed delegates (static or not)
         static Dictionary<string, Delegate> methodsRegistry = new();
@@ -105,6 +105,12 @@ namespace PoNah.EasyWebInterop
             bool hasReturn = method.Method.ReturnType != typeof(void);
             int parametersCount = method.Method.GetParameters().Length;
 
+            // Get the parameter names (args and return value)
+            string[] parameterNames = new string[parametersCount +1];
+            parameterNames[0] = method.Method.ReturnType.FullName;
+            for (int i = 0; i < parametersCount; i++)
+                parameterNames[i+1] = method.Method.GetParameters()[i].ParameterType.FullName;
+
             // Case has return
             if (hasReturn)
             {
@@ -113,32 +119,32 @@ namespace PoNah.EasyWebInterop
                 {
                     I asDelegate = () => InvokeWrapped(method);
                     methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryICallPtr, name, GetRegistryMethodSignature<I>());
+                    RegisterMethodInRegistry(registryICallPtr, name, GetRegistryMethodSignature<I>(), parameterNames, parameterNames.Length);
                 }
                 // One parameter
                 else if (parametersCount == 1)
                 {
                     II asDelegate = (IntPtr inputA) => InvokeWrapped(method, inputA);
                     methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryIICallPtr, name, GetRegistryMethodSignature<II>());
+                    RegisterMethodInRegistry(registryIICallPtr, name, GetRegistryMethodSignature<II>(), parameterNames, parameterNames.Length);
                 }
                 else if (parametersCount == 2)
                 {
                     III asDelegate = (IntPtr inputA, IntPtr inputB) => InvokeWrapped(method, inputA, inputB);
                     methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryIIICallPtr, name, GetRegistryMethodSignature<III>());
+                    RegisterMethodInRegistry(registryIIICallPtr, name, GetRegistryMethodSignature<III>(), parameterNames, parameterNames.Length);
                 }
                 else if (parametersCount == 3)
                 {
                     IIII asDelegate = (IntPtr inputA, IntPtr inputB, IntPtr inputC) => InvokeWrapped(method, inputA, inputB, inputC);
                     methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryIIIICallPtr, name, GetRegistryMethodSignature<IIII>());
+                    RegisterMethodInRegistry(registryIIIICallPtr, name, GetRegistryMethodSignature<IIII>(), parameterNames, parameterNames.Length);
                 }
                 else if (parametersCount == 4)
                 {
                     IIIII asDelegate = (IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD) => InvokeWrapped(method, inputA, inputB, inputC, inputD);
                     methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryIIIIICallPtr, name, GetRegistryMethodSignature<IIIII>());
+                    RegisterMethodInRegistry(registryIIIIICallPtr, name, GetRegistryMethodSignature<IIIII>(), parameterNames, parameterNames.Length);
                 }
                 else
                     throw new Exception("Method has too many parameters");
@@ -149,13 +155,13 @@ namespace PoNah.EasyWebInterop
                 {
                     V asDelegate = () => InvokeWrappedInternal(method);
                     methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryVCallPtr, name, GetRegistryMethodSignature<V>());
+                    RegisterMethodInRegistry(registryVCallPtr, name, GetRegistryMethodSignature<V>(), parameterNames, parameterNames.Length);
                 }
                 else if (parametersCount == 1)
                 {
                     VI asDelegate = (IntPtr inputA) => InvokeWrappedInternal(method, inputA);
                     methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryVICallPtr, name, GetRegistryMethodSignature<VI>());
+                    RegisterMethodInRegistry(registryVICallPtr, name, GetRegistryMethodSignature<VI>(), parameterNames, parameterNames.Length);
                 }
             }
         }
