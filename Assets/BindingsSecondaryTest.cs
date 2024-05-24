@@ -62,23 +62,20 @@ public class BindingsSecondaryTest : MonoBehaviour
 
     void Awake()
     {
-        // Setup the service register
-        ServiceRegisterer.Setup();
-
         // Register methods we want to expose to the nJS side
-        ServiceRegisterer.RegisterMethod<Func<string>>(nameof(MyMethodReturningString), MyMethodReturningString);
-        ServiceRegisterer.RegisterMethod<Func<double>>(nameof(MyMethodReturningDouble), MyMethodReturningDouble);
-        ServiceRegisterer.RegisterMethod<Func<int>>(nameof(MyMethodReturningInt), MyMethodReturningInt);
-        ServiceRegisterer.RegisterMethod<Func<string>>(nameof(TestReturnNullValue), TestReturnNullValue);
-        ServiceRegisterer.RegisterMethod<Func<Task<string>>>(nameof(ComputeStuff), ComputeStuff);
-        ServiceRegisterer.RegisterMethod<Func<double[]>>(nameof(MeMethodReturningDoubleArray), MeMethodReturningDoubleArray);
-        ServiceRegisterer.RegisterMethod<Func<Task<string>, string>>(nameof(GetStringIfTaskComplete), GetStringIfTaskComplete);
-        ServiceRegisterer.RegisterMethod<Func<Action<string>, Task<string>>>(nameof(ComputeStuffAndRaiseCallback), ComputeStuffAndRaiseCallback);
-        ServiceRegisterer.RegisterMethod<Func<string, string, string>>(nameof(ConcatenateStrings), ConcatenateStrings);
-        ServiceRegisterer.RegisterMethod<Func<double, double>>(nameof(AddOneToDouble), AddOneToDouble);
-        ServiceRegisterer.RegisterMethod<Action>(nameof(InfiniteAsyncFunction), InfiniteAsyncFunction);
+        MethodsRegistry.RegisterMethod<Func<string>>(nameof(MyMethodReturningString), MyMethodReturningString);
+        MethodsRegistry.RegisterMethod<Func<double>>(nameof(MyMethodReturningDouble), MyMethodReturningDouble);
+        MethodsRegistry.RegisterMethod<Func<int>>(nameof(MyMethodReturningInt), MyMethodReturningInt);
+        MethodsRegistry.RegisterMethod<Func<string>>(nameof(TestReturnNullValue), TestReturnNullValue);
+        MethodsRegistry.RegisterMethod<Func<Task<string>>>(nameof(ComputeStuff), ComputeStuff);
+        MethodsRegistry.RegisterMethod<Func<double[]>>(nameof(MeMethodReturningDoubleArray), MeMethodReturningDoubleArray);
+        MethodsRegistry.RegisterMethod<Func<Task<string>, string>>(nameof(GetStringIfTaskComplete), GetStringIfTaskComplete);
+        MethodsRegistry.RegisterMethod<Func<Action<string>, Task<string>>>(nameof(ComputeStuffAndRaiseCallback), ComputeStuffAndRaiseCallback);
+        MethodsRegistry.RegisterMethod<Func<string, string, string>>(nameof(ConcatenateStrings), ConcatenateStrings);
+        MethodsRegistry.RegisterMethod<Func<double, double>>(nameof(AddOneToDouble), AddOneToDouble);
+        MethodsRegistry.RegisterMethod<Action>(nameof(InfiniteAsyncFunction), InfiniteAsyncFunction);
 
         // Possibility to get an action
-        ServiceRegisterer.RegisterGetActionStringFromPtr();
+        //MethodsRegistry.RegisterGetActionStringFromPtr();
     }
 }

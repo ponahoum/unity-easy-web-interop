@@ -1,7 +1,4 @@
 
-// Debug
-window.ModuleBidule = Module;
-
 // Check if Module["internal"] exists, if not, create it
 if (!Module["internal"])
     Module["internal"] = {};
@@ -34,7 +31,7 @@ Module.internalJs.HandleResPtr = function (resPtr) {
         console.log("Object collected");
         console.log(heldValue);
     });
-    console.log("Registering object");
+    console.log("Registering object - TO DO CHECK COLLECTIOn");
 
     let resultingPtr = new Module.PointerToNativeObject(resPtr);
     registry.register(resultingPtr, 'here put id of collected ??');

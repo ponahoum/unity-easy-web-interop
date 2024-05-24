@@ -630,7 +630,7 @@ PlayerSettings:
   webGLDebugSymbols: 0
   webGLEmscriptenArgs: -s ALLOW_TABLE_GROWTH
   webGLModulesDirectory: 
-  webGLTemplate: APPLICATION:Default
+  webGLTemplate: PROJECT:TestTemplate
   webGLAnalyzeBuildSize: 0
   webGLUseEmbeddedResources: 0
   webGLCompressionFormat: 1
