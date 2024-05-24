@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using static PoNah.EasyWebInterop.DyncallSignature;
 
 namespace PoNah.EasyWebInterop
@@ -31,7 +32,14 @@ namespace PoNah.EasyWebInterop
 
             // Register element get Type from ptr
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetManagedElementType), nameof(GetManagedElementType), "ii");
+
+            // Register task completed
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(IsTaskCompleted), nameof(IsTaskCompleted), "ii");
+
+            // Register get task result
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetTaskResult), nameof(GetTaskResult), "ii");
         }
+
 
 
         /// <summary>
@@ -85,6 +93,42 @@ namespace PoNah.EasyWebInterop
         /// </summary>
         [MonoPInvokeCallback]
         static IntPtr GetManagedElementType(IntPtr targetObject) => NewManagedObject(GetManagedObjectFromPtr(targetObject).GetType().ToString());
+
+        /// <summary>
+        /// Tells if a task is completed
+        /// </summary>
+        [MonoPInvokeCallback]
+        static IntPtr IsTaskCompleted(IntPtr taskPtr)
+        {
+            object task = GetManagedObjectFromPtr(taskPtr);
+            if (task is Task asTask)
+                return NewManagedObject(asTask.IsCompleted);
+            throw new Exception("The object is not a task");
+        }
+
+        /// <summary>
+        /// Gets the result of a task
+        /// Only call this if the task is completed
+        /// </summary>
+        [MonoPInvokeCallback]
+        static IntPtr GetTaskResult(IntPtr taskPtr)
+        {
+            object task = GetManagedObjectFromPtr(taskPtr);
+
+            if (task is Task asTask && asTask.IsCompleted)
+                return NewManagedObject(asTask.GetType().GetProperty("Result").GetValue(asTask));
+            throw new Exception("The object is not a task or the task is not completed");
+        }
+
+        /// <summary>
+        /// Register a task completion callback with a managed action
+        /// </summary>
+        [MonoPInvokeCallback]
+        static void OnTaskComplete(Action<IntPtr> onCompleted)
+        {
+            // TODO
+
+        }
 
         /// <summary>
         /// Given an object, return a GCHandle ptr to the object

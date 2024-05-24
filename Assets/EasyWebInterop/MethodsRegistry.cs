@@ -18,7 +18,7 @@ namespace PoNah.EasyWebInterop
         /// Allows to pass a delegate pointer to the JS side so it can be invoked from there
         /// </summary>
         [DllImport("__Internal")]
-        internal static extern void RegisterMethodInRegistry(IntPtr methodPtr, string functionName, string functionSignature, string[] parameterNames, int parameterCount);
+        internal static extern void RegisterMethodInRegistry(IntPtr methodPtr, string functionName, string functionSignature);
 
         // Keep reference to all exposed delegates (static or not)
         static Dictionary<string, Delegate> methodsRegistry = new();
@@ -137,22 +137,8 @@ namespace PoNah.EasyWebInterop
             // Add the method to the static registry that will later be used to invoke the method from its name
             methodsRegistry.Add(name, registryData.asDelegate);
 
-            // Get the signature types names to provide it as an information to the JS side
-            string[] signatureTypesNames = GetSignatureTypesNames(method);
-
             // Notice the js side that this named method is available under this signature
-            RegisterMethodInRegistry(registryData.registryPtr, name, GetRegistrySignatureFromDelegate(registryData.asDelegate), signatureTypesNames, signatureTypesNames.Length);
-        }
-
-        private static string[] GetSignatureTypesNames(Delegate method)
-        {
-            int parametersCount = method.Method.GetParameters().Length;
-            string[] parameterNames = new string[parametersCount + 1];
-            parameterNames[0] = method.Method.ReturnType.FullName;
-            for (int i = 0; i < parametersCount; i++)
-                parameterNames[i + 1] = method.Method.GetParameters()[i].ParameterType.FullName;
-
-            return parameterNames;
+            RegisterMethodInRegistry(registryData.registryPtr, name, GetRegistrySignatureFromDelegate(registryData.asDelegate));
         }
 
         /// <summary>

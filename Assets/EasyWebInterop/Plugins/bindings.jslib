@@ -34,35 +34,17 @@ var easyWebInteropLib = {
             return Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
         }
     },
-    RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr, parametersNamesPtr, parametersNamesPtrSize) {
+    RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr) {
         var functionNameAsString = UTF8ToString(functionNamePtr);
         var signatureAsString = UTF8ToString(functionParamSignaturePtr);
-
-        // Get each parameter in parametersNamesPtr string array
-        var parametersNames = [];
-        for (var i = 0; i < parametersNamesPtrSize; i++) {
-            var ptr = parametersNamesPtr + i * 4;
-            var str = UTF8ToString(Module.HEAPU32[ptr >> 2]);
-            parametersNames.push(str);
-        }
-
-        // The C# return type of the function
-        const managedReturnType = parametersNames[0];
-
-        // The names of the C# input parameters
-        const managedArgsTypesNames = parametersNames.slice(1);
         
         Module[functionNameAsString] = (...args) => {
             // Assign params of the fuction to a variable that's we'll play with afterwards
             var targetArgs = [...args];
-
-            // Ensure provided args countis the same as the managed function
-            if (targetArgs.length !== managedArgsTypesNames.length)
-                throw new Error("The number of arguments provided does not match the number of arguments expected by the managed function.");
             
             // Ensure all args are PointerToNativeObject, if not, throw an error
             for (var i = 0; i < targetArgs.length; i++) {
-                if (targetArgs[i] instanceof Module.PointerToNativeObject && targetArgs[i].managedType === managedArgsTypesNames[i])
+                if (targetArgs[i] instanceof Module.PointerToNativeObject)
                     targetArgs[i] = targetArgs[i].targetGcHandleObjectPtr;
                 else
                     throw new Error("All arguments must be instances of PointerToNativeObject. Argument at index " + i + " is not.");
@@ -72,7 +54,7 @@ var easyWebInteropLib = {
             targetArgs.unshift(allocateUTF8(functionNameAsString));
 
             // Call the function
-            return Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs), managedReturnType);
+            return Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
         };
     },
 };
