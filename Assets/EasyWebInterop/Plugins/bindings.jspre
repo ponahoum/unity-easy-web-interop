@@ -10,8 +10,9 @@ if (!Module["internalJs"])
 // Declare class that holds references
 Module.PointerToNativeObject = class PointerToNativeObject {
     // Constructor to initialize the private integer field
-    constructor(initialValue) {
-        this.targetGcHandleObjectPtr = initialValue;
+    constructor(targetGcHandleObjectPtr, managedType) {
+        this.targetGcHandleObjectPtr = targetGcHandleObjectPtr;
+        this.managedType = managedType;
     }
 
     get value() {
@@ -20,7 +21,7 @@ Module.PointerToNativeObject = class PointerToNativeObject {
 }
 
 // Declare a wrapper around a C# object pointer that will be collected by the garbage collector
-Module.internalJs.HandleResPtr = function (resPtr) {
+Module.internalJs.HandleResPtr = function (resPtr, resManagedType) {
     if (resPtr === undefined)
         return undefined;
 
@@ -31,7 +32,7 @@ Module.internalJs.HandleResPtr = function (resPtr) {
     });
     console.log("Registering object - TO DO CHECK COLLECTIOn");
 
-    let resultingPtr = new Module.PointerToNativeObject(resPtr);
+    let resultingPtr = new Module.PointerToNativeObject(resPtr, resManagedType);
     registry.register(resultingPtr, 'here put id of collected ??');
     return resultingPtr;
 }

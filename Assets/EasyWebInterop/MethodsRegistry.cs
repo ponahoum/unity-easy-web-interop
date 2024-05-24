@@ -70,11 +70,11 @@ namespace PoNah.EasyWebInterop
             // Invoke it dynamically
             try
             {
-                object result;
-                if (args.Length == 0)
-                    result = targetDelegate.DynamicInvoke();
-                else
-                    result = targetDelegate.DynamicInvoke(args);
+                // Copy the IntPtr array to an object array so that its passed as params and not an individual argument
+                object[] newArgs = new object[args.Length];
+                args.CopyTo(newArgs, 0);
+                object result = targetDelegate.DynamicInvoke(newArgs);
+
 
                 if (result is IntPtr asIntPtr)
                     return asIntPtr;
@@ -92,103 +92,77 @@ namespace PoNah.EasyWebInterop
         }
 
         /// <summary>
-        /// Exposes a method with a given name to the JS side
+        /// Exposes a method to the JS side from its name
         /// </summary>
-        public static void RegisterMethod<T>(string name, T method)
-            where T : Delegate
+        public static void RegisterMethod<T>(string name, T method) where T : Delegate
         {
-            // Check if a method with the same name is already registered
+            // Ensure the method is not already registered
             if (methodsRegistry.ContainsKey(name))
                 throw new Exception($"Method {name} already registered");
 
-            // Get parameters count and check if there is a return value
+            // Check if the method has a return value or if it is void
             bool hasReturn = method.Method.ReturnType != typeof(void);
+
+            // Get arguments count
             int parametersCount = method.Method.GetParameters().Length;
 
-            // Get the parameter names (args and return value)
-            string[] parameterNames = new string[parametersCount +1];
-            parameterNames[0] = method.Method.ReturnType.FullName;
-            for (int i = 0; i < parametersCount; i++)
-                parameterNames[i+1] = method.Method.GetParameters()[i].ParameterType.FullName;
+            // Define the registry data
+            (IntPtr registryPtr, Delegate asDelegate) registryData;
 
-            // Case has return
+            // If the methods returns something, use the appropriate registry
             if (hasReturn)
             {
-                // No parameters
-                if (parametersCount == 0)
+                registryData = parametersCount switch
                 {
-                    I asDelegate = () => InvokeWrapped(method);
-                    methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryICallPtr, name, GetRegistryMethodSignature<I>(), parameterNames, parameterNames.Length);
-                }
-                // One parameter
-                else if (parametersCount == 1)
-                {
-                    II asDelegate = (IntPtr inputA) => InvokeWrapped(method, inputA);
-                    methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryIICallPtr, name, GetRegistryMethodSignature<II>(), parameterNames, parameterNames.Length);
-                }
-                else if (parametersCount == 2)
-                {
-                    III asDelegate = (IntPtr inputA, IntPtr inputB) => InvokeWrapped(method, inputA, inputB);
-                    methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryIIICallPtr, name, GetRegistryMethodSignature<III>(), parameterNames, parameterNames.Length);
-                }
-                else if (parametersCount == 3)
-                {
-                    IIII asDelegate = (IntPtr inputA, IntPtr inputB, IntPtr inputC) => InvokeWrapped(method, inputA, inputB, inputC);
-                    methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryIIIICallPtr, name, GetRegistryMethodSignature<IIII>(), parameterNames, parameterNames.Length);
-                }
-                else if (parametersCount == 4)
-                {
-                    IIIII asDelegate = (IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD) => InvokeWrapped(method, inputA, inputB, inputC, inputD);
-                    methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryIIIIICallPtr, name, GetRegistryMethodSignature<IIIII>(), parameterNames, parameterNames.Length);
-                }
-                else
-                    throw new Exception("Method has too many parameters");
+                    0 => (registryICallPtr, (I)(() => InvokeWrapped(method))),
+                    1 => (registryIICallPtr, (II)((IntPtr inputA) => InvokeWrapped(method, inputA))),
+                    2 => (registryIIICallPtr, (III)((IntPtr inputA, IntPtr inputB) => InvokeWrapped(method, inputA, inputB))),
+                    3 => (registryIIIICallPtr, (IIII)((IntPtr inputA, IntPtr inputB, IntPtr inputC) => InvokeWrapped(method, inputA, inputB, inputC))),
+                    4 => (registryIIIIICallPtr, (IIIII)((IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD) => InvokeWrapped(method, inputA, inputB, inputC, inputD))),
+                    _ => throw new Exception("Method has too many parameters")
+                };
             }
+
+            // If the return type is void, use the appropriate registry
             else
             {
-                if (parametersCount == 0)
+                registryData = parametersCount switch
                 {
-                    V asDelegate = () => InvokeWrappedInternal(method);
-                    methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryVCallPtr, name, GetRegistryMethodSignature<V>(), parameterNames, parameterNames.Length);
-                }
-                else if (parametersCount == 1)
-                {
-                    VI asDelegate = (IntPtr inputA) => InvokeWrappedInternal(method, inputA);
-                    methodsRegistry.Add(name, asDelegate);
-                    RegisterMethodInRegistry(registryVICallPtr, name, GetRegistryMethodSignature<VI>(), parameterNames, parameterNames.Length);
-                }
+                    0 => (registryVCallPtr, (V)(() => InvokeWrapped(method))),
+                    1 => (registryVICallPtr, (VI)((IntPtr inputA) => InvokeWrapped(method, inputA))),
+                    _ => throw new Exception("Method has too many parameters")
+                };
             }
+
+            // Add the method to the static registry that will later be used to invoke the method from its name
+            methodsRegistry.Add(name, registryData.asDelegate);
+
+            // Get the signature types names to provide it as an information to the JS side
+            string[] signatureTypesNames = GetSignatureTypesNames(method);
+
+            // Notice the js side that this named method is available under this signature
+            RegisterMethodInRegistry(registryData.registryPtr, name, GetRegistrySignatureFromDelegate(registryData.asDelegate), signatureTypesNames, signatureTypesNames.Length);
         }
 
-        /// <summary>
-        /// Given a method and its arguments, unwrap the arguments and invoke the method, return a wrapped result
-        /// </summary>
-        private static IntPtr InvokeWrapped(Delegate method, params IntPtr[] args)
+        private static string[] GetSignatureTypesNames(Delegate method)
         {
-            // Check the method returns something
-            if (method.Method.ReturnType == typeof(void))
-                throw new Exception("Method returns void. It should return a value");
+            int parametersCount = method.Method.GetParameters().Length;
+            string[] parameterNames = new string[parametersCount + 1];
+            parameterNames[0] = method.Method.ReturnType.FullName;
+            for (int i = 0; i < parametersCount; i++)
+                parameterNames[i + 1] = method.Method.GetParameters()[i].ParameterType.FullName;
 
-            object result = InvokeWrappedInternal(method, args);
-            return NewManagedObject(result);
+            return parameterNames;
         }
 
         /// <summary>
         /// Given a delegate, return the signature of the method to be used in the registry
+        /// Typically, ends with i for int and v for void return types and add an i for the service name key intptr
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        private static string GetRegistryMethodSignature<T>()
-            where T : Delegate
+        private static string GetRegistrySignatureFromDelegate(Delegate d)
         {
             // Get the invoke method
-            MethodInfo invokeMethod = typeof(T).GetMethod("Invoke");
+            MethodInfo invokeMethod = d.Method;
 
             // Get return type
             Type returnType = invokeMethod.ReturnType;
@@ -217,7 +191,7 @@ namespace PoNah.EasyWebInterop
         /// <param name="method"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        private static object InvokeWrappedInternal(Delegate method, params IntPtr[] args)
+        private static IntPtr InvokeWrapped(Delegate method, params IntPtr[] args)
         {
             try
             {
@@ -228,7 +202,8 @@ namespace PoNah.EasyWebInterop
                 for (int i = 0; i < args.Length; i++)
                     argsCasted[i] = GetManagedObjectFromPtr(args[i]);
 
-                return method.DynamicInvoke(argsCasted);
+                object result = method.DynamicInvoke(argsCasted);
+                return NewManagedObject(result);
             }
             catch (Exception e)
             {
