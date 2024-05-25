@@ -141,12 +141,6 @@
                 var module = unityInstance.Module;
                 window.Module = module;
 
-                // Test 
-                console.log(module.MyMethodReturningString().value);
-                console.log(module.MyMethodReturningDouble().value);
-                console.log(module.MyMethodReturningInt().value);
-                console.log(module.TestReturnNullValue().value);
-
 #if SHOW_DIAGNOSTICS
                 diagnostics_icon.onclick = () => {
                   unityDiagnostics.openDiagnosticsDiv(unityInstance.GetMemoryInfo);
@@ -163,5 +157,6 @@
       document.body.appendChild(script);
 
     </script>
+    <script src="./tests.js"></script>
   </body>
 </html>

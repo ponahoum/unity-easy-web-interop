@@ -72,5 +72,23 @@ namespace Nahoum.EasyWebInterop.Tests
             Assert.IsFalse(hasReturnValueRealTask);
             Assert.AreEqual(taskRunning, asTaskRealTask);
         }
+
+        [Test]
+        public async Task TestGetTaskResult(){
+            // Test with fromresult
+            Task taskResult = Task.FromResult("Hello World");
+            Assert.AreEqual("Hello World", ReflectionUtilities.GetTaskResult(taskResult));
+
+
+            // Test with real async task
+            async Task<string> asyncTaskResult(){
+                await Task.Delay(100);
+                return "Hello World";
+            }
+            Task<string> taskResultAsync = asyncTaskResult();
+            while(!taskResultAsync.IsCompleted)
+                await Task.Yield();
+            Assert.AreEqual("Hello World", ReflectionUtilities.GetTaskResult(taskResultAsync));
+        }
     }
 }

@@ -99,9 +99,7 @@ namespace Nahoum.EasyWebInterop
 
             // Wait for the task to complete
             while (!asTask.IsCompleted)
-            {
                 await Task.Yield();
-            }
 
             // If task is faulted, return undefined encoded pointer
             if (asTask.IsFaulted)
@@ -114,10 +112,9 @@ namespace Nahoum.EasyWebInterop
             // If has return type, return the wrapped object
             if (hasReturnValue)
             {
-                var result = ReflectionUtilities.GetTaskResult(asTask);
+                object result = ReflectionUtilities.GetTaskResult(asTask);
                 onCompleted.Invoke(GCUtils.NewManagedObject(result));
             }
-
             // Otherwise return undefined (-1 which means void)
             else
                 onCompleted.Invoke(IntPtrExtension.Void);

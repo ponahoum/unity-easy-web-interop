@@ -68,7 +68,7 @@ namespace Nahoum.EasyWebInterop
 
             // Get the delegate from the registry
             Delegate targetDelegate = methodsRegistry[serviceKeyStr];
-
+            
             // Invoke it dynamically
             try
             {

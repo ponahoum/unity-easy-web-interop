@@ -54,7 +54,7 @@ var easyWebInteropLib = {
 
             // Call the function
             const resultingManagedObjectPtr = Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
-
+            
             // Handle async task if needed
             if (isAsyncTask) {
                 return new Promise((resolve, reject) => {

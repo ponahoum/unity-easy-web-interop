@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -46,7 +48,8 @@ namespace Nahoum.EasyWebInterop
 
             // Check if the task is a generic task (async Task == Task<VoidTaskResult>, so an async task will still be generic)
             Type objectType = objectToCheck.GetType();
-            if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Task<>)){
+            if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
 
                 // The only case in which we typically have no return type but still the task is generic is when the task is async
                 // C# wraps the "Task" return type in a Task<VoidTaskResult> when the method is async
@@ -59,12 +62,34 @@ namespace Nahoum.EasyWebInterop
         }
 
         /// <summary>
+        /// Fake methods to preserve the type of a Task<T> when using reflection
+        /// Otherwise it's stripped by the IL2CPP compiler
+        /// </summary>
+        [UnityEngine.Scripting.Preserve]
+        private static T PreserveTaskT<T>(Task<T> task){
+             return task.Result;
+        }
+
+        /// <summary>
         /// Returns the result of a task
         /// </summary>
         internal static object GetTaskResult(Task task)
         {
+            UnityEngine.Debug.Log("Error probably here 0");
             if (task.IsCompleted)
-                return task.GetType().GetProperty("Result").GetValue(task);
+            {
+                UnityEngine.Debug.Log("Error probably here 1");
+                var type = task.GetType();
+                UnityEngine.Debug.Log("Error probably here 2");
+                UnityEngine.Debug.Log("Type is " + type);
+                task.GetAwaiter().GetResult();
+                var result = type.GetRuntimeProperty("Result");
+                UnityEngine.Debug.Log("Error probably here 3");
+                UnityEngine.Debug.Log("Result null ? " + (result == null));
+                var value = result.GetValue(task);
+                UnityEngine.Debug.Log("Error probably here 4");
+                return value;
+            }
             throw new Exception("The task is not completed");
         }
     }
