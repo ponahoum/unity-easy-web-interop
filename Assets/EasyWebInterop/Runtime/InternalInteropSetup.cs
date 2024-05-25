@@ -1,9 +1,10 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using static PoNah.EasyWebInterop.DyncallSignature;
+using static Nahoum.EasyWebInterop.DyncallSignature;
 
-namespace PoNah.EasyWebInterop
+namespace Nahoum.EasyWebInterop
 {
     public static class InternalInteropSetup
     {
@@ -30,17 +31,12 @@ namespace PoNah.EasyWebInterop
             // Register get element at index from ptr array
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, int, IntPtr>>(GetManagedElementAtIndexFromManagedPtrArray), nameof(GetManagedElementAtIndexFromManagedPtrArray), "iii");
 
-            // Register element get Type from ptr
-            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetManagedElementType), nameof(GetManagedElementType), "ii");
-
             // Register task completed
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(IsTaskCompleted), nameof(IsTaskCompleted), "ii");
 
             // Register get task result
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetTaskResult), nameof(GetTaskResult), "ii");
         }
-
-
 
         /// <summary>
         /// Given an GCHandle ptr, return the string representation of the object as json
@@ -50,7 +46,7 @@ namespace PoNah.EasyWebInterop
         static IntPtr GetSerializedValueFromPtr(IntPtr targetObject)
         {
             // Gather the object from the GCHandle
-            object obj = GetManagedObjectFromPtr(targetObject);
+            object obj = GCUtils.GetManagedObjectFromPtr(targetObject);
 
             // Serialize the object
             string json = ObjectSerializer.ToJson(obj);
@@ -61,10 +57,10 @@ namespace PoNah.EasyWebInterop
         }
 
         [MonoPInvokeCallback]
-        static IntPtr GetManagedDoubleFromPtr([MarshalAs(UnmanagedType.R8)] double managedDouble) => NewManagedObject(managedDouble);
+        static IntPtr GetManagedDoubleFromPtr([MarshalAs(UnmanagedType.R8)] double managedDouble) => GCUtils.NewManagedObject(managedDouble);
 
         [MonoPInvokeCallback]
-        static IntPtr GetManagedDoubleArrayFromPtr([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] managedArray, int size) => NewManagedObject(managedArray);
+        static IntPtr GetManagedDoubleArrayFromPtr([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] double[] managedArray, int size) => GCUtils.NewManagedObject(managedArray);
 
         /// <summary>
         /// Given an array ptr and an index, return the element at the index
@@ -74,7 +70,7 @@ namespace PoNah.EasyWebInterop
         static IntPtr GetManagedElementAtIndexFromManagedPtrArray(IntPtr arrayPtr, int index)
         {
             // Get object from ptr
-            object array = GetManagedObjectFromPtr(arrayPtr);
+            object array = GCUtils.GetManagedObjectFromPtr(arrayPtr);
 
             // Check array is array
             if (!array.GetType().IsArray)
@@ -85,14 +81,8 @@ namespace PoNah.EasyWebInterop
                 throw new IndexOutOfRangeException("Index out of range");
 
             // Get element at index
-            return NewManagedObject(asArray.GetValue(index));
+            return GCUtils.NewManagedObject(asArray.GetValue(index));
         }
-
-        /// <summary>
-        /// Returns the type of the managed element from the ptr
-        /// </summary>
-        [MonoPInvokeCallback]
-        static IntPtr GetManagedElementType(IntPtr targetObject) => NewManagedObject(GetManagedObjectFromPtr(targetObject).GetType().ToString());
 
         /// <summary>
         /// Tells if a task is completed
@@ -100,9 +90,9 @@ namespace PoNah.EasyWebInterop
         [MonoPInvokeCallback]
         static IntPtr IsTaskCompleted(IntPtr taskPtr)
         {
-            object task = GetManagedObjectFromPtr(taskPtr);
+            object task = GCUtils.GetManagedObjectFromPtr(taskPtr);
             if (task is Task asTask)
-                return NewManagedObject(asTask.IsCompleted);
+                return GCUtils.NewManagedObject(asTask.IsCompleted);
             throw new Exception("The object is not a task");
         }
 
@@ -113,10 +103,10 @@ namespace PoNah.EasyWebInterop
         [MonoPInvokeCallback]
         static IntPtr GetTaskResult(IntPtr taskPtr)
         {
-            object task = GetManagedObjectFromPtr(taskPtr);
+            object task = GCUtils.GetManagedObjectFromPtr(taskPtr);
 
             if (task is Task asTask && asTask.IsCompleted)
-                return NewManagedObject(asTask.GetType().GetProperty("Result").GetValue(asTask));
+                return GCUtils.NewManagedObject(asTask.GetType().GetProperty("Result").GetValue(asTask));
             throw new Exception("The object is not a task or the task is not completed");
         }
 
@@ -128,30 +118,6 @@ namespace PoNah.EasyWebInterop
         {
             // TODO
 
-        }
-
-        /// <summary>
-        /// Given an object, return a GCHandle ptr to the object
-        /// </summary>
-        static IntPtr NewManagedObject(object targetObject)
-        {
-            // Handle null case
-            if (targetObject == null)
-                return IntPtr.Zero;
-
-            GCHandle elementHandle = GCHandle.Alloc(targetObject);
-            return GCHandle.ToIntPtr(elementHandle);
-        }
-
-        /// <summary>
-        /// Returns the managed object from the GCHandle ptr
-        /// </summary>
-        static object GetManagedObjectFromPtr(IntPtr targetObject)
-        {
-            if (targetObject == IntPtr.Zero)
-                return null;
-
-            return GCHandle.FromIntPtr(targetObject).Target;
         }
 
         // public static void RegisterGetActionStringFromPtr()

@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
-using static PoNah.EasyWebInterop.DyncallSignature;
+using static Nahoum.EasyWebInterop.DyncallSignature;
 
-namespace PoNah.EasyWebInterop
+[assembly: InternalsVisibleTo("com.nahoum.EasyWebInterop.Tests")]
+namespace Nahoum.EasyWebInterop
 {
     public class MethodsRegistry
     {
@@ -18,7 +20,7 @@ namespace PoNah.EasyWebInterop
         /// Allows to pass a delegate pointer to the JS side so it can be invoked from there
         /// </summary>
         [DllImport("__Internal")]
-        internal static extern void RegisterMethodInRegistry(IntPtr methodPtr, string functionName, string functionSignature);
+        internal static extern void RegisterMethodInRegistry(IntPtr methodPtr, string functionName, string functionSignature, IntPtr isAsyncTask);
 
         // Keep reference to all exposed delegates (static or not)
         static Dictionary<string, Delegate> methodsRegistry = new();
@@ -74,7 +76,6 @@ namespace PoNah.EasyWebInterop
                 object[] newArgs = new object[args.Length];
                 args.CopyTo(newArgs, 0);
                 object result = targetDelegate.DynamicInvoke(newArgs);
-
 
                 if (result is IntPtr asIntPtr)
                     return asIntPtr;
@@ -138,7 +139,7 @@ namespace PoNah.EasyWebInterop
             methodsRegistry.Add(name, registryData.asDelegate);
 
             // Notice the js side that this named method is available under this signature
-            RegisterMethodInRegistry(registryData.registryPtr, name, GetRegistrySignatureFromDelegate(registryData.asDelegate));
+            RegisterMethodInRegistry(registryData.registryPtr, name, GetRegistrySignatureFromDelegate(registryData.asDelegate), new IntPtr(ReflectionUtilities.IsDelegateAsyncTask(method) ? 1 : 0));
         }
 
         /// <summary>
@@ -186,10 +187,10 @@ namespace PoNah.EasyWebInterop
 
                 object[] argsCasted = new object[args.Length];
                 for (int i = 0; i < args.Length; i++)
-                    argsCasted[i] = GetManagedObjectFromPtr(args[i]);
+                    argsCasted[i] = GCUtils.GetManagedObjectFromPtr(args[i]);
 
                 object result = method.DynamicInvoke(argsCasted);
-                return NewManagedObject(result);
+                return GCUtils.NewManagedObject(result);
             }
             catch (Exception e)
             {
@@ -198,28 +199,5 @@ namespace PoNah.EasyWebInterop
             }
         }
 
-        /// <summary>
-        /// Given an object, return a GCHandle ptr to the object
-        /// </summary>
-        static IntPtr NewManagedObject(object targetObject)
-        {
-            // Handle null case
-            if (targetObject == null)
-                return IntPtr.Zero;
-
-            GCHandle elementHandle = GCHandle.Alloc(targetObject);
-            return GCHandle.ToIntPtr(elementHandle);
-        }
-
-        /// <summary>
-        /// Returns the managed object from the GCHandle ptr
-        /// </summary>
-        static object GetManagedObjectFromPtr(IntPtr targetObject)
-        {
-            if (targetObject == IntPtr.Zero)
-                return null;
-
-            return GCHandle.FromIntPtr(targetObject).Target;
-        }
     }
 }

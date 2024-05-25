@@ -1,6 +1,6 @@
 
 using UnityEngine;
-namespace PoNah.EasyWebInterop
+namespace Nahoum.EasyWebInterop
 {
     public static class ObjectSerializer
     {

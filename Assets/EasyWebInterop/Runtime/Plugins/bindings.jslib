@@ -34,14 +34,15 @@ var easyWebInteropLib = {
             return Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
         }
     },
-    RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr) {
+    RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr, isAsyncTaskPtr) {
         var functionNameAsString = UTF8ToString(functionNamePtr);
         var signatureAsString = UTF8ToString(functionParamSignaturePtr);
-        
+        const isAsyncTask = isAsyncTaskPtr === 1;
+        console.log(functionNameAsString + "is async task " + isAsyncTask +" dd"+isAsyncTaskPtr);
         Module[functionNameAsString] = (...args) => {
             // Assign params of the fuction to a variable that's we'll play with afterwards
             var targetArgs = [...args];
-            
+
             // Ensure all args are PointerToNativeObject, if not, throw an error
             for (var i = 0; i < targetArgs.length; i++) {
                 if (targetArgs[i] instanceof Module.PointerToNativeObject)

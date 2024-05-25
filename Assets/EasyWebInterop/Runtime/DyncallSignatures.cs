@@ -1,6 +1,6 @@
 using System;
 
-namespace PoNah.EasyWebInterop
+namespace Nahoum.EasyWebInterop
 {
     public static class DyncallSignature
     {
