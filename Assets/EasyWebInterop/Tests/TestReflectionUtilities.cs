@@ -39,5 +39,38 @@ namespace Nahoum.EasyWebInterop.Tests
             Assert.IsTrue(ReflectionUtilities.IsDelegateAsyncTask(new Func<Task>(RealAsyncMethodNoReturn)));
 
         }
+
+        /// <summary>
+        /// Tests the IsTask method that tells if an object is a Task or Task<T> and returns the task
+        /// </summary>
+        [Test]
+        public void IsTaskTests()
+        {
+            // Test for Task<string> (return string)
+            object taskString = Task.FromResult("Test String");
+            Assert.IsTrue(ReflectionUtilities.IsTask(taskString, out bool hasReturnValueString, out Task aTask));
+            Assert.IsTrue(hasReturnValueString);
+            Assert.AreEqual(taskString, aTask);
+            Assert.IsInstanceOf<Task<string>>(aTask);
+
+            // Test for Task (returns void)
+            object taskVoid = Task.CompletedTask;
+            Assert.IsTrue(ReflectionUtilities.IsTask(taskVoid, out bool hasReturnValueTask, out Task aTaskVoid));
+            Assert.IsFalse(hasReturnValueTask);
+            Assert.AreEqual(taskVoid, aTaskVoid);
+
+            // Test for a non-task object
+            object notATask = "abcd";
+            Assert.IsFalse(ReflectionUtilities.IsTask(notATask, out bool hasReturnValueNotTask, out Task asTaskNotTask));
+            Assert.IsFalse(hasReturnValueNotTask);
+            Assert.IsNull(asTaskNotTask);
+
+            // Test for real syntax Task
+            async Task TestVoidReturn() { await Task.Delay(100); };
+            var taskRunning = TestVoidReturn();
+            Assert.IsTrue(ReflectionUtilities.IsTask(taskRunning, out bool hasReturnValueRealTask, out Task asTaskRealTask));
+            Assert.IsFalse(hasReturnValueRealTask);
+            Assert.AreEqual(taskRunning, asTaskRealTask);
+        }
     }
 }

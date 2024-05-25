@@ -31,11 +31,8 @@ namespace Nahoum.EasyWebInterop
             // Register get element at index from ptr array
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, int, IntPtr>>(GetManagedElementAtIndexFromManagedPtrArray), nameof(GetManagedElementAtIndexFromManagedPtrArray), "iii");
 
-            // Register task completed
-            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(IsTaskCompleted), nameof(IsTaskCompleted), "ii");
-
-            // Register get task result
-            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetTaskResult), nameof(GetTaskResult), "ii");
+            // Register wait for task to complete
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Action<IntPtr, IntPtr>>(WaitForTaskToComplete), nameof(WaitForTaskToComplete), "vii");
         }
 
         /// <summary>
@@ -85,56 +82,52 @@ namespace Nahoum.EasyWebInterop
         }
 
         /// <summary>
-        /// Tells if a task is completed
-        /// </summary>
-        [MonoPInvokeCallback]
-        static IntPtr IsTaskCompleted(IntPtr taskPtr)
-        {
-            object task = GCUtils.GetManagedObjectFromPtr(taskPtr);
-            if (task is Task asTask)
-                return GCUtils.NewManagedObject(asTask.IsCompleted);
-            throw new Exception("The object is not a task");
-        }
-
-        /// <summary>
-        /// Gets the result of a task
-        /// Only call this if the task is completed
-        /// </summary>
-        [MonoPInvokeCallback]
-        static IntPtr GetTaskResult(IntPtr taskPtr)
-        {
-            object task = GCUtils.GetManagedObjectFromPtr(taskPtr);
-
-            if (task is Task asTask && asTask.IsCompleted)
-                return GCUtils.NewManagedObject(asTask.GetType().GetProperty("Result").GetValue(asTask));
-            throw new Exception("The object is not a task or the task is not completed");
-        }
-
-        /// <summary>
         /// Register a task completion callback with a managed action
         /// </summary>
         [MonoPInvokeCallback]
-        static void OnTaskComplete(Action<IntPtr> onCompleted)
+        static async void WaitForTaskToComplete(IntPtr taskPtr, IntPtr onCompletedActionCallback)
         {
-            // TODO
+            // Convert the managed task inptr to task
+            object task = GCUtils.GetManagedObjectFromPtr(taskPtr);
 
+            // Check the object is a task
+            if (!ReflectionUtilities.IsTask(task, out bool hasReturnValue, out Task asTask))
+                throw new Exception("The object is not a task");
+
+            // Get the callback Action<IntPtr> from the ptr
+            VI onCompleted = Marshal.GetDelegateForFunctionPointer<VI>(onCompletedActionCallback);
+
+            // Wait for the task to complete
+            while (!asTask.IsCompleted)
+            {
+                await Task.Yield();
+            }
+
+            // If task is faulted, return undefined encoded pointer
+            if (asTask.IsFaulted)
+            {
+                UnityEngine.Debug.LogError(asTask.Exception);
+                onCompleted.Invoke(IntPtrExtension.Exception);
+                return;
+            }
+
+            // If has return type, return the wrapped object
+            if (hasReturnValue)
+            {
+                var result = ReflectionUtilities.GetTaskResult(asTask);
+                onCompleted.Invoke(GCUtils.NewManagedObject(result));
+            }
+
+            // Otherwise return undefined (-1 which means void)
+            else
+                onCompleted.Invoke(IntPtrExtension.Undefined);
         }
 
-        // public static void RegisterGetActionStringFromPtr()
-        // {
-        //     [MonoPInvokeCallback]
-        //     static IntPtr RegisterGetActionStringFromPtr_internal(IntPtr _, IntPtr actionAsPtr)
-        //     {
-        //         VI targetAct = Marshal.GetDelegateForFunctionPointer<VI>(actionAsPtr);
-        //         Action<string> targetActAsActionString = (string value) =>
-        //         {
-        //             targetAct.Invoke(NewManagedObject(value));
-        //         };
-        //         return NewManagedObject(targetActAsActionString);
-        //     }
-
-        //     IntPtr registryCallPtr = Marshal.GetFunctionPointerForDelegate<III>(RegisterGetActionStringFromPtr_internal);
-        //     RegisterMethodInRegistry(registryCallPtr, "GetActionStringFromPtr", "iii");
-        // }
+        [MonoPInvokeCallback]
+        static IntPtr RegisterGetActionIntPtrFromJsPtr(IntPtr actionIntPtrAsPtr)
+        {
+            VI targetAct = Marshal.GetDelegateForFunctionPointer<VI>(actionIntPtrAsPtr);
+            return GCUtils.NewManagedObject(targetAct);
+        }
     }
 }

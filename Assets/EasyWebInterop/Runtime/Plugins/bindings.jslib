@@ -2,18 +2,14 @@ var easyWebInteropLib = {
     $dependencies: {},
 
     Setup: function (getIntPtrValueMethodPtr) {
-        // Expose possibility to allocate a pointer from a string
-        Module.allocateString = (str) => allocateUTF8(str);
-        Module.convertStringResult = (strPtr) => UTF8ToString(strPtr);
-
         // Setup callback registerer, This allows to create javascript callbacks that can be called from C#
-        Module.createCallback = (callback, signature) => {
+        Module.internal.createCallback = (callback, signature) => {
             var ptr = addFunction(callback, signature);
             return ptr;
         };
 
         // Given a managed C# object pointer, return a serialized JSON object
-        Module.getJsonValueFromGCHandlePtr = (ptrToGcHandle) => {
+        Module.internal.getJsonValueFromGCHandlePtr = (ptrToGcHandle) => {
             const resPtr = dynCall("ii", getIntPtrValueMethodPtr, [ptrToGcHandle]);
             const asJsonObject = JSON.parse(UTF8ToString(resPtr)).value;
             return asJsonObject;
@@ -37,8 +33,10 @@ var easyWebInteropLib = {
     RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr, isAsyncTaskPtr) {
         var functionNameAsString = UTF8ToString(functionNamePtr);
         var signatureAsString = UTF8ToString(functionParamSignaturePtr);
+
+        // Detect if the method is an async task on the C# side. Therefore we'll wrap it in a promise
         const isAsyncTask = isAsyncTaskPtr === 1;
-        console.log(functionNameAsString + "is async task " + isAsyncTask +" dd"+isAsyncTaskPtr);
+
         Module[functionNameAsString] = (...args) => {
             // Assign params of the fuction to a variable that's we'll play with afterwards
             var targetArgs = [...args];
@@ -55,7 +53,35 @@ var easyWebInteropLib = {
             targetArgs.unshift(allocateUTF8(functionNameAsString));
 
             // Call the function
-            return Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
+            const resultingManagedObjectPtr = Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
+
+            // Handle async task if needed
+            if (isAsyncTask) {
+                return new Promise((resolve, reject) => {
+                    const callBackPtr = Module.internal.createCallback((i) => {
+                        console.log("Task completed with result: " + i);
+                        // Case exception on the C# side
+                        if (i == -3) {
+                            reject("Task failed on the C# side.");
+                        }
+                        // Case void task
+                        else if(i == -2) {
+                            resolve(undefined);
+                        }
+                        // Case task with a result (Task<T>)
+                        else {
+                            resolve(Module.internalJs.HandleResPtr(i));
+                        }
+                    }, "vi");
+                    Module.internal.WaitForTaskToComplete(resultingManagedObjectPtr, callBackPtr);
+                });
+
+            }
+
+            // If the function is not an async task, return the resulting managed object immediately
+            else {
+                return resultingManagedObjectPtr;
+            }
         };
     },
 };

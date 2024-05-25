@@ -15,14 +15,20 @@ Module.PointerToNativeObject = class PointerToNativeObject {
     }
 
     get value() {
-        return Module.getJsonValueFromGCHandlePtr(this.targetGcHandleObjectPtr);
+        return Module.internal.getJsonValueFromGCHandlePtr(this.targetGcHandleObjectPtr);
     }
 }
 
 // Declare a wrapper around a C# object pointer that will be collected by the garbage collector
 Module.internalJs.HandleResPtr = function (resPtr) {
+    // Check for undefined
     if (resPtr === undefined)
         return undefined;
+
+    // Check for exceptions
+    if (resPtr == -3) {
+        throw new Error("An exception occured on the C# side.");
+    }
 
     const registry = new FinalizationRegistry((heldValue) => {
         // TO DO: remove the object from the C# side
@@ -58,7 +64,7 @@ Module.GetManagedDoubleArray = (array) => {
 
     // Create float 64 array from array of number
     var float64Array = new Float64Array(array);
-    
+
     // Allocate memory for the array
     var dataPtr = Module.internalJs.allocateMemoryForArray(float64Array);
 

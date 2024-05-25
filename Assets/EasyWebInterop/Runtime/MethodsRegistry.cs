@@ -88,7 +88,7 @@ namespace Nahoum.EasyWebInterop
             catch (Exception e)
             {
                 Debug.LogError(e);
-                throw e;
+                return IntPtrExtension.Exception;
             }
         }
 
