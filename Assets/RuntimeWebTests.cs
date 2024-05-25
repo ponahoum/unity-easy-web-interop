@@ -27,6 +27,18 @@ public class RuntimeWebTests : MonoBehaviour
     public async Task AsyncTaskVoidMethod() => await Task.Yield();
     public async void AsyncVoidMethod() => await Task.Yield();
 
+    public string GetImageInformation(byte[] imageBytes)
+    {
+        // Load the PNG
+        var tex = new Texture2D(2, 2);
+        tex.LoadImage(imageBytes);
+        string result = $"Received image with {imageBytes.Length} bytes and resolution {tex.width}x{tex.height}";
+
+        // Release the texture
+        Destroy(tex);
+        return result;
+    }
+
     void Awake()
     {
         // Register methods we want to expose to the nJS side
@@ -41,5 +53,6 @@ public class RuntimeWebTests : MonoBehaviour
         MethodsRegistry.RegisterMethod<Func<string, string, string>>(nameof(ConcatenateStrings), ConcatenateStrings);
         MethodsRegistry.RegisterMethod<Func<double, double>>(nameof(AddOneToDouble), AddOneToDouble);
         MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskStringFail), AsyncTaskStringFail);
+        MethodsRegistry.RegisterMethod<Func<byte[], string>>(nameof(GetImageInformation), GetImageInformation);
     }
 }

@@ -5,7 +5,7 @@ const assert = function (condition, testName) {
         console.log('The following test passed: ' + testName);
 };
 
-const assertEquals = function (expected, actual, testName) {
+const assertEquals = function (actual, expected, testName) {
     if (expected !== actual)
         throw Error('The following test failed: ' + testName + '. Expected: ' + expected + ' but actual is: ' + actual);
     else
@@ -27,6 +27,38 @@ const arrayContentsEquals = function (array1, array2) {
     return true;
 
 }
+
+/**
+ *  Download sample image
+ */
+
+async function downloadJPGImageToUint8Array(resX, resY) {
+    try {
+        // Fetch the image
+        const url= "https://picsum.photos/" + resX + '/' + resY;
+        const response = await fetch(url);
+
+        // Check if the response is ok
+        if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.statusText}`);
+        }
+
+        // Get the image as a blob
+        const blob = await response.blob();
+
+        // Convert the blob to an ArrayBuffer
+        const arrayBuffer = await blob.arrayBuffer();
+
+        // Create a Uint8Array from the ArrayBuffer
+        const uint8Array = new Uint8Array(arrayBuffer);
+
+        // Return the Uint8Array
+        return uint8Array;
+    } catch (error) {
+        console.error('Error downloading or converting the image:', error);
+    }
+}
+
 
 // Wait for window.Module to be defined
 const waitForModule = async function () {
@@ -60,7 +92,28 @@ const runTests = async function () {
         assert(true, "Async task failed as expected");
     }
 
+    // Primitives getters
+    assertEquals(module.GetManagedInt(123456).value, 123456, "GetInt works");
+    assertEquals(module.GetManagedLong(123456).value, 123456, "GetBool works");
+    assertEquals(module.GetManagedFloat(123456.3).value, 123456.3, "GetFloat works (around 7 decimal digits)");
+    assertEquals(module.GetManagedDouble(123456.3339944).value, 123456.3339944, "GetDouble works (around 13 decimal digits");
+    assertEquals(module.GetManagedBool(true).value, true, "GetBool true works");
+    assertEquals(module.GetManagedBool(false).value, false, "GetBool true works");
+    assertEquals(module.GetManagedString("A string").value, "A string", "GetString works");
+
+    // Primitive arrays getter
+    assert(arrayContentsEquals(module.GetManagedIntArray([1, 2, 3]).value, [1, 2, 3]), "GetIntArray works");
+    assert(arrayContentsEquals(module.GetManagedDoubleArray([1.1, 2.2, 3.3]).value, [1.1, 2.2, 3.3]), "GetDoubleArray works");
+    assert(arrayContentsEquals(module.GetManagedFloatArray([1.1, 2.2, 3.3]).value, [1.1, 2.2, 3.3]), "GetFloatArray works");
+    assert(arrayContentsEquals(module.GetManagedBoolArray([true, false, true]).value, [true, false, true]), "GetBoolArray works");
+    assert(arrayContentsEquals(module.GetManagedByteArray(new Uint8Array([1, 2, 3])).value, [1, 2, 3]), "GetByteArray works");
+
     // Methods with parameters
+    // Download image as byte array and pass it to C#
+    const imageByteArray = await downloadJPGImageToUint8Array(200, 300);
+    const getManagedByteArray = module.GetManagedByteArray(imageByteArray);
+    const imageDebug = module.GetImageInformation(getManagedByteArray);
+    assert(imageDebug.value.includes("200x300"), "GetManagedByteArray works")
 
     // Methods with callbacks
 };

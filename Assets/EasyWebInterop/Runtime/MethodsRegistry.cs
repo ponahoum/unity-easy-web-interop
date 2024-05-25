@@ -13,7 +13,7 @@ namespace Nahoum.EasyWebInterop
     {
         static MethodsRegistry()
         {
-            InternalInteropSetup.Setup();
+            InternalInteropSetup.SetupInternal();
         }
 
         /// <summary>

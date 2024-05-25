@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Nahoum.EasyWebInterop
@@ -29,6 +30,22 @@ namespace Nahoum.EasyWebInterop
                 return null;
 
             return GCHandle.FromIntPtr(targetObject).Target;
+        }
+
+        internal static void CollectManagedObjectFromPtr(IntPtr ptrToGcHandle)
+        {
+            if (ptrToGcHandle == IntPtrExtension.Null)
+                return;
+
+            var fromIntPtr = GCHandle.FromIntPtr(ptrToGcHandle);
+            if (fromIntPtr.IsAllocated){
+                fromIntPtr.Free();
+            }
+            else
+            {
+                UnityEngine.Debug.LogError("Tried to free a GCHandle that was not allocated");
+                throw new InvalidOperationException("The GCHandle is not allocated");
+            }
         }
     }
 }

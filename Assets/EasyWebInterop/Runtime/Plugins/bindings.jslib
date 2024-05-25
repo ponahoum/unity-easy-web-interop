@@ -1,7 +1,7 @@
 var easyWebInteropLib = {
     $dependencies: {},
 
-    Setup: function (getIntPtrValueMethodPtr) {
+    Setup: function (getIntPtrValueMethodPtr, collectManagedPtrMethodPtr) {
         // Setup callback registerer, This allows to create javascript callbacks that can be called from C#
         Module.internal.createCallback = (callback, signature) => {
             var ptr = addFunction(callback, signature);
@@ -12,8 +12,15 @@ var easyWebInteropLib = {
         Module.internal.getJsonValueFromGCHandlePtr = (ptrToGcHandle) => {
             const resPtr = dynCall("ii", getIntPtrValueMethodPtr, [ptrToGcHandle]);
             const asJsonObject = JSON.parse(UTF8ToString(resPtr)).value;
+            // Free the memory allocated by the C# side
+            _free(resPtr);
             return asJsonObject;
         };
+
+        Module.internal.finalizationRegistry = new FinalizationRegistry((ptrToGcHandle) => {
+            dynCall("vi", collectManagedPtrMethodPtr, [ptrToGcHandle]);
+            console.log("Collected object with ptr: " + ptrToGcHandle);
+        });
     },
     RegisterStaticMethodInternalRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr) {
         var functionNameAsString = UTF8ToString(functionNamePtr);
@@ -22,9 +29,9 @@ var easyWebInteropLib = {
 
         Module.internal[functionNameAsString] = (...args) => {
             var targetArgs = [...args];
-            // For simplificy, if element is Module.PointerToNativeObject, just replace the element with the targetGcHandleObjectPtr directly
+            // For simplificy, if element is Module.internal.PointerToNativeObject, just replace the element with the targetGcHandleObjectPtr directly
             for (var i = 0; i < targetArgs.length; i++) {
-                if (targetArgs[i] instanceof Module.PointerToNativeObject)
+                if (targetArgs[i] instanceof Module.internal.PointerToNativeObject)
                     targetArgs[i] = targetArgs[i].targetGcHandleObjectPtr;
             }
             return Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
@@ -43,7 +50,7 @@ var easyWebInteropLib = {
 
             // Ensure all args are PointerToNativeObject, if not, throw an error
             for (var i = 0; i < targetArgs.length; i++) {
-                if (targetArgs[i] instanceof Module.PointerToNativeObject)
+                if (targetArgs[i] instanceof Module.internal.PointerToNativeObject)
                     targetArgs[i] = targetArgs[i].targetGcHandleObjectPtr;
                 else
                     throw new Error("All arguments must be instances of PointerToNativeObject. Argument at index " + i + " is not.");
