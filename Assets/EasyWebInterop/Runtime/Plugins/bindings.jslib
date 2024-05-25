@@ -65,7 +65,7 @@ var easyWebInteropLib = {
                             reject("Task failed on the C# side.");
                         }
                         // Case void task
-                        else if(i == -2) {
+                        else if (i == -2) {
                             resolve(undefined);
                         }
                         // Case task with a result (Task<T>)
@@ -75,7 +75,6 @@ var easyWebInteropLib = {
                     }, "vi");
                     Module.internal.WaitForTaskToComplete(resultingManagedObjectPtr, callBackPtr);
                 });
-
             }
 
             // If the function is not an async task, return the resulting managed object immediately

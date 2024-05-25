@@ -120,7 +120,7 @@ namespace Nahoum.EasyWebInterop
 
             // Otherwise return undefined (-1 which means void)
             else
-                onCompleted.Invoke(IntPtrExtension.Undefined);
+                onCompleted.Invoke(IntPtrExtension.Void);
         }
 
         [MonoPInvokeCallback]
