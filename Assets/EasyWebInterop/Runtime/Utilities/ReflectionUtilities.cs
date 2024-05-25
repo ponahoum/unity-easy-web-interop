@@ -75,21 +75,8 @@ namespace Nahoum.EasyWebInterop
         /// </summary>
         internal static object GetTaskResult(Task task)
         {
-            UnityEngine.Debug.Log("Error probably here 0");
             if (task.IsCompleted)
-            {
-                UnityEngine.Debug.Log("Error probably here 1");
-                var type = task.GetType();
-                UnityEngine.Debug.Log("Error probably here 2");
-                UnityEngine.Debug.Log("Type is " + type);
-                task.GetAwaiter().GetResult();
-                var result = type.GetRuntimeProperty("Result");
-                UnityEngine.Debug.Log("Error probably here 3");
-                UnityEngine.Debug.Log("Result null ? " + (result == null));
-                var value = result.GetValue(task);
-                UnityEngine.Debug.Log("Error probably here 4");
-                return value;
-            }
+                return task.GetType().GetProperty("Result").GetValue(task);
             throw new Exception("The task is not completed");
         }
     }
