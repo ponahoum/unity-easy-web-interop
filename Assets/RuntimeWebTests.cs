@@ -49,6 +49,12 @@ public class RuntimeWebTests : MonoBehaviour
         action("Some callback string");
     }
 
+    public void InvokeCallbackWithActionStringDouble(Action<string, double> action)
+    {
+        Debug.Log("Invoking callback with string and double");
+        action("Some callback string", 12345);
+    }
+
     void Awake()
     {
         // Register methods we want to expose to the nJS side
@@ -66,5 +72,6 @@ public class RuntimeWebTests : MonoBehaviour
         MethodsRegistry.RegisterMethod<Func<byte[], string>>(nameof(GetImageInformation), GetImageInformation);
         MethodsRegistry.RegisterMethod<Action<Action>>(nameof(InvokeCallbackForTest), InvokeCallbackForTest);
         MethodsRegistry.RegisterMethod<Action<Action<string>>>(nameof(InvokeCallbackWithActionString), InvokeCallbackWithActionString);
+        MethodsRegistry.RegisterMethod<Action<Action<string, double>>>(nameof(InvokeCallbackWithActionStringDouble), InvokeCallbackWithActionStringDouble);
     }
 }

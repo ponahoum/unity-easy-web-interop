@@ -10,18 +10,25 @@ namespace Nahoum.EasyWebInterop
     public class TestActionFactory
     {
         [Test]
-        public void TestCanCreateActionDouble()
-        {
-            var action = InternalInteropSetup.CreateActionTWrapped(new string[] { "System.Double" }, IntPtr.Zero);
-
-            if (action is Action<double> asActionDouble)
+        public void TestJsActionVoidCreation(){
+            bool jsSideCalled = false;
+            V theFakeJsAction = () =>
             {
-                asActionDouble.Invoke(125);
+                jsSideCalled = true;
+            };
+            IntPtr pointerToAction = Marshal.GetFunctionPointerForDelegate(theFakeJsAction);
+            var action = ManagedActionFactory.GetWrappedActionFromJsDelegate(new string[] { }, pointerToAction);
+
+            if (action is Action asAction)
+            {
+                asAction.Invoke();
                 Assert.Pass();
             }
 
             else
                 Assert.Fail();
+
+            Assert.IsTrue(jsSideCalled);
         }
 
         [Test]
@@ -40,7 +47,7 @@ namespace Nahoum.EasyWebInterop
             IntPtr pointerToAction = Marshal.GetFunctionPointerForDelegate(theFakeJsAction);
 
             // Now gather an Action<double> that internally calls this action with the double being wrapped
-            var actionDouble = InternalInteropSetup.CreateActionTWrapped(new string[] { "System.Double" }, pointerToAction);
+            var actionDouble = ManagedActionFactory.GetWrappedActionFromJsDelegate(new string[] { "System.Double" }, pointerToAction);
 
             // Ensure actionDouble is Action<double>
             if (actionDouble is Action<double> asActionDouble)
@@ -81,7 +88,7 @@ namespace Nahoum.EasyWebInterop
             IntPtr pointerToFakeJsAction = Marshal.GetFunctionPointerForDelegate(theFakeJsAction);
 
             // Now gather an Action<double, string> that internally calls this action with the double being wrapped
-            var actionDoubleString = InternalInteropSetup.CreateActionTWrapped(new string[] { "System.Double", "System.String" }, pointerToFakeJsAction);
+            var actionDoubleString = ManagedActionFactory.GetWrappedActionFromJsDelegate(new string[] { "System.Double", "System.String" }, pointerToFakeJsAction);
 
             // Ensure actionDoubleString is Action<double, string>
             if (actionDoubleString is Action<double, string> asActionDoubleString)
@@ -103,6 +110,54 @@ namespace Nahoum.EasyWebInterop
             Assert.IsTrue(stringGathered is string);
             Assert.AreEqual(125, (double)doubleGathered);
             Assert.AreEqual("Hello", (string)stringGathered);
+        }
+
+        [Test]
+        public void TestJsActionTUVCreation()
+        {
+            // Simulate the js side calling the action
+            bool jsSideCalled = false;
+            IntPtr gatheredPtrA = IntPtr.Zero;
+            IntPtr gatheredPtrB = IntPtr.Zero;
+            IntPtr gatheredPtrC = IntPtr.Zero;
+            VIII theFakeJsAction = (IntPtr ptrA, IntPtr ptrB, IntPtr ptrC) =>
+            {
+                gatheredPtrA = ptrA;
+                gatheredPtrB = ptrB;
+                gatheredPtrC = ptrC;
+                jsSideCalled = true;
+            };
+
+            // Get intptr from this action
+            IntPtr pointerToFakeJsAction = Marshal.GetFunctionPointerForDelegate(theFakeJsAction);
+
+            // Now gather an Action<double, string, int> that internally calls this action with the double being wrapped
+            var actionDoubleStringInt =  ManagedActionFactory.GetWrappedActionFromJsDelegate(new string[] { "System.Double", "System.String", "System.Int32" }, pointerToFakeJsAction);
+
+            // Ensure actionDoubleStringInt is Action<double, string, int>
+            if (actionDoubleStringInt is Action<double, string, int> asActionDoubleStringInt)
+            {
+                // Call the action
+                asActionDoubleStringInt.Invoke(125, "Hello", 5);
+                Assert.Pass();
+            }
+
+            else
+                Assert.Fail();
+            
+            Assert.IsTrue(jsSideCalled);
+            Assert.IsFalse(gatheredPtrA == IntPtr.Zero);
+            Assert.IsFalse(gatheredPtrB == IntPtr.Zero);
+            Assert.IsFalse(gatheredPtrC == IntPtr.Zero);
+            object doubleGathered = GCUtils.GetManagedObjectFromPtr(gatheredPtrA);
+            object stringGathered = GCUtils.GetManagedObjectFromPtr(gatheredPtrB);
+            object intGathered = GCUtils.GetManagedObjectFromPtr(gatheredPtrC);
+            Assert.IsTrue(doubleGathered is double);
+            Assert.IsTrue(stringGathered is string);
+            Assert.IsTrue(intGathered is int);
+            Assert.AreEqual(125, (double)doubleGathered);
+            Assert.AreEqual("Hello", (string)stringGathered);
+            Assert.AreEqual(5, (int)intGathered);
         }
 
     }

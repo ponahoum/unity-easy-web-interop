@@ -173,11 +173,9 @@ namespace Nahoum.EasyWebInterop
 
         /// <summary>
         /// Given a method and its arguments, invoke the method and return the result
+        /// All the arguments are wrapped in GCHandles before
         /// If the method does not return a value, throw an exception
         /// </summary>
-        /// <param name="method"></param>
-        /// <param name="args"></param>
-        /// <returns></returns>
         private static IntPtr InvokeWrapped(Delegate method, params IntPtr[] args)
         {
             try

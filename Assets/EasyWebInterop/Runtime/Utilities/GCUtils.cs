@@ -6,8 +6,6 @@ namespace Nahoum.EasyWebInterop
 {
     internal static class GCUtils
     {
-
-
         /// <summary>
         /// Given an object, return a GCHandle ptr to the object
         /// </summary>

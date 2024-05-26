@@ -116,12 +116,31 @@ const runTests = async function () {
     assert(imageDebug.value.includes("200x300"), "GetManagedByteArray works")
 
     // Methods with callbacks
-    let valueToSet = "";
-    const managedActionVoid = module.GetManagedActionVoid(()=> {
+    // Test callback Action
+    let valueToSet = null;
+    const managedActionVoid = module.GetManagedAction(()=> {
         valueToSet = "Callback invoked";
-    });
+    }, []);
     module.InvokeCallbackForTest(managedActionVoid);
     assertEquals(valueToSet, "Callback invoked", "Action created an invoked");
+    // Test callback Action<string>
+    let valueToSet2 = null;
+    const managedActionString = module.GetManagedAction((str)=> {
+        valueToSet2 = str;
+    }, ["System.String"]);
+    module.InvokeCallbackWithActionString(managedActionString);
+    assertEquals(valueToSet2.value, "Some callback string");
+    // Test callback Action<string, double>
+    let targetString = null;
+    let targetDouble = null;
+    const managedActionStringDouble = module.GetManagedAction((str, dbl)=> {
+        targetString = str;
+        targetDouble = dbl;
+    }, ["System.String", "System.Double"]);
+    module.InvokeCallbackWithActionStringDouble(managedActionStringDouble);
+    assertEquals(targetString.value, "Some callback string");
+    assertEquals(targetDouble.value, 12345);
+
 };
 
 runTests();

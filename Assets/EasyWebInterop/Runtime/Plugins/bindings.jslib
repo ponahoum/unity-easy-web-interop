@@ -30,6 +30,8 @@ var easyWebInteropLib = {
         Module.internal[functionNameAsString] = (...args) => {
             var targetArgs = [...args];
             // For simplificy, if element is Module.internal.PointerToNativeObject, just replace the element with the targetGcHandleObjectPtr directly
+            // This way we can pass either the PointerToNativeObject or the targetGcHandleObjectPtr directly
+            // Only for internal use, not exposed to the user
             for (var i = 0; i < targetArgs.length; i++) {
                 if (targetArgs[i] instanceof Module.internal.PointerToNativeObject)
                     targetArgs[i] = targetArgs[i].targetGcHandleObjectPtr;
@@ -43,7 +45,6 @@ var easyWebInteropLib = {
 
         // Detect if the method is an async task on the C# side. Therefore we'll wrap it in a promise
         const isAsyncTask = isAsyncTaskPtr === 1;
-
         Module[functionNameAsString] = (...args) => {
             // Assign params of the fuction to a variable that's we'll play with afterwards
             var targetArgs = [...args];
@@ -57,11 +58,15 @@ var easyWebInteropLib = {
             }
 
             // Add function name pointer string as the first element
-            targetArgs.unshift(allocateUTF8(functionNameAsString));
+            var functionNamePtr = allocateUTF8(functionNameAsString);
+            targetArgs.unshift(functionNamePtr);
 
             // Call the function
             const resultingManagedObjectPtr = Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
             
+            // Free the memory allocated by the allocateUTF8
+            _free(functionNamePtr);
+
             // Handle async task if needed
             if (isAsyncTask) {
                 return new Promise((resolve, reject) => {

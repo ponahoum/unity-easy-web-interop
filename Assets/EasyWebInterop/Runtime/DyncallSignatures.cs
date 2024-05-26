@@ -2,7 +2,7 @@ using System;
 
 namespace Nahoum.EasyWebInterop
 {
-    public static class DyncallSignature
+    internal static class DyncallSignature
     {
         public delegate void V();
         public delegate void VI(IntPtr A);

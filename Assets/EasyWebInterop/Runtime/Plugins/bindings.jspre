@@ -46,10 +46,10 @@ Module.internalJs.allocateMemoryForArray = (data) => {
     if (!data.BYTES_PER_ELEMENT) {
         throw new Error("Data must be an array like Float64Array, Float32Array, Int32Array, etc.");
     }
-    
+
     var nDataBytes = data.length * data.BYTES_PER_ELEMENT;
     var dataPtr = _malloc(nDataBytes);
-    
+
 
     // Depending on the kind of array, allocate the memory on different emscripten views
     if (data instanceof Float64Array) {
@@ -57,13 +57,12 @@ Module.internalJs.allocateMemoryForArray = (data) => {
     } else if (data instanceof Float32Array) {
         HEAPF32.set(data, dataPtr / data.BYTES_PER_ELEMENT);
     }
-    else if(data instanceof Int8Array)
-    {
+    else if (data instanceof Int8Array) {
         HEAP8.set(data, dataPtr / data.BYTES_PER_ELEMENT);
     }
     else if (data instanceof Int32Array) {
         HEAP32.set(data, dataPtr / data.BYTES_PER_ELEMENT);
-    } 
+    }
     else if (data instanceof Uint8Array) {
         HEAPU8.set(data, dataPtr / data.BYTES_PER_ELEMENT);
     }
@@ -105,7 +104,7 @@ Module.GetManagedLong = (targetNumber) => {
 
 
 Module.GetManagedDoubleArray = (array) => {
-    if(!isNumberArray(array))
+    if (!isNumberArray(array))
         throw new Error("All elements of the array must be numbers.");
     const float64Array = new Float64Array(array);
     const dataPtr = Module.internalJs.allocateMemoryForArray(float64Array);
@@ -115,7 +114,7 @@ Module.GetManagedDoubleArray = (array) => {
 }
 
 Module.GetManagedIntArray = (array) => {
-    if(!isNumberArray(array))
+    if (!isNumberArray(array))
         throw new Error("All elements of the array must be numbers.");
     const int32Array = new Int32Array(array);
     const dataPtr = Module.internalJs.allocateMemoryForArray(int32Array);
@@ -125,7 +124,7 @@ Module.GetManagedIntArray = (array) => {
 }
 
 Module.GetManagedFloatArray = (array) => {
-    if(!isNumberArray(array))
+    if (!isNumberArray(array))
         throw new Error("All elements of the array must be numbers.");
     const float32Array = new Float32Array(array);
     const dataPtr = Module.internalJs.allocateMemoryForArray(float32Array);
@@ -135,7 +134,7 @@ Module.GetManagedFloatArray = (array) => {
 }
 
 Module.GetManagedStringArray = (array) => {
-    if(!isStringArray(array))
+    if (!isStringArray(array))
         throw new Error("All elements of the array must be strings.");
     const stringPtrArray = array.map((str) => stringToNewUTF8(str));
 
@@ -156,7 +155,7 @@ Module.GetManagedStringArray = (array) => {
 
 Module.GetManagedByteArray = (uint8array) => {
     // Ensure it' a Uint8Array
-    if(!(uint8array instanceof Uint8Array))
+    if (!(uint8array instanceof Uint8Array))
         throw new Error("The input must be a Uint8Array.");
     const dataPtr = Module.internalJs.allocateMemoryForArray(uint8array);
     const ptrToManagedData = Module.internal.GetManagedByteArray(dataPtr, uint8array.length);
@@ -166,7 +165,7 @@ Module.GetManagedByteArray = (uint8array) => {
 
 Module.GetManagedBoolArray = (array) => {
     // Ensure it's a boolean array
-    if(!isBooleanArray(array))
+    if (!isBooleanArray(array))
         throw new Error("The input must be a boolean array.");
     const int8Array = new Int8Array(array.map((b) => b ? 1 : 0));
     const dataPtr = Module.internalJs.allocateMemoryForArray(int8Array);
@@ -175,10 +174,44 @@ Module.GetManagedBoolArray = (array) => {
     return ptrToManagedData;
 }
 
-Module.GetManagedActionVoid = (callback) => {
-    const jsPtrCallback = Module.internal.createCallback(callback, "v");
-    const managedActionVoid = Module.internal.GetManagedActionVoidFromJsPtr(jsPtrCallback);
-    return managedActionVoid;
+Module.GetManagedAction = (callback, managedTypesArray) => {
+    // Check managed types array is a string array
+    if (!isStringArray(managedTypesArray))
+        throw new Error("The second parameter must be an array of strings.");
+
+    // Get callback signature depending on the length of the managed types array
+    let callbackSignature = "v";
+    for (let i = 0; i < managedTypesArray.length; i++)
+        callbackSignature += "i";
+
+    // Ensure the the callback is a function
+    if (typeof callback !== "function")
+        throw new Error("The first parameter must be a function.");
+
+    // Make sure the function number of parameters matches the number of managed types
+    if (callback.length !== managedTypesArray.length)
+        throw new Error("The number of parameters of the callback must match the number of managed types.");
+
+    // Now, create a callback that wraps this callback so that its returns GC collect ptrs
+    const newCallback = (...args) => {
+        // Create a PointerToNativeObject for each argument
+        const newArgs = [];
+        for (let i = 0; i < args.length; i++) {
+            newArgs.push(new Module.internalJs.HandleResPtr(args[i]));
+        }
+        // Invoke the original callback with the wrapped arguments
+        callback(...newArgs);
+    }
+
+    // Create the callback
+    const jsPtrCallback = Module.internal.createCallback(newCallback, callbackSignature);
+
+    // Convert the string array 
+    const ptrToManagedStringArray = Module.GetManagedStringArray(managedTypesArray);
+
+    // Get the action pointer on the C# side
+    const managedAction = Module.internal.GetManagedWrappedAction(ptrToManagedStringArray, jsPtrCallback);
+    return managedAction;
 }
 
 isArrayOfType = (array, type) => {
