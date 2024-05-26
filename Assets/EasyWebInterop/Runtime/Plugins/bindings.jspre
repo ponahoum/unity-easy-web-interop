@@ -4,11 +4,11 @@ if (!Module["internal"])
     Module["internal"] = {};
 
 // Check if Module["internalJs"] exists, if not, create it
-if (!Module["internalJs"])
-    Module["internalJs"] = {};
+if (!Module["internalJS"])
+    Module["internalJS"] = {};
 
 // Declare class that holds references
-Module.internal.PointerToNativeObject = class PointerToNativeObject {
+Module.internalJS.PointerToNativeObject = class PointerToNativeObject {
     // Constructor to initialize the private integer field
     constructor(targetGcHandleObjectPtr) {
         this.targetGcHandleObjectPtr = targetGcHandleObjectPtr;
@@ -24,7 +24,7 @@ Module.internal.PointerToNativeObject = class PointerToNativeObject {
 }
 
 // Declare a wrapper around a C# object pointer that will be collected by the garbage collector
-Module.internalJs.HandleResPtr = function (resPtr) {
+Module.internalJS.HandleResPtr = function (resPtr) {
     // Check for undefined
     if (resPtr === undefined || resPtr === -2)
         return undefined;
@@ -34,14 +34,14 @@ Module.internalJs.HandleResPtr = function (resPtr) {
         throw new Error("An exception occured on the C# side.");
     }
 
-    let resultingPtr = new Module.internal.PointerToNativeObject(resPtr);
+    let resultingPtr = new Module.internalJS.PointerToNativeObject(resPtr);
     Module.internal.finalizationRegistry.register(resultingPtr, resPtr);
     return resultingPtr;
 }
 
 // Allocate memory for an array of type Float64Array, Float32Array, Int32Array, etc.
 // After allocating memory, one must make sure to free it using Module._free
-Module.internalJs.allocateMemoryForArray = (data) => {
+Module.internalJS.allocateMemoryForArray = (data) => {
     // Ensure data is an array like Float64Array, Float32Array, Int32Array, etc.
     if (!data.BYTES_PER_ELEMENT) {
         throw new Error("Data must be an array like Float64Array, Float32Array, Int32Array, etc.");
@@ -107,7 +107,7 @@ Module.GetManagedDoubleArray = (array) => {
     if (!isNumberArray(array))
         throw new Error("All elements of the array must be numbers.");
     const float64Array = new Float64Array(array);
-    const dataPtr = Module.internalJs.allocateMemoryForArray(float64Array);
+    const dataPtr = Module.internalJS.allocateMemoryForArray(float64Array);
     const ptrToManagedData = Module.internal.GetManagedDoubleArray(dataPtr, float64Array.length);
     _free(dataPtr);
     return ptrToManagedData;
@@ -117,7 +117,7 @@ Module.GetManagedIntArray = (array) => {
     if (!isNumberArray(array))
         throw new Error("All elements of the array must be numbers.");
     const int32Array = new Int32Array(array);
-    const dataPtr = Module.internalJs.allocateMemoryForArray(int32Array);
+    const dataPtr = Module.internalJS.allocateMemoryForArray(int32Array);
     const ptrToManagedData = Module.internal.GetManagedIntArray(dataPtr, int32Array.length);
     _free(dataPtr);
     return ptrToManagedData;
@@ -127,7 +127,7 @@ Module.GetManagedFloatArray = (array) => {
     if (!isNumberArray(array))
         throw new Error("All elements of the array must be numbers.");
     const float32Array = new Float32Array(array);
-    const dataPtr = Module.internalJs.allocateMemoryForArray(float32Array);
+    const dataPtr = Module.internalJS.allocateMemoryForArray(float32Array);
     const ptrToManagedData = Module.internal.GetManagedFloatArray(dataPtr, float32Array.length);
     _free(dataPtr);
     return ptrToManagedData;
@@ -157,7 +157,7 @@ Module.GetManagedByteArray = (uint8array) => {
     // Ensure it' a Uint8Array
     if (!(uint8array instanceof Uint8Array))
         throw new Error("The input must be a Uint8Array.");
-    const dataPtr = Module.internalJs.allocateMemoryForArray(uint8array);
+    const dataPtr = Module.internalJS.allocateMemoryForArray(uint8array);
     const ptrToManagedData = Module.internal.GetManagedByteArray(dataPtr, uint8array.length);
     _free(dataPtr);
     return ptrToManagedData;
@@ -168,7 +168,7 @@ Module.GetManagedBoolArray = (array) => {
     if (!isBooleanArray(array))
         throw new Error("The input must be a boolean array.");
     const int8Array = new Int8Array(array.map((b) => b ? 1 : 0));
-    const dataPtr = Module.internalJs.allocateMemoryForArray(int8Array);
+    const dataPtr = Module.internalJS.allocateMemoryForArray(int8Array);
     const ptrToManagedData = Module.internal.GetManagedBoolArray(dataPtr, int8Array.length);
     _free(dataPtr);
     return ptrToManagedData;
@@ -197,7 +197,7 @@ Module.GetManagedAction = (callback, managedTypesArray) => {
         // Create a PointerToNativeObject for each argument
         const newArgs = [];
         for (let i = 0; i < args.length; i++) {
-            newArgs.push(new Module.internalJs.HandleResPtr(args[i]));
+            newArgs.push(new Module.internalJS.HandleResPtr(args[i]));
         }
         // Invoke the original callback with the wrapped arguments
         callback(...newArgs);

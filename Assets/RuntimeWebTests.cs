@@ -68,7 +68,6 @@ public class RuntimeWebTests : MonoBehaviour
     }
 
     public void TestUnraisedException(){
-        Debug.Log("Getting a natural exception");
         string obj = null;
         obj.ToString();
     }
@@ -94,7 +93,7 @@ public class RuntimeWebTests : MonoBehaviour
         MethodsRegistry.RegisterMethod<Action<Action<string, double>>>(nameof(InvokeCallbackWithActionStringDouble), InvokeCallbackWithActionStringDouble);
         MethodsRegistry.RegisterMethod<Action>(nameof(TestInvokedException), TestInvokedException);
         MethodsRegistry.RegisterMethod<Action>(nameof(TestUnraisedException), TestUnraisedException);
-        MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskStringExplicitelyFail), AsyncTaskStringExplicitelyFail);
+        MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskUnraisedException), AsyncTaskUnraisedException);
         MethodsRegistry.RegisterMethod<Func<string>>(nameof(TestStaticMethodReturnsString), TestStaticMethodReturnsString);
     }
 }

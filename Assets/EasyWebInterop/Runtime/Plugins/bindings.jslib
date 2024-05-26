@@ -29,14 +29,14 @@ var easyWebInteropLib = {
 
         Module.internal[functionNameAsString] = (...args) => {
             var targetArgs = [...args];
-            // For simplificy, if element is Module.internal.PointerToNativeObject, just replace the element with the targetGcHandleObjectPtr directly
+            // For simplificy, if element is Module.internalJS.PointerToNativeObject, just replace the element with the targetGcHandleObjectPtr directly
             // This way we can pass either the PointerToNativeObject or the targetGcHandleObjectPtr directly
             // Only for internal use, not exposed to the user
             for (var i = 0; i < targetArgs.length; i++) {
-                if (targetArgs[i] instanceof Module.internal.PointerToNativeObject)
+                if (targetArgs[i] instanceof Module.internalJS.PointerToNativeObject)
                     targetArgs[i] = targetArgs[i].targetGcHandleObjectPtr;
             }
-            return Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
+            return Module.internalJS.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
         }
     },
     RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr, isAsyncTaskPtr) {
@@ -51,7 +51,7 @@ var easyWebInteropLib = {
 
             // Ensure all args are PointerToNativeObject, if not, throw an error
             for (var i = 0; i < targetArgs.length; i++) {
-                if (targetArgs[i] instanceof Module.internal.PointerToNativeObject)
+                if (targetArgs[i] instanceof Module.internalJS.PointerToNativeObject)
                     targetArgs[i] = targetArgs[i].targetGcHandleObjectPtr;
                 else
                     throw new Error("All arguments must be instances of PointerToNativeObject. Argument at index " + i + " is not.");
@@ -70,7 +70,7 @@ var easyWebInteropLib = {
                 resultOfCall = undefined;
                 console.error("An uncaught error occurred when calling the C# method: " + functionNameAsString+". If you wish to catch this error, consider wrapping the call in a try-catch block in C# and/or enable exceptions in build publishing settings.");
             }
-            const resultingManagedObjectPtr = Module.internalJs.HandleResPtr(resultOfCall);
+            const resultingManagedObjectPtr = Module.internalJS.HandleResPtr(resultOfCall);
 
             // Free the memory allocated by the allocateUTF8
             _free(functionNamePtr);
@@ -81,7 +81,7 @@ var easyWebInteropLib = {
                     const callBackPtr = Module.internal.createCallback((i) => {
                         // When this piece of code is called, it means the task is completed
                         try {
-                            resolve(Module.internalJs.HandleResPtr(i));
+                            resolve(Module.internalJS.HandleResPtr(i));
                         }
                         catch (e) {
                             reject(e);
