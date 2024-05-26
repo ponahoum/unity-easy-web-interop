@@ -164,7 +164,6 @@ namespace Nahoum.EasyWebInterop
             // If task is faulted, return undefined encoded pointer
             if (asTask.IsFaulted)
             {
-                UnityEngine.Debug.Log(asTask.Exception.GetType());
                 onCompleted.Invoke(ExceptionsUtilities.HandleExceptionWithIntPtr(asTask.Exception));
                 return;
             }

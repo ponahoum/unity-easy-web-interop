@@ -72,6 +72,7 @@ public class RuntimeWebTests : MonoBehaviour
         string obj = null;
         obj.ToString();
     }
+    public static string TestStaticMethodReturnsString() => "This is a static method returning a string";
 
     void Awake()
     {
@@ -94,5 +95,6 @@ public class RuntimeWebTests : MonoBehaviour
         MethodsRegistry.RegisterMethod<Action>(nameof(TestInvokedException), TestInvokedException);
         MethodsRegistry.RegisterMethod<Action>(nameof(TestUnraisedException), TestUnraisedException);
         MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskStringExplicitelyFail), AsyncTaskStringExplicitelyFail);
+        MethodsRegistry.RegisterMethod<Func<string>>(nameof(TestStaticMethodReturnsString), TestStaticMethodReturnsString);
     }
 }
