@@ -81,6 +81,14 @@ namespace Nahoum.EasyWebInterop
         /// <summary>
         /// Exposes a method to the JS side from its name
         /// </summary>
+        public static void RegisterMethod(string name, Delegate method)
+        {
+            RegisterMethod<Delegate>(name, method);
+        }
+
+        /// <summary>
+        /// Exposes a method to the JS side from its name
+        /// </summary>
         public static void RegisterMethod<T>(string name, T method) where T : Delegate
         {
             // Ensure the method is not already registered
