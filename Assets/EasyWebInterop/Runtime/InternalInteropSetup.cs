@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using static Nahoum.EasyWebInterop.DyncallSignature;
@@ -66,6 +68,10 @@ namespace Nahoum.EasyWebInterop
 
             // Managed byte array
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<byte[], int, IntPtr>>(GetManagedByteArray), nameof(GetManagedByteArray), "iii");
+
+            // Get action, action<T> from js ptr
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetManagedActionPtrVoidFromJsPtr), nameof(GetManagedActionPtrVoidFromJsPtr), "ii");
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetManagedActionVoidFromJsPtr), nameof(GetManagedActionVoidFromJsPtr), "ii");
         }
 
         #region 
@@ -181,7 +187,8 @@ namespace Nahoum.EasyWebInterop
         [MonoPInvokeCallback]
         static IntPtr GetManagedBool([MarshalAs(UnmanagedType.I1)] bool managedBool) => GCUtils.NewManagedObject(managedBool);
         [MonoPInvokeCallback]
-        static IntPtr GetManagedBoolArray([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] sbyte[] managedArray, int size){
+        static IntPtr GetManagedBoolArray([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] sbyte[] managedArray, int size)
+        {
             bool[] boolArray = new bool[size];
             for (int i = 0; i < size; i++)
                 boolArray[i] = managedArray[i] != 0;
@@ -219,11 +226,104 @@ namespace Nahoum.EasyWebInterop
         static IntPtr GetManagedByteArray([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] managedArray, int size) => GCUtils.NewManagedObject(managedArray);
 
         [MonoPInvokeCallback]
-        static IntPtr RegisterGetActionIntPtrFromJsPtr(IntPtr actionIntPtrAsPtr)
+        static IntPtr GetManagedActionPtrVoidFromJsPtr(IntPtr actionJsPtr)
         {
-            VI targetAct = Marshal.GetDelegateForFunctionPointer<VI>(actionIntPtrAsPtr);
+            VI targetAct = Marshal.GetDelegateForFunctionPointer<VI>(actionJsPtr);
             return GCUtils.NewManagedObject(targetAct);
         }
+
+        [MonoPInvokeCallback]
+        static IntPtr GetManagedActionVoidFromJsPtr(IntPtr actionVoidAsPtr)
+        {
+            Action targetAct = Marshal.GetDelegateForFunctionPointer<Action>(actionVoidAsPtr);
+            return GCUtils.NewManagedObject(targetAct);
+        }
+
+        /// <summary>
+        /// Given a list of types as string and a pointer to a native js callback, return an Action<T..> of those types
+        /// </summary>
+        internal static object CreateActionTWrapped(string[] managedTypes, IntPtr actionJsPtr)
+        {
+            ManagedActionsFactory actionFactory = new ManagedActionsFactory(managedTypes, actionJsPtr);
+            return actionFactory.CreateActionMethod();
+        }
+
         #endregion
+    }
+
+    internal class ManagedActionsFactory
+    {
+        Type[] realActionTypes;
+        IntPtr jsDelegate;
+
+        public ManagedActionsFactory(string[] typesAsString, IntPtr jsDelegate)
+        {
+            // Get types
+            realActionTypes = new Type[typesAsString.Length];
+            for (int i = 0; i < typesAsString.Length; i++)
+                realActionTypes[i] = Type.GetType(typesAsString[i]);
+
+            this.jsDelegate = jsDelegate;
+
+        }
+
+        public object CreateActionMethod()
+        {
+            Delegate delegateToCall = GetDelegateFromPtr(jsDelegate, realActionTypes.Length);
+            MethodInfo[] methods = typeof(ManagedActionsFactory).GetMethods();
+            Dictionary<int, MethodInfo> methodInfosByParamCount = new Dictionary<int, MethodInfo>();
+            foreach (var aMethod in methods)
+            {
+                if (aMethod.Name.Contains(nameof(CreateAction)))
+                {
+                    // Get the number of generic parameters
+                    int genericParamsCount = aMethod.IsGenericMethod ? aMethod.GetGenericArguments().Length : 0;
+                    methodInfosByParamCount.Add(genericParamsCount, aMethod);
+                }
+            }
+
+
+
+            if (!methodInfosByParamCount.TryGetValue(realActionTypes.Length, out MethodInfo method))
+                throw new ArgumentException("The number of parameters is not supported. Supported are 0, 1, 2, 3");
+
+            return method.MakeGenericMethod(realActionTypes).Invoke(this, new object[] { delegateToCall });
+        }
+
+        public Action<T> CreateAction<T>(Delegate delegateToCall)
+        {
+            return new Action<T>(obj =>
+               {
+                   // Wrap resulting object in a GCHandle
+                   IntPtr handle = GCUtils.NewManagedObject(obj);
+                   delegateToCall.DynamicInvoke(handle);
+                   UnityEngine.Debug.Log("Action called with " + obj);
+               });
+        }
+
+        public Action<T, U> CreateAction<T, U>(Delegate delegateToCall)
+        {
+            return new Action<T, U>((a, b) =>
+               {
+                   // Wrap resulting object in a GCHandle
+                   IntPtr handleA = GCUtils.NewManagedObject(a);
+                   IntPtr handleB = GCUtils.NewManagedObject(b);
+                   delegateToCall.DynamicInvoke(handleA, handleB);
+                   UnityEngine.Debug.Log("Action called with " + a + " and " + b);
+               });
+        }
+
+        private static Delegate GetDelegateFromPtr(IntPtr actionJsPtr, int paramCount)
+        {
+            if (paramCount == 0)
+                return Marshal.GetDelegateForFunctionPointer<V>(actionJsPtr);
+            else if (paramCount == 1)
+                return Marshal.GetDelegateForFunctionPointer<VI>(actionJsPtr);
+            else if (paramCount == 2)
+                return Marshal.GetDelegateForFunctionPointer<VII>(actionJsPtr);
+            else if (paramCount == 3)
+                return Marshal.GetDelegateForFunctionPointer<VIII>(actionJsPtr);
+            throw new ArgumentException("The number of parameters is not supported");
+        }
     }
 }

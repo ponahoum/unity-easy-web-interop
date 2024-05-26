@@ -34,7 +34,6 @@ Module.internalJs.HandleResPtr = function (resPtr) {
         throw new Error("An exception occured on the C# side.");
     }
 
-    console.log("Registering object - TO DO CHECK COLLECTION");
     let resultingPtr = new Module.internal.PointerToNativeObject(resPtr);
     Module.internal.finalizationRegistry.register(resultingPtr, resPtr);
     return resultingPtr;
@@ -174,6 +173,12 @@ Module.GetManagedBoolArray = (array) => {
     const ptrToManagedData = Module.internal.GetManagedBoolArray(dataPtr, int8Array.length);
     _free(dataPtr);
     return ptrToManagedData;
+}
+
+Module.GetManagedActionVoid = (callback) => {
+    const jsPtrCallback = Module.internal.createCallback(callback, "v");
+    const managedActionVoid = Module.internal.GetManagedActionVoidFromJsPtr(jsPtrCallback);
+    return managedActionVoid;
 }
 
 isArrayOfType = (array, type) => {

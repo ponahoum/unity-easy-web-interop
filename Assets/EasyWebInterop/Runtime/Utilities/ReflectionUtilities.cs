@@ -2,7 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using static Nahoum.EasyWebInterop.DyncallSignature;
 
 
 namespace Nahoum.EasyWebInterop
@@ -59,15 +61,16 @@ namespace Nahoum.EasyWebInterop
             }
 
             return true;
-        }
+        }   
 
         /// <summary>
         /// Fake methods to preserve the type of a Task<T> when using reflection
         /// Otherwise it's stripped by the IL2CPP compiler
         /// </summary>
         [UnityEngine.Scripting.Preserve]
-        private static T PreserveTaskT<T>(Task<T> task){
-             return task.Result;
+        private static T PreserveTaskT<T>(Task<T> task)
+        {
+            return task.Result;
         }
 
         /// <summary>
