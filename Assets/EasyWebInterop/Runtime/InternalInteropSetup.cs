@@ -164,8 +164,8 @@ namespace Nahoum.EasyWebInterop
             // If task is faulted, return undefined encoded pointer
             if (asTask.IsFaulted)
             {
-                UnityEngine.Debug.LogError(asTask.Exception);
-                onCompleted.Invoke(IntPtrExtension.Exception);
+                UnityEngine.Debug.Log(asTask.Exception.GetType());
+                onCompleted.Invoke(ExceptionsUtilities.HandleExceptionWithIntPtr(asTask.Exception));
                 return;
             }
 
@@ -175,7 +175,7 @@ namespace Nahoum.EasyWebInterop
                 object result = ReflectionUtilities.GetTaskResult(asTask);
                 onCompleted.Invoke(GCUtils.NewManagedObject(result));
             }
-            // Otherwise return undefined (-1 which means void)
+            // Otherwise return undefined (-2 which means void)
             else
                 onCompleted.Invoke(IntPtrExtension.Void);
         }

@@ -61,9 +61,17 @@ var easyWebInteropLib = {
             var functionNamePtr = allocateUTF8(functionNameAsString);
             targetArgs.unshift(functionNamePtr);
 
-            // Call the function
-            const resultingManagedObjectPtr = Module.internalJs.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
-            
+            // Call the function. Handle any uncaught errors (typically exceptions not thrown by the user, which is an option in the Unity build);
+            let resultOfCall;
+            try {
+                resultOfCall = dynCall(signatureAsString, functionPtr, targetArgs)
+            }
+            catch {
+                resultOfCall = undefined;
+                console.error("An uncaught error occurred when calling the C# method: " + functionNameAsString+". If you wish to catch this error, consider wrapping the call in a try-catch block in C# and/or enable exceptions in build publishing settings.");
+            }
+            const resultingManagedObjectPtr = Module.internalJs.HandleResPtr(resultOfCall);
+
             // Free the memory allocated by the allocateUTF8
             _free(functionNamePtr);
 
@@ -71,11 +79,11 @@ var easyWebInteropLib = {
             if (isAsyncTask) {
                 return new Promise((resolve, reject) => {
                     const callBackPtr = Module.internal.createCallback((i) => {
-                        console.log("Task completed with result: " + i);
-                        try{
+                        // When this piece of code is called, it means the task is completed
+                        try {
                             resolve(Module.internalJs.HandleResPtr(i));
                         }
-                        catch(e){
+                        catch (e) {
                             reject(e);
                         }
                     }, "vi");

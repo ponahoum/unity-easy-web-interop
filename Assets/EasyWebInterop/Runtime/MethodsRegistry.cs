@@ -45,16 +45,6 @@ namespace Nahoum.EasyWebInterop
         static IntPtr RegistryIIIII(IntPtr serviceKey, IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD) => InvokeFromRegistry<IIIII>(serviceKey, inputA, inputB, inputC, inputD);
         static IntPtr registryIIIIICallPtr = Marshal.GetFunctionPointerForDelegate<IIIIII>(RegistryIIIII);
 
-
-        [MonoPInvokeCallback]
-        static void RegistryV(IntPtr serviceKey) => InvokeFromRegistry<V>(serviceKey);
-        static IntPtr registryVCallPtr = Marshal.GetFunctionPointerForDelegate<VI>(RegistryV);
-
-        [MonoPInvokeCallback]
-        static void RegistryVI(IntPtr serviceKey, IntPtr inputA) => InvokeFromRegistry<VI>(serviceKey, inputA);
-        static IntPtr registryVICallPtr = Marshal.GetFunctionPointerForDelegate<VII>(RegistryVI);
-
-
         /// <summary>
         /// Find a method in the registry and invoke it with the real points
         /// The pointers passed here must be the real pointers to the objects, not the wrapped GCHandle pointers
@@ -68,7 +58,7 @@ namespace Nahoum.EasyWebInterop
 
             // Get the delegate from the registry
             Delegate targetDelegate = methodsRegistry[serviceKeyStr];
-            
+
             // Invoke it dynamically
             try
             {
@@ -79,21 +69,12 @@ namespace Nahoum.EasyWebInterop
 
                 if (result is IntPtr asIntPtr)
                     return asIntPtr;
-                else if (result is null)
-                    return IntPtr.Zero;
                 else
                     throw new Exception("Return type not supported");
-
-            }
-            catch (TargetInvocationException e)
-            {
-                Debug.LogError(e.InnerException);
-                return IntPtrExtension.Exception;
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
-                return IntPtrExtension.Exception;
+                return ExceptionsUtilities.HandleExceptionWithIntPtr(e);
             }
         }
 
@@ -115,30 +96,16 @@ namespace Nahoum.EasyWebInterop
             // Define the registry data
             (IntPtr registryPtr, Delegate asDelegate) registryData;
 
-            // If the methods returns something, use the appropriate registry
-            if (hasReturn)
+            // Define the registry data based on the number of parameters
+            registryData = parametersCount switch
             {
-                registryData = parametersCount switch
-                {
-                    0 => (registryICallPtr, (I)(() => InvokeWrapped(method))),
-                    1 => (registryIICallPtr, (II)((IntPtr inputA) => InvokeWrapped(method, inputA))),
-                    2 => (registryIIICallPtr, (III)((IntPtr inputA, IntPtr inputB) => InvokeWrapped(method, inputA, inputB))),
-                    3 => (registryIIIICallPtr, (IIII)((IntPtr inputA, IntPtr inputB, IntPtr inputC) => InvokeWrapped(method, inputA, inputB, inputC))),
-                    4 => (registryIIIIICallPtr, (IIIII)((IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD) => InvokeWrapped(method, inputA, inputB, inputC, inputD))),
-                    _ => throw new Exception("Method has too many parameters")
-                };
-            }
-
-            // If the return type is void, use the appropriate registry
-            else
-            {
-                registryData = parametersCount switch
-                {
-                    0 => (registryVCallPtr, (V)(() => InvokeWrapped(method))),
-                    1 => (registryVICallPtr, (VI)((IntPtr inputA) => InvokeWrapped(method, inputA))),
-                    _ => throw new Exception("Method has too many parameters")
-                };
-            }
+                0 => (registryICallPtr, (I)(() => InvokeWrapped(method))),
+                1 => (registryIICallPtr, (II)((IntPtr inputA) => InvokeWrapped(method, inputA))),
+                2 => (registryIIICallPtr, (III)((IntPtr inputA, IntPtr inputB) => InvokeWrapped(method, inputA, inputB))),
+                3 => (registryIIIICallPtr, (IIII)((IntPtr inputA, IntPtr inputB, IntPtr inputC) => InvokeWrapped(method, inputA, inputB, inputC))),
+                4 => (registryIIIIICallPtr, (IIIII)((IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD) => InvokeWrapped(method, inputA, inputB, inputC, inputD))),
+                _ => throw new Exception("Method has too many parameters")
+            };
 
             // Add the method to the static registry that will later be used to invoke the method from its name
             methodsRegistry.Add(name, registryData.asDelegate);
@@ -156,23 +123,16 @@ namespace Nahoum.EasyWebInterop
             // Get the invoke method
             MethodInfo invokeMethod = d.Method;
 
-            // Get return type
-            Type returnType = invokeMethod.ReturnType;
-            bool hasReturnType = returnType != typeof(void);
-
             // Get parameters
             ParameterInfo[] parameters = invokeMethod.GetParameters();
             int parameterCount = parameters.Length;
 
-            // There is n times the parameters i concatenated (+ one i for the name as the first parameter)
-            string parameterSignature = "i";
+            // There is n times the parameters i concatenated (+ one i for the name as the first parameter, and i for the return, even for void)
+
+            string parameterSignature = "ii";
             for (int i = 0; i < parameterCount; i++)
                 parameterSignature += "i";
-
-            if (hasReturnType)
-                return "i" + parameterSignature;
-            else
-                return "v" + parameterSignature;
+            return parameterSignature;
         }
 
 
@@ -183,24 +143,21 @@ namespace Nahoum.EasyWebInterop
         /// </summary>
         private static IntPtr InvokeWrapped(Delegate method, params IntPtr[] args)
         {
-            try
-            {
-                if (method.Method.GetParameters().Length != args.Length)
-                    throw new Exception("Method parameters count does not match the arguments count");
+            if (method.Method.GetParameters().Length != args.Length)
+                throw new Exception("Method parameters count does not match the arguments count");
 
-                object[] argsCasted = new object[args.Length];
-                for (int i = 0; i < args.Length; i++)
-                    argsCasted[i] = GCUtils.GetManagedObjectFromPtr(args[i]);
+            object[] argsCasted = new object[args.Length];
+            for (int i = 0; i < args.Length; i++)
+                argsCasted[i] = GCUtils.GetManagedObjectFromPtr(args[i]);
 
-                object result = method.DynamicInvoke(argsCasted);
+            bool methodHasReturn = method.Method.ReturnType != typeof(void);
+
+            // Invoke instance method
+            object result = method.DynamicInvoke(argsCasted);
+            if (!methodHasReturn)
+                return IntPtrExtension.Void;
+            else
                 return GCUtils.NewManagedObject(result);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-                throw e;
-            }
         }
-
     }
 }

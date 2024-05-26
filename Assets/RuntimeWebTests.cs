@@ -18,10 +18,18 @@ public class RuntimeWebTests : MonoBehaviour
         return "A cool result from an async task";
     }
 
-    public async Task<string> AsyncTaskStringFail()
+    public async Task<string> AsyncTaskStringExplicitelyFail()
     {
         await Task.Yield();
-        throw new Exception("This is a test exception");
+        throw new Exception("This is a test exception from a task");
+    }
+
+    public async Task AsyncTaskUnraisedException()
+    {
+        await Task.Yield();
+        // This raises an exception because obj is null
+        string obj = null;
+        obj.ToString();
     }
 
     public async Task AsyncTaskVoidMethod() => await Task.Yield();
@@ -55,8 +63,14 @@ public class RuntimeWebTests : MonoBehaviour
         action("Some callback string", 12345);
     }
 
-    public void TestInvokeException(){
+    public void TestInvokedException(){
         throw new Exception("This is a test exception");
+    }
+
+    public void TestUnraisedException(){
+        Debug.Log("Getting a natural exception");
+        string obj = null;
+        obj.ToString();
     }
 
     void Awake()
@@ -72,11 +86,13 @@ public class RuntimeWebTests : MonoBehaviour
         MethodsRegistry.RegisterMethod<Func<double[]>>(nameof(MethodReturningDoubleArray), MethodReturningDoubleArray);
         MethodsRegistry.RegisterMethod<Func<string, string, string>>(nameof(ConcatenateStrings), ConcatenateStrings);
         MethodsRegistry.RegisterMethod<Func<double, double>>(nameof(AddOneToDouble), AddOneToDouble);
-        MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskStringFail), AsyncTaskStringFail);
+        MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskStringExplicitelyFail), AsyncTaskStringExplicitelyFail);
         MethodsRegistry.RegisterMethod<Func<byte[], string>>(nameof(GetImageInformation), GetImageInformation);
         MethodsRegistry.RegisterMethod<Action<Action>>(nameof(InvokeCallbackForTest), InvokeCallbackForTest);
         MethodsRegistry.RegisterMethod<Action<Action<string>>>(nameof(InvokeCallbackWithActionString), InvokeCallbackWithActionString);
         MethodsRegistry.RegisterMethod<Action<Action<string, double>>>(nameof(InvokeCallbackWithActionStringDouble), InvokeCallbackWithActionStringDouble);
-        MethodsRegistry.RegisterMethod<Action>(nameof(TestInvokeException), TestInvokeException);
+        MethodsRegistry.RegisterMethod<Action>(nameof(TestInvokedException), TestInvokedException);
+        MethodsRegistry.RegisterMethod<Action>(nameof(TestUnraisedException), TestUnraisedException);
+        MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskStringExplicitelyFail), AsyncTaskStringExplicitelyFail);
     }
 }
