@@ -55,6 +55,10 @@ public class RuntimeWebTests : MonoBehaviour
         action("Some callback string", 12345);
     }
 
+    public void TestInvokeException(){
+        throw new Exception("This is a test exception");
+    }
+
     void Awake()
     {
         // Register methods we want to expose to the nJS side
@@ -73,5 +77,6 @@ public class RuntimeWebTests : MonoBehaviour
         MethodsRegistry.RegisterMethod<Action<Action>>(nameof(InvokeCallbackForTest), InvokeCallbackForTest);
         MethodsRegistry.RegisterMethod<Action<Action<string>>>(nameof(InvokeCallbackWithActionString), InvokeCallbackWithActionString);
         MethodsRegistry.RegisterMethod<Action<Action<string, double>>>(nameof(InvokeCallbackWithActionStringDouble), InvokeCallbackWithActionStringDouble);
+        MethodsRegistry.RegisterMethod<Action>(nameof(TestInvokeException), TestInvokeException);
     }
 }

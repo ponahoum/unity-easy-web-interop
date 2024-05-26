@@ -72,17 +72,11 @@ var easyWebInteropLib = {
                 return new Promise((resolve, reject) => {
                     const callBackPtr = Module.internal.createCallback((i) => {
                         console.log("Task completed with result: " + i);
-                        // Case exception on the C# side
-                        if (i == -3) {
-                            reject("Task failed on the C# side.");
-                        }
-                        // Case void task
-                        else if (i == -2) {
-                            resolve(undefined);
-                        }
-                        // Case task with a result (Task<T>)
-                        else {
+                        try{
                             resolve(Module.internalJs.HandleResPtr(i));
+                        }
+                        catch(e){
+                            reject(e);
                         }
                     }, "vi");
                     Module.internal.WaitForTaskToComplete(resultingManagedObjectPtr, callBackPtr);

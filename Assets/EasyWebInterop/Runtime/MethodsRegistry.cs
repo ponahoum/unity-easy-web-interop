@@ -85,6 +85,11 @@ namespace Nahoum.EasyWebInterop
                     throw new Exception("Return type not supported");
 
             }
+            catch (TargetInvocationException e)
+            {
+                Debug.LogError(e.InnerException);
+                return IntPtrExtension.Exception;
+            }
             catch (Exception e)
             {
                 Debug.LogError(e);

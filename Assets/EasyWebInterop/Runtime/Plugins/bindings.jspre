@@ -26,7 +26,7 @@ Module.internal.PointerToNativeObject = class PointerToNativeObject {
 // Declare a wrapper around a C# object pointer that will be collected by the garbage collector
 Module.internalJs.HandleResPtr = function (resPtr) {
     // Check for undefined
-    if (resPtr === undefined)
+    if (resPtr === undefined || resPtr === -2)
         return undefined;
 
     // Check for exceptions
