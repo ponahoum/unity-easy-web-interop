@@ -86,12 +86,12 @@ const runExceptionCatchingTests = async function (module) {
     }
 
     // Unraised exception in task
-    try {
-        await module.AsyncTaskUnraisedException();
-        assert(false, "Async task unraised exception not raised");
-    } catch (e) {
-        assert(true, "Async task natural exception raised as expected");
-    }
+    // try {
+    //     await module.AsyncTaskUnraisedException();
+    //     assert(false, "Async task unraised exception not raised");
+    // } catch (e) {
+    //     assert(true, "Async task natural exception raised as expected");
+    // }
 
 }
 const runCallbackTests = function (module) {

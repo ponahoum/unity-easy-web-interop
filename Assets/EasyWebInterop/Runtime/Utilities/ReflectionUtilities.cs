@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -61,7 +63,7 @@ namespace Nahoum.EasyWebInterop
             }
 
             return true;
-        }   
+        }
 
         /// <summary>
         /// Fake methods to preserve the type of a Task<T> when using reflection
@@ -81,6 +83,33 @@ namespace Nahoum.EasyWebInterop
             if (task.IsCompleted)
                 return task.GetType().GetProperty("Result").GetValue(task);
             throw new Exception("The task is not completed");
+        }
+
+        /// <summary>
+        /// Create a delegate from a methodinfo
+        /// </summary>
+        internal static Delegate CreateDelegate(MethodInfo methodInfo, object target)
+        {
+            Func<Type[], Type> getType;
+            bool isAction = methodInfo.ReturnType.Equals((typeof(void)));
+            var types = methodInfo.GetParameters().Select(p => p.ParameterType);
+
+            if (isAction)
+            {
+                getType = Expression.GetActionType;
+            }
+            else
+            {
+                getType = Expression.GetFuncType;
+                types = types.Concat(new[] { methodInfo.ReturnType });
+            }
+
+            if (methodInfo.IsStatic)
+            {
+                return Delegate.CreateDelegate(getType(types.ToArray()), methodInfo);
+            }
+
+            return Delegate.CreateDelegate(getType(types.ToArray()), target, methodInfo.Name);
         }
     }
 }

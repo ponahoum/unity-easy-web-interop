@@ -2,13 +2,18 @@ var easyWebInteropLib = {
     $dependencies: {},
 
     Setup: function (getIntPtrValueMethodPtr, collectManagedPtrMethodPtr) {
-        // Setup callback registerer, This allows to create javascript callbacks that can be called from C#
+        /**
+         * Setup callback registerer, This allows to create javascript callbacks that can be called from C#
+         * @param callback The javascript callback (arg)=>{...}
+         */
         Module.internal.createCallback = (callback, signature) => {
             var ptr = addFunction(callback, signature);
             return ptr;
         };
 
-        // Given a managed C# object pointer, return a serialized JSON object
+        /**
+         * Given a managed C# object pointer, return a serialized JSON object
+         */
         Module.internal.getJsonValueFromGCHandlePtr = (ptrToGcHandle) => {
             const resPtr = dynCall("ii", getIntPtrValueMethodPtr, [ptrToGcHandle]);
             const asJsonObject = JSON.parse(UTF8ToString(resPtr)).value;
@@ -17,18 +22,38 @@ var easyWebInteropLib = {
             return asJsonObject;
         };
 
+        /**
+         * Setup callback registerer, This allows to create javascript callbacks that can be called from C#
+         */
         Module.internal.finalizationRegistry = new FinalizationRegistry((ptrToGcHandle) => {
             dynCall("vi", collectManagedPtrMethodPtr, [ptrToGcHandle]);
             console.log("Collected object with ptr: " + ptrToGcHandle);
         });
-    },
-    RegisterStaticMethodInternalRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr) {
-        var functionNameAsString = UTF8ToString(functionNamePtr);
-        var signatureAsString = UTF8ToString(functionParamSignaturePtr);
 
+        /**
+         * Convert a string array pointer to a JS array
+         * Doesn't free the input pointer, this has to be done manually somewhere else
+         */
+        Module.internal.stringArrayPtrToJSArray = (stringArrayPtr, stringArrayLength) => {
+            var stringArray = new Array(stringArrayLength);
+            for (var i = 0; i < stringArrayLength; i++) {
+                var currentPtr = getValue(stringArrayPtr + i * 4, "i32");
+                stringArray[i] = UTF8ToString(currentPtr);
+            }
+            return stringArray;
+        }
+    },
+    /**
+     * Register a static method in the internal registry
+     * Only for internal use, not exposed to the user
+     * This is used to register static methods that are called from the C# side without handling marshalling automatically
+     */
+    RegisterStaticMethodInternalRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr) {
+        const functionNameAsString = UTF8ToString(functionNamePtr);
+        const signatureAsString = UTF8ToString(functionParamSignaturePtr);
 
         Module.internal[functionNameAsString] = (...args) => {
-            var targetArgs = [...args];
+            const targetArgs = [...args];
             // For simplificy, if element is Module.internalJS.PointerToNativeObject, just replace the element with the targetGcHandleObjectPtr directly
             // This way we can pass either the PointerToNativeObject or the targetGcHandleObjectPtr directly
             // Only for internal use, not exposed to the user
@@ -39,15 +64,18 @@ var easyWebInteropLib = {
             return Module.internalJS.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
         }
     },
-    RegisterMethodInRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr, isAsyncTaskPtr) {
-        var functionNameAsString = UTF8ToString(functionNamePtr);
-        var signatureAsString = UTF8ToString(functionParamSignaturePtr);
+    RegisterMethodInRegistry: function (functionPtr, functionKeyPtr, pathToFunctionArrPtr, pathToFunctionArrLength, functionParamSignaturePtr, isAsyncTaskPtr) {
+        const functionNameAsString = UTF8ToString(functionKeyPtr);
+        const signatureAsString = UTF8ToString(functionParamSignaturePtr);
+
+        // Given that pathToFunctionArrPtr is a string[] on the C# side, we need to convert it to a JS array
+        const pathToFunctionArr = Module.internal.stringArrayPtrToJSArray(pathToFunctionArrPtr, pathToFunctionArrLength);
 
         // Detect if the method is an async task on the C# side. Therefore we'll wrap it in a promise
         const isAsyncTask = isAsyncTaskPtr === 1;
-        Module[functionNameAsString] = (...args) => {
+        const moduleInjectedFunction = (...args) => {
             // Assign params of the fuction to a variable that's we'll play with afterwards
-            var targetArgs = [...args];
+            const targetArgs = [...args];
 
             // Ensure all args are PointerToNativeObject, if not, throw an error
             for (var i = 0; i < targetArgs.length; i++) {
@@ -58,8 +86,8 @@ var easyWebInteropLib = {
             }
 
             // Add function name pointer string as the first element
-            var functionNamePtr = allocateUTF8(functionNameAsString);
-            targetArgs.unshift(functionNamePtr);
+            const methodSignaturePtr = allocateUTF8(functionNameAsString);
+            targetArgs.unshift(methodSignaturePtr);
 
             // Call the function. Handle any uncaught errors (typically exceptions not thrown by the user, which is an option in the Unity build);
             let resultOfCall;
@@ -68,12 +96,12 @@ var easyWebInteropLib = {
             }
             catch {
                 resultOfCall = undefined;
-                console.error("An uncaught error occurred when calling the C# method: " + functionNameAsString+". If you wish to catch this error, consider wrapping the call in a try-catch block in C# and/or enable exceptions in build publishing settings.");
+                console.error("An uncaught error occurred when calling the C# method: " + functionNameAsString + ". This could break the player. If you wish to catch this error, consider wrapping the call in a try-catch block in C# and/or enable exceptions in build publishing settings.");
             }
             const resultingManagedObjectPtr = Module.internalJS.HandleResPtr(resultOfCall);
 
             // Free the memory allocated by the allocateUTF8
-            _free(functionNamePtr);
+            _free(methodSignaturePtr);
 
             // Handle async task if needed
             if (isAsyncTask) {
@@ -96,6 +124,9 @@ var easyWebInteropLib = {
                 return resultingManagedObjectPtr;
             }
         };
+
+        // Assign the function to the path in the module
+        Module.internal.assignValueToPath(Module, pathToFunctionArr, moduleInjectedFunction);
     },
 };
 

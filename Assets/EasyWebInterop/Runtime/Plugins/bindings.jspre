@@ -7,6 +7,30 @@ if (!Module["internal"])
 if (!Module["internalJS"])
     Module["internalJS"] = {};
 
+/**
+ * Given an object and a string array, assign a value to the path specified by the string array
+ * For example if the array is ["a", "b", "c"] and the value is 10, the object will be modified to be {a: {b: {c: 10}}}
+ */
+Module.internal.assignValueToPath = (targetObject, pathArray, value) => {
+    let currentLevel = targetObject;
+    for (let i = 0; i < pathArray.length; i++) {
+        const key = pathArray[i];
+
+        // If it's the last key in the path, assign the value
+        if (i === pathArray.length - 1) {
+            currentLevel[key] = value;
+        } else {
+            // If the key does not exist or is not an object, create an empty object
+            if (!currentLevel[key] || typeof currentLevel[key] !== 'object') {
+                currentLevel[key] = {};
+            }
+            // Move to the next level
+            currentLevel = currentLevel[key];
+        }
+    }
+}
+
+
 // Declare class that holds references
 Module.internalJS.PointerToNativeObject = class PointerToNativeObject {
     // Constructor to initialize the private integer field

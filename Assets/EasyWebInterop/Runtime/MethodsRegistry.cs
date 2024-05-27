@@ -20,7 +20,7 @@ namespace Nahoum.EasyWebInterop
         /// Allows to pass a delegate pointer to the JS side so it can be invoked from there
         /// </summary>
         [DllImport("__Internal")]
-        internal static extern void RegisterMethodInRegistry(IntPtr methodPtr, string functionName, string functionSignature, IntPtr isAsyncTask);
+        internal static extern void RegisterMethodInRegistry(IntPtr methodPtr, IntPtr functionName, IntPtr pathToFunctionArrPtr, int pathToFunctionArrLength, IntPtr functionSignature, IntPtr isAsyncTask);
 
         // Keep reference to all exposed delegates (static or not)
         static Dictionary<string, Delegate> methodsRegistry = new();
@@ -81,19 +81,14 @@ namespace Nahoum.EasyWebInterop
         /// <summary>
         /// Exposes a method to the JS side from its name
         /// </summary>
-        public static void RegisterMethod(string name, Delegate method)
+        public static void RegisterMethod(string[] pathToMethod, Delegate method)
         {
-            RegisterMethod<Delegate>(name, method);
-        }
+            // Internal function key used to retrieve the method from the registry
+            string functionKey = string.Join(".", pathToMethod);
 
-        /// <summary>
-        /// Exposes a method to the JS side from its name
-        /// </summary>
-        public static void RegisterMethod<T>(string name, T method) where T : Delegate
-        {
             // Ensure the method is not already registered
-            if (methodsRegistry.ContainsKey(name))
-                throw new Exception($"Method {name} already registered");
+            if (methodsRegistry.ContainsKey(functionKey))
+                throw new Exception($"Method {functionKey} already registered");
 
             // Check if the method has a return value or if it is void
             bool hasReturn = method.Method.ReturnType != typeof(void);
@@ -116,10 +111,28 @@ namespace Nahoum.EasyWebInterop
             };
 
             // Add the method to the static registry that will later be used to invoke the method from its name
-            methodsRegistry.Add(name, registryData.asDelegate);
+            methodsRegistry.Add(functionKey, registryData.asDelegate);
 
             // Notice the js side that this named method is available under this signature
-            RegisterMethodInRegistry(registryData.registryPtr, name, GetRegistrySignatureFromDelegate(registryData.asDelegate), new IntPtr(ReflectionUtilities.IsDelegateAsyncTask(method) ? 1 : 0));
+            IntPtr arrayPtr = MarshalUtilities.MarshalStringArray(pathToMethod, out int length, out Action freeArrayPtr);
+            IntPtr functionKeyPtr = MarshalUtilities.MarshalString(functionKey, out Action freeFunctionKeyPtr);
+            IntPtr functionSignature = MarshalUtilities.MarshalString(GetRegistrySignatureFromDelegate(registryData.asDelegate), out Action freeFunctionSignaturePtr);
+
+            RegisterMethodInRegistry(registryData.registryPtr, functionKeyPtr, arrayPtr, length, functionSignature, new IntPtr(ReflectionUtilities.IsDelegateAsyncTask(method) ? 1 : 0));
+
+            // Free the allocated pointers except the function key which is needed to be called later on
+            // The rest has been marshalled by js so we can free themÒ
+            freeArrayPtr();
+            freeFunctionKeyPtr();
+            freeFunctionSignaturePtr();
+        }
+
+        /// <summary>
+        /// Exposes a method to the JS side from its name
+        /// </summary>
+        public static void RegisterMethod<T>(string name, T method) where T : Delegate
+        {
+            RegisterMethod(new string[] { name }, (Delegate)method);
         }
 
         /// <summary>
@@ -136,7 +149,6 @@ namespace Nahoum.EasyWebInterop
             int parameterCount = parameters.Length;
 
             // There is n times the parameters i concatenated (+ one i for the name as the first parameter, and i for the return, even for void)
-
             string parameterSignature = "ii";
             for (int i = 0; i < parameterCount; i++)
                 parameterSignature += "i";
