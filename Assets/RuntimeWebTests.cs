@@ -3,27 +3,43 @@ using UnityEngine;
 using System.Threading.Tasks;
 using Nahoum.EasyWebInterop;
 
-public class RuntimeWebTests : MonoBehaviour
+
+public class RuntimeWebTests
 {
+    
+    [ExposeWeb]
+    public static RuntimeWebTests GetNewTestInstance()
+    {
+        return new RuntimeWebTests();
+    }
+    
+    [ExposeWeb]
     public string MyMethodReturningString() => "returning a random string";
+    [ExposeWeb]
     public double MyMethodReturningDouble() => 2147483647125d;
+    [ExposeWeb]
     public int MyMethodReturningInt() => 450050554;
+    [ExposeWeb]
     public string TestReturnNullValue() => null;
+    [ExposeWeb]
     public double AddOneToDouble(double a) => a + 1;
+    [ExposeWeb]
     public double[] MethodReturningDoubleArray() => new double[] { 123d, 789d, 101112d };
+    [ExposeWeb]
     public string ConcatenateStrings(string a, string b) => a + " - added to -" + b;
+    [ExposeWeb]
     public async Task<string> AsyncTaskReturnString()
     {
         await Task.Yield();
         return "A cool result from an async task";
     }
-
+    [ExposeWeb]
     public async Task<string> AsyncTaskStringExplicitelyFail()
     {
         await Task.Yield();
         throw new Exception("This is a test exception from a task");
     }
-
+    [ExposeWeb]
     public async Task AsyncTaskUnraisedException()
     {
         await Task.Yield();
@@ -32,9 +48,11 @@ public class RuntimeWebTests : MonoBehaviour
         obj.ToString();
     }
 
+    [ExposeWeb]
     public async Task AsyncTaskVoidMethod() => await Task.Yield();
+    [ExposeWeb]
     public async void AsyncVoidMethod() => await Task.Yield();
-
+    [ExposeWeb]
     public string GetImageInformation(byte[] imageBytes)
     {
         // Load the PNG
@@ -43,57 +61,42 @@ public class RuntimeWebTests : MonoBehaviour
         string result = $"Received image with {imageBytes.Length} bytes and resolution {tex.width}x{tex.height}";
 
         // Release the texture
-        Destroy(tex);
+        UnityEngine.Object.Destroy(tex);
         return result;
     }
+
+    [ExposeWeb]
 
     public void InvokeCallbackForTest(Action action)
     {
         action();
     }
 
+    [ExposeWeb]
     public void InvokeCallbackWithActionString(Action<string> action)
     {
         action("Some callback string");
     }
 
+    [ExposeWeb]
     public void InvokeCallbackWithActionStringDouble(Action<string, double> action)
     {
         Debug.Log("Invoking callback with string and double");
         action("Some callback string", 12345);
     }
 
-    public void TestInvokedException(){
+    [ExposeWeb]
+    public void TestInvokedException()
+    {
         throw new Exception("This is a test exception");
     }
 
-    public void TestUnraisedException(){
+    [ExposeWeb]
+    public void TestUnraisedException()
+    {
         string obj = null;
         obj.ToString();
     }
+    [ExposeWeb]
     public static string TestStaticMethodReturnsString() => "This is a static method returning a string";
-
-    void Awake()
-    {
-        // Register methods we want to expose to the nJS side
-        MethodsRegistry.RegisterMethod<Func<string>>(nameof(MyMethodReturningString), MyMethodReturningString);
-        MethodsRegistry.RegisterMethod<Func<double>>(nameof(MyMethodReturningDouble), MyMethodReturningDouble);
-        MethodsRegistry.RegisterMethod<Func<int>>(nameof(MyMethodReturningInt), MyMethodReturningInt);
-        MethodsRegistry.RegisterMethod<Func<string>>(nameof(TestReturnNullValue), TestReturnNullValue);
-        MethodsRegistry.RegisterMethod<Func<Task<string>>>(nameof(AsyncTaskReturnString), AsyncTaskReturnString);
-        MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskVoidMethod), AsyncTaskVoidMethod);
-        MethodsRegistry.RegisterMethod<Action>(nameof(AsyncVoidMethod), AsyncVoidMethod);
-        MethodsRegistry.RegisterMethod<Func<double[]>>(nameof(MethodReturningDoubleArray), MethodReturningDoubleArray);
-        MethodsRegistry.RegisterMethod<Func<string, string, string>>(nameof(ConcatenateStrings), ConcatenateStrings);
-        MethodsRegistry.RegisterMethod<Func<double, double>>(nameof(AddOneToDouble), AddOneToDouble);
-        MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskStringExplicitelyFail), AsyncTaskStringExplicitelyFail);
-        MethodsRegistry.RegisterMethod<Func<byte[], string>>(nameof(GetImageInformation), GetImageInformation);
-        MethodsRegistry.RegisterMethod<Action<Action>>(nameof(InvokeCallbackForTest), InvokeCallbackForTest);
-        MethodsRegistry.RegisterMethod<Action<Action<string>>>(nameof(InvokeCallbackWithActionString), InvokeCallbackWithActionString);
-        MethodsRegistry.RegisterMethod<Action<Action<string, double>>>(nameof(InvokeCallbackWithActionStringDouble), InvokeCallbackWithActionStringDouble);
-        MethodsRegistry.RegisterMethod<Action>(nameof(TestInvokedException), TestInvokedException);
-        MethodsRegistry.RegisterMethod<Action>(nameof(TestUnraisedException), TestUnraisedException);
-        MethodsRegistry.RegisterMethod<Func<Task>>(nameof(AsyncTaskUnraisedException), AsyncTaskUnraisedException);
-        MethodsRegistry.RegisterMethod<Func<string>>(nameof(TestStaticMethodReturnsString), TestStaticMethodReturnsString);
-    }
 }

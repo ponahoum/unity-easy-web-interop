@@ -8,6 +8,40 @@ if (!Module["internalJS"])
     Module["internalJS"] = {};
 
 /**
+ * A dictionnary of int, pointer to native object to temporary store the objects
+ */
+Module.internalJS.tempReferences = {};
+
+Module.internalJS.PopulatePointerToNativeObject = function (pointerToNativeObject) {
+
+    // Skip if the pointer is undefined
+    if (pointerToNativeObject === undefined)
+        return;
+    
+    // Check pointerToNativeObject is instance  of PointerToNativeObject
+    if (!(pointerToNativeObject instanceof Module.internalJS.PointerToNativeObject))
+        return;
+
+    // Timer to measure the time it takes
+    var timeStart = performance.now();
+
+    // Add temporary reference to object with an id available in tempReferences
+    let id = pointerToNativeObject.targetGcHandleObjectPtr;
+    Module.internalJS.tempReferences[id] = pointerToNativeObject;
+
+    Module.internal.RequestCompleteReturnedObject(pointerToNativeObject);
+
+    // Set temporary reference to undefined
+    delete Module.internalJS.tempReferences[id];
+
+    // Remove from tempReferences
+    var timeEnd = performance.now();
+    console.log("Tool took " + (timeEnd - timeStart) + " milliseconds to populate pointer to native object of id " + id);
+    console.log("Done populating pointer to native object");
+}
+
+
+/**
  * Given an object and a string array, assign a value to the path specified by the string array
  * For example if the array is ["a", "b", "c"] and the value is 10, the object will be modified to be {a: {b: {c: 10}}}
  */
@@ -48,7 +82,7 @@ Module.internalJS.PointerToNativeObject = class PointerToNativeObject {
 }
 
 // Declare a wrapper around a C# object pointer that will be collected by the garbage collector
-Module.internalJS.HandleResPtr = function (resPtr) {
+Module.internalJS.HandleResPtr = function (resPtr, targetId) {
     // Check for undefined
     if (resPtr === undefined || resPtr === -2)
         return undefined;
@@ -59,7 +93,7 @@ Module.internalJS.HandleResPtr = function (resPtr) {
     }
 
     let resultingPtr = new Module.internalJS.PointerToNativeObject(resPtr);
-    Module.internal.finalizationRegistry.register(resultingPtr, resPtr);
+    Module.internal.managedObjectsFinalizationRegistry.register(resultingPtr, resPtr);
     return resultingPtr;
 }
 
@@ -256,4 +290,28 @@ isStringArray = (array) => {
 
 isBooleanArray = (array) => {
     return isArrayOfType(array, "boolean");
+}
+
+
+/**
+ * Givens args, transform them to the expected types if they are of native types
+ */
+Module.internal.autoTransformArgs = (argsToTransformArray) => {
+    const newArgs = [];
+    for (let i = 0; i < argsToTransformArray.length; i++) {
+        const arg = argsToTransformArray[i];
+
+        // Just transform the argument if it's a native type
+        if (arg instanceof Module.internalJS.PointerToNativeObject)
+            newArgs.push(arg.targetGcHandleObjectPtr);
+        // if it's a string, transform it to a managed string
+        else if (typeof arg === "string")
+            newArgs.push(Module.GetManagedString(arg).targetGcHandleObjectPtr);
+        else if (typeof arg === "boolean")
+            newArgs.push(Module.GetManagedBool(arg).targetGcHandleObjectPtr);
+        else
+            throw new Error("Unsupported argument type.", arg);
+    }
+
+    return newArgs;
 }

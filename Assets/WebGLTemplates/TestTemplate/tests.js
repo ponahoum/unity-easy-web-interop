@@ -11,18 +11,18 @@ const waitForModule = async function () {
 const runTests = async function () {
     const module = await waitForModule();
     console.log('Module loaded. Test running...');
-
+    const instance = module.static.RuntimeWebTests.GetNewTestInstance()
     // Regular method and async methods
-    assertEquals(module.MyMethodReturningString().value, "returning a random string", "Method returning string works");
-    assertEquals(module.MyMethodReturningDouble().value, 2147483647125, "Method returning double works");
-    assertEquals(module.MyMethodReturningInt().value, 450050554, "Method returning int works");
-    assertEquals(module.TestReturnNullValue().value, null, "Method returning null works");
-    assertEquals((await module.AsyncTaskReturnString()).value, "A cool result from an async task", "AsyncTaskReturnString (Async Task<string>) returns correct string value");
-    assert(module.AsyncTaskReturnString().then, "AsyncTaskReturnString (Async Task<string>) is a promise");
-    assertEquals(await module.AsyncTaskVoidMethod(), undefined, "Awaiting AsyncTaskVoidMethod returns undefined");
-    assert(module.AsyncTaskVoidMethod().then, "AsyncTaskVoidMethod is a promise");
-    assertEquals(module.AsyncVoidMethod(), undefined, "AsyncVoidMethod is not a promise and is undefined");
-    assert(arrayContentsEquals(module.MethodReturningDoubleArray().value, [123, 789, 101112]), "MethodReturningDoubleArray");
+    assertEquals(instance.MyMethodReturningString().value, "returning a random string", "Method returning string works");
+    assertEquals(instance.MyMethodReturningDouble().value, 2147483647125, "Method returning double works");
+    assertEquals(instance.MyMethodReturningInt().value, 450050554, "Method returning int works");
+    assertEquals(instance.TestReturnNullValue().value, null, "Method returning null works");
+    assertEquals((await instance.AsyncTaskReturnString()).value, "A cool result from an async task", "AsyncTaskReturnString (Async Task<string>) returns correct string value");
+    assert(instance.AsyncTaskReturnString().then, "AsyncTaskReturnString (Async Task<string>) is a promise");
+    assertEquals(await instance.AsyncTaskVoidMethod(), undefined, "Awaiting AsyncTaskVoidMethod returns undefined");
+    assert(instance.AsyncTaskVoidMethod().then, "AsyncTaskVoidMethod is a promise");
+    assertEquals(instance.AsyncVoidMethod(), undefined, "AsyncVoidMethod is not a promise and is undefined");
+    assert(arrayContentsEquals(instance.MethodReturningDoubleArray().value, [123, 789, 101112]), "MethodReturningDoubleArray");
     // Primitives getters
     assertEquals(module.GetManagedInt(123456).value, 123456, "GetInt works");
     assertEquals(module.GetManagedLong(123456).value, 123456, "GetBool works");
@@ -43,15 +43,15 @@ const runTests = async function () {
     // Download image as byte array and pass it to C#
     const imageByteArray = await downloadJPGImageToUint8Array(200, 300);
     const getManagedByteArray = module.GetManagedByteArray(imageByteArray);
-    const imageDebug = module.GetImageInformation(getManagedByteArray);
+    const imageDebug = instance.GetImageInformation(getManagedByteArray);
     assert(imageDebug.value.includes("200x300"), "GetManagedByteArray works")
 
     // Methods with callbacks
     // Test callback Action
-    runCallbackTests(module);
+    runCallbackTests(module, instance);
 
     // Exception catching
-    await runExceptionCatchingTests(module);
+    await runExceptionCatchingTests(instance);
 
     // green test in console telling all tests passed
     console.log("%cAll tests passed", "color: green; font-size: 20px");
@@ -59,11 +59,11 @@ const runTests = async function () {
 
 runTests();
 
-const runExceptionCatchingTests = async function (module) {
+const runExceptionCatchingTests = async function (instance) {
 
     // Explicitely raised exception
     try {
-        module.TestInvokedException();
+        instance.TestInvokedException();
         assert.false("Exception not raised");
     } catch (e) {
         assert(true, "Exception raised as expected");
@@ -71,7 +71,7 @@ const runExceptionCatchingTests = async function (module) {
 
     // Exception in Task
     try {
-        await module.AsyncTaskStringExplicitelyFail();
+        await instance.AsyncTaskStringExplicitelyFail();
         assert(false, "Async task failed as expected");
     } catch (e) {
         assert(true, "Async task failed as expected");
@@ -79,7 +79,7 @@ const runExceptionCatchingTests = async function (module) {
 
     // Unraised exception
     try {
-        module.TestUnraisedException();
+        instance.TestUnraisedException();
         assert(false, "Exception not raised");
     } catch (e) {
         assert(true, "Exception raised as expected");
@@ -87,19 +87,19 @@ const runExceptionCatchingTests = async function (module) {
 
     // Unraised exception in task
     // try {
-    //     await module.AsyncTaskUnraisedException();
+    //     await instance.AsyncTaskUnraisedException();
     //     assert(false, "Async task unraised exception not raised");
     // } catch (e) {
     //     assert(true, "Async task natural exception raised as expected");
     // }
 
 }
-const runCallbackTests = function (module) {
+const runCallbackTests = function (module, instance) {
     let valueToSet = null;
     const managedActionVoid = module.GetManagedAction(() => {
         valueToSet = "Callback invoked";
     }, []);
-    module.InvokeCallbackForTest(managedActionVoid);
+    instance.InvokeCallbackForTest(managedActionVoid);
     assertEquals(valueToSet, "Callback invoked", "Action created an invoked");
 
     // Test callback Action<string>
@@ -107,7 +107,7 @@ const runCallbackTests = function (module) {
     const managedActionString = module.GetManagedAction((str) => {
         valueToSet2 = str;
     }, ["System.String"]);
-    module.InvokeCallbackWithActionString(managedActionString);
+    instance.InvokeCallbackWithActionString(managedActionString);
     assertEquals(valueToSet2.value, "Some callback string");
 
     // Test callback Action<string, double>
@@ -117,7 +117,7 @@ const runCallbackTests = function (module) {
         targetString = str;
         targetDouble = dbl;
     }, ["System.String", "System.Double"]);
-    module.InvokeCallbackWithActionStringDouble(managedActionStringDouble);
+    instance.InvokeCallbackWithActionStringDouble(managedActionStringDouble);
     assertEquals(targetString.value, "Some callback string");
     assertEquals(targetDouble.value, 12345);
 }

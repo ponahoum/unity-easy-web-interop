@@ -27,6 +27,7 @@ namespace Nahoum.EasyWebInterop
             if (targetObject == IntPtrExtension.Null)
                 return null;
 
+            // Get object from GCHandle
             return GCHandle.FromIntPtr(targetObject).Target;
         }
 

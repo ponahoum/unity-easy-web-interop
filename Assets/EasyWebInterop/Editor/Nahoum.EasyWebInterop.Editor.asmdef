@@ -1,0 +1,18 @@
+{
+    "name": "com.nahoum.EasyWebInterop.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:cd52595f0382049afbfcd0cb90670671"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

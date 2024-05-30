@@ -50,6 +50,24 @@ internal static class MarshalUtilities
     }
 
     /// <summary>
+    /// Encode a boolean value to an IntPtr
+    /// Doesn't need to be freed as it is a simple value
+    /// </summary>
+    internal static IntPtr EncodeBool(bool value)
+    {
+        return new IntPtr(value ? 1 : 0);
+    }
+
+    /// <summary>
+    /// Decode a boolean value from an IntPtr
+    /// No marshalling needed as it is a simple value
+    /// </summary>
+    internal static bool DecodeBool(IntPtr value)
+    {
+        return value.ToInt32() == 1;
+    }
+
+    /// <summary>
     /// Private method to free the allocated memory for a single string
     /// </summary>
     internal static void FreeString(IntPtr stringPtr)

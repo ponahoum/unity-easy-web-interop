@@ -4,26 +4,25 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.Scripting;
 using static Nahoum.EasyWebInterop.DyncallSignature;
 
 [assembly: InternalsVisibleTo("com.nahoum.EasyWebInterop.Tests")]
+[assembly: InternalsVisibleTo("com.nahoum.EasyWebInterop.Editor")]
 namespace Nahoum.EasyWebInterop
 {
+    [Preserve]
     public class MethodsRegistry
     {
-        static MethodsRegistry()
-        {
-            InternalInteropSetup.SetupInternal();
-        }
-
         /// <summary>
         /// Allows to pass a delegate pointer to the JS side so it can be invoked from there
         /// </summary>
         [DllImport("__Internal")]
-        internal static extern void RegisterMethodInRegistry(IntPtr methodPtr, IntPtr functionName, IntPtr pathToFunctionArrPtr, int pathToFunctionArrLength, IntPtr functionSignature, IntPtr isAsyncTask);
+        static extern void RegisterMethodInRegistry(IntPtr targetId, IntPtr methodPtr, IntPtr functionName, IntPtr pathToFunctionArrPtr, int pathToFunctionArrLength, IntPtr functionSignature, IntPtr isAsyncTask);
 
         // Keep reference to all exposed delegates (static or not)
-        static Dictionary<string, Delegate> methodsRegistry = new();
+        static Dictionary<int, Delegate> methodsRegistry = new();
+        static int currentDelegateIndex = 0;
 
         [MonoPInvokeCallback]
         static IntPtr RegistryI(IntPtr serviceKey) => InvokeFromRegistry<I>(serviceKey);
@@ -53,11 +52,8 @@ namespace Nahoum.EasyWebInterop
         private static IntPtr InvokeFromRegistry<T>(IntPtr serviceKey, params IntPtr[] args)
         where T : Delegate
         {
-            // Convert servicekey to string
-            string serviceKeyStr = Marshal.PtrToStringUTF8(serviceKey);
-
             // Get the delegate from the registry
-            Delegate targetDelegate = methodsRegistry[serviceKeyStr];
+            Delegate targetDelegate = methodsRegistry[serviceKey.ToInt32()];
 
             // Invoke it dynamically
             try
@@ -81,14 +77,11 @@ namespace Nahoum.EasyWebInterop
         /// <summary>
         /// Exposes a method to the JS side from its name
         /// </summary>
-        public static void RegisterMethod(string[] pathToMethod, Delegate method)
+        internal static void RegisterMethod(string[] pathToMethod, Delegate method, int targetId = -1)
         {
-            // Internal function key used to retrieve the method from the registry
-            string functionKey = string.Join(".", pathToMethod);
+            currentDelegateIndex++;
 
-            // Ensure the method is not already registered
-            if (methodsRegistry.ContainsKey(functionKey))
-                throw new Exception($"Method {functionKey} already registered");
+            // Internal function key used to retrieve the method from the registry
 
             // Check if the method has a return value or if it is void
             bool hasReturn = method.Method.ReturnType != typeof(void);
@@ -111,28 +104,18 @@ namespace Nahoum.EasyWebInterop
             };
 
             // Add the method to the static registry that will later be used to invoke the method from its name
-            methodsRegistry.Add(functionKey, registryData.asDelegate);
+            methodsRegistry.Add(currentDelegateIndex, registryData.asDelegate);
 
             // Notice the js side that this named method is available under this signature
             IntPtr arrayPtr = MarshalUtilities.MarshalStringArray(pathToMethod, out int length, out Action freeArrayPtr);
-            IntPtr functionKeyPtr = MarshalUtilities.MarshalString(functionKey, out Action freeFunctionKeyPtr);
             IntPtr functionSignature = MarshalUtilities.MarshalString(GetRegistrySignatureFromDelegate(registryData.asDelegate), out Action freeFunctionSignaturePtr);
 
-            RegisterMethodInRegistry(registryData.registryPtr, functionKeyPtr, arrayPtr, length, functionSignature, new IntPtr(ReflectionUtilities.IsDelegateAsyncTask(method) ? 1 : 0));
+            RegisterMethodInRegistry(new IntPtr(targetId), registryData.registryPtr, new IntPtr(currentDelegateIndex), arrayPtr, length, functionSignature,  MarshalUtilities.EncodeBool(ReflectionUtilities.IsDelegateAsyncTask(method)));
 
             // Free the allocated pointers except the function key which is needed to be called later on
             // The rest has been marshalled by js so we can free themÒ
             freeArrayPtr();
-            freeFunctionKeyPtr();
             freeFunctionSignaturePtr();
-        }
-
-        /// <summary>
-        /// Exposes a method to the JS side from its name
-        /// </summary>
-        public static void RegisterMethod<T>(string name, T method) where T : Delegate
-        {
-            RegisterMethod(new string[] { name }, (Delegate)method);
         }
 
         /// <summary>
@@ -174,10 +157,24 @@ namespace Nahoum.EasyWebInterop
 
             // Invoke instance method
             object result = method.DynamicInvoke(argsCasted);
+
             if (!methodHasReturn)
                 return IntPtrExtension.Void;
             else
                 return GCUtils.NewManagedObject(result);
+        }
+
+        /// <summary>
+        /// Removes a delegate from the registry given a int key
+        /// Throws an exception if the key is not found
+        /// </summary>
+        internal static void FreeDelegate(int delegateKey)
+        {
+            if(methodsRegistry.Remove(delegateKey)){
+                Debug.Log("Removed delegate from registry: " + delegateKey);
+            } else {
+                throw new Exception("Delegate to delete not found in registry: " + delegateKey);
+            }
         }
     }
 }

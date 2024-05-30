@@ -4,23 +4,25 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using UnityEngine.Scripting;
 using static Nahoum.EasyWebInterop.DyncallSignature;
 
 namespace Nahoum.EasyWebInterop
 {
+    [Preserve]
     internal static class InternalInteropSetup
     {
         [DllImport("__Internal")]
-        internal static extern void RegisterStaticMethodInternalRegistry(IntPtr methodPtr, string functionName, string functionSignature);
+        static extern void RegisterStaticMethodInternalRegistry(IntPtr methodPtr, string functionName, string functionSignature);
 
         [DllImport("__Internal")]
-        internal static extern void Setup(IntPtr getIntPtrValueMethodPtr, IntPtr collectManagedPtrMethodPtr);
+        static extern void Setup(IntPtr getIntPtrValueMethodPtr, IntPtr collectManagedPtrMethodPtr);
 
         /// <summary>
         /// Setup the service register with the default method to get the string representation of an object
         /// To be called on startup
         /// </summary>
-        internal static void SetupInternal()
+        internal static void Setup()
         {
             Setup(Marshal.GetFunctionPointerForDelegate<II>(GetSerializedValueFromManagedPtr), Marshal.GetFunctionPointerForDelegate<VI>(CollectManagedPtr));
 
@@ -71,6 +73,12 @@ namespace Nahoum.EasyWebInterop
 
             // Get action, action<T> from js ptr
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr, IntPtr>>(GetManagedWrappedAction), nameof(GetManagedWrappedAction), "iii");
+
+            // Register request complete returned object
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Action<IntPtr>>(RequestCompleteReturnedObject), nameof(RequestCompleteReturnedObject), "vi");
+
+            // Register free delegate from methods registry
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Action<int>>(FreeDelegate), nameof(FreeDelegate), "vi");
         }
 
         #region 
@@ -102,17 +110,6 @@ namespace Nahoum.EasyWebInterop
             // Gather the object from the GCHandle
             object obj = GCUtils.GetManagedObjectFromPtr(targetObject);
             return GCUtils.NewManagedObject(obj.GetType());
-        }
-
-        /// <summary>
-        /// Collect the managed object from the GCHandle
-        /// Will throw an exception if the GCHandle is not allocated
-        /// </summary>
-        /// <param name="ptr"></param>
-        [MonoPInvokeCallback]
-        static void CollectManagedPtr(IntPtr ptr)
-        {
-            GCUtils.CollectManagedObjectFromPtr(ptr);
         }
 
         #endregion
@@ -178,6 +175,7 @@ namespace Nahoum.EasyWebInterop
             else
                 onCompleted.Invoke(IntPtrExtension.Void);
         }
+
         #endregion
 
         #region Primitive getter
@@ -235,11 +233,61 @@ namespace Nahoum.EasyWebInterop
             object typesStringArray = GCUtils.GetManagedObjectFromPtr(typesArrayPtr);
 
             // Ensure the object is a string array
-            if(typesStringArray is not string[] managedTypes)
+            if (typesStringArray is not string[] managedTypes)
                 throw new Exception("The object is not an array");
 
             object actionWrapped = ManagedActionFactory.GetWrappedActionFromJsDelegate(managedTypes, actionJsPtr);
             return GCUtils.NewManagedObject(actionWrapped);
+        }
+
+
+        /// <summary>
+        /// Given an intptr to a returned object, check if the object has the ExposeWebAttribute
+        /// If it does, expose the object methods to the web
+        /// </summary>
+        /// <param name="target"></param>
+        [MonoPInvokeCallback]
+        static void RequestCompleteReturnedObject(IntPtr target)
+        {
+            try
+            {
+                if (target == IntPtr.Zero)
+                    return;
+                object targetObject = GCUtils.GetManagedObjectFromPtr(target);
+
+                // Check if object class has webexpose attribute
+                if (ExposeWebAttribute.HasExposedMethods(targetObject.GetType()))
+                {
+                    AutoRegister.RegisterSubService(target, targetObject);
+                    UnityEngine.Debug.Log("This object has the ExposeWebAttribute and has been registered to the web in bliblo");
+                }
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogError(e);
+                throw e;
+            }
+        }
+
+        /// <summary>
+        /// Collect a delegate from the managed registry of delegate
+        /// Typically used to free delegate when some object containing those methods are not used anymore on the JS side
+        /// </summary>
+        [MonoPInvokeCallback]
+        static void FreeDelegate(int delegateKey)
+        {
+            MethodsRegistry.FreeDelegate(delegateKey);
+        }
+
+        /// <summary>
+        /// Collect the managed object from the GCHandle
+        /// Will throw an exception if the GCHandle is not allocated
+        /// </summary>
+        /// <param name="ptr"></param>
+        [MonoPInvokeCallback]
+        static void CollectManagedPtr(IntPtr ptr)
+        {
+            GCUtils.CollectManagedObjectFromPtr(ptr);
         }
 
         #endregion

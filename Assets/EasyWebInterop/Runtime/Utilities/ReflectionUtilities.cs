@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -111,5 +112,24 @@ namespace Nahoum.EasyWebInterop
 
             return Delegate.CreateDelegate(getType(types.ToArray()), target, methodInfo.Name);
         }
+
+        /// <summary>
+        /// Returns a gigantic list of all the types in all the available assemblies
+        /// </summary>
+        internal static List<Type> GetAllAssembliesTypes(){
+            List<Type> types = new List<Type>();
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (Assembly assembly in assemblies)
+            {
+                // Get all the types in the assembly
+                Type[] allTypes = assembly.GetTypes();
+                foreach (Type targetType in allTypes)
+                {
+                    types.Add(targetType);
+                }
+            }
+            return types;
+        }
+
     }
 }
