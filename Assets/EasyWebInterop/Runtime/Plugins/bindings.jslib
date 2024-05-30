@@ -1,12 +1,12 @@
 var easyWebInteropLib = {
     $dependencies: {},
 
-    Setup: function (getIntPtrValueMethodPtr, collectManagedPtrMethodPtr) {
+    Setup: function (getIntPtrValueMethodPtr) {
         /**
          * Setup callback registerer, This allows to create javascript callbacks that can be called from C#
          * @param callback The javascript callback (arg)=>{...}
          */
-        Module.internal.createCallback = (callback, signature) => {
+        Module.internalJS.createCallback = (callback, signature) => {
             var ptr = addFunction(callback, signature);
             return ptr;
         };
@@ -14,7 +14,7 @@ var easyWebInteropLib = {
         /**
          * Given a managed C# object pointer, return a serialized JSON object
          */
-        Module.internal.getJsonValueFromGCHandlePtr = (ptrToGcHandle) => {
+        Module.internalJS.getJsonValueFromGCHandlePtr = (ptrToGcHandle) => {
             const resPtr = dynCall("ii", getIntPtrValueMethodPtr, [ptrToGcHandle]);
             const asJsonObject = JSON.parse(UTF8ToString(resPtr)).value;
             // Free the memory allocated by the C# side
@@ -25,12 +25,12 @@ var easyWebInteropLib = {
         /**
          * Setup callback registerer, This allows to create javascript callbacks that can be called from C#
          */
-        Module.internal.managedObjectsFinalizationRegistry = new FinalizationRegistry((ptrToGcHandle) => {
-            dynCall("vi", collectManagedPtrMethodPtr, [ptrToGcHandle]);
+        Module.internalJS.managedObjectsFinalizationRegistry = new FinalizationRegistry((ptrToGcHandle) => {
+            Module.internal.CollectManagedPtr(ptrToGcHandle);
             console.log("Collected object with ptr: " + ptrToGcHandle);
         });
 
-        Module.internal.delegateFinalizationRegistry = new FinalizationRegistry((delegateID) => {
+        Module.internalJS.delegateFinalizationRegistry = new FinalizationRegistry((delegateID) => {
             Module.internal.FreeDelegate(delegateID);
             console.log("Collected delegate with key: " + delegateID);
         });
@@ -39,7 +39,7 @@ var easyWebInteropLib = {
          * Convert a string array pointer to a JS array
          * Doesn't free the input pointer, this has to be done manually somewhere else
          */
-        Module.internal.stringArrayPtrToJSArray = (stringArrayPtr, stringArrayLength) => {
+        Module.internalJS.stringArrayPtrToJSArray = (stringArrayPtr, stringArrayLength) => {
             var stringArray = new Array(stringArrayLength);
             for (var i = 0; i < stringArrayLength; i++) {
                 var currentPtr = getValue(stringArrayPtr + i * 4, "i32");
@@ -67,20 +67,20 @@ var easyWebInteropLib = {
                 if (targetArgs[i] instanceof Module.internalJS.PointerToNativeObject)
                     targetArgs[i] = targetArgs[i].targetGcHandleObjectPtr;
             }
-            return Module.internalJS.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs));
+            return Module.internalJS.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs), false);
         }
     },
     RegisterMethodInRegistry: function (targetId, functionPtr, functionKeyPtr, pathToFunctionArrPtr, pathToFunctionArrLength, functionParamSignaturePtr, isAsyncTaskPtr) {
         const signatureAsString = UTF8ToString(functionParamSignaturePtr);
 
         // Given that pathToFunctionArrPtr is a string[] on the C# side, we need to convert it to a JS array
-        const pathToFunctionArr = Module.internal.stringArrayPtrToJSArray(pathToFunctionArrPtr, pathToFunctionArrLength);
+        const pathToFunctionArr = Module.internalJS.stringArrayPtrToJSArray(pathToFunctionArrPtr, pathToFunctionArrLength);
         const isAsyncTask = isAsyncTaskPtr === 1;
 
         // Create the function that will be injected in the module (if static) / target object (if instance)
         const moduleInjectedFunction = (...args) => {
             // Assign params of the fuction to a variable that's we'll play with afterwards
-            const targetArgs = Module.internal.autoTransformArgs([...args]);
+            const targetArgs = Module.internalJS.autoTransformArgs([...args]);
 
             // Add function name pointer string as the first element
             targetArgs.unshift(functionKeyPtr);
@@ -95,17 +95,15 @@ var easyWebInteropLib = {
             }
 
             // Measure time it took to perform the dyncall
-            const resultingManagedObjectPtr = Module.internalJS.HandleResPtr(resultOfCall);
-            Module.internalJS.PopulatePointerToNativeObject(resultingManagedObjectPtr);
+            const resultingManagedObjectPtr = Module.internalJS.HandleResPtr(resultOfCall, true);
 
             // Handle async task if needed
             if (isAsyncTask) {
                 return new Promise((resolve, reject) => {
-                    const callBackPtr = Module.internal.createCallback((i) => {
+                    const callBackPtr = Module.internalJS.createCallback((i) => {
                         // When this piece of code is called, it means the task is completed
                         try {
-                            var res = Module.internalJS.HandleResPtr(i);
-                            Module.internalJS.PopulatePointerToNativeObject(res);
+                            const res = Module.internalJS.HandleResPtr(i, true);
                             resolve(res);
                         }
                         catch (e) {
@@ -125,16 +123,16 @@ var easyWebInteropLib = {
         // Assign the function to the path in the module
         // Static method case
         if (targetId === -1)
-            Module.internal.assignValueToPath(Module, pathToFunctionArr, moduleInjectedFunction);
+            Module.internalJS.assignValueToPath(Module, pathToFunctionArr, moduleInjectedFunction);
 
         // Instance case
         else {
-            const targetObject = Module.internalJS.tempReferences[targetId];
-            Module.internal.assignValueToPath(targetObject, pathToFunctionArr, moduleInjectedFunction);
+            const targetObject = Module.internalJS.tempReferences;
+            Module.internalJS.assignValueToPath(targetObject, pathToFunctionArr, moduleInjectedFunction);
         }
 
         // Add the method to finalization registry so that if it's dereference in JS, it's also dereferenced in C#
-        Module.internal.delegateFinalizationRegistry.register(moduleInjectedFunction, functionKeyPtr);
+        Module.internalJS.delegateFinalizationRegistry.register(moduleInjectedFunction, functionKeyPtr);
     },
 };
 

@@ -16,7 +16,7 @@ namespace Nahoum.EasyWebInterop
         static extern void RegisterStaticMethodInternalRegistry(IntPtr methodPtr, string functionName, string functionSignature);
 
         [DllImport("__Internal")]
-        static extern void Setup(IntPtr getIntPtrValueMethodPtr, IntPtr collectManagedPtrMethodPtr);
+        static extern void Setup(IntPtr getIntPtrValueMethodPtr);
 
         /// <summary>
         /// Setup the service register with the default method to get the string representation of an object
@@ -24,7 +24,7 @@ namespace Nahoum.EasyWebInterop
         /// </summary>
         internal static void Setup()
         {
-            Setup(Marshal.GetFunctionPointerForDelegate<II>(GetSerializedValueFromManagedPtr), Marshal.GetFunctionPointerForDelegate<VI>(CollectManagedPtr));
+            Setup(Marshal.GetFunctionPointerForDelegate<II>(GetSerializedValueFromManagedPtr));
 
             // Register get type from ptr
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr, IntPtr>>(GetManagedTypeFromManagedPtr), nameof(GetManagedTypeFromManagedPtr), "ii");
@@ -79,6 +79,9 @@ namespace Nahoum.EasyWebInterop
 
             // Register free delegate from methods registry
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Action<int>>(FreeDelegate), nameof(FreeDelegate), "vi");
+
+            // Register CollectManagedPtr
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Action<IntPtr>>(CollectManagedPtr), nameof(CollectManagedPtr), "vi");
         }
 
         #region 
@@ -257,10 +260,7 @@ namespace Nahoum.EasyWebInterop
 
                 // Check if object class has webexpose attribute
                 if (ExposeWebAttribute.HasExposedMethods(targetObject.GetType()))
-                {
                     AutoRegister.RegisterSubService(target, targetObject);
-                    UnityEngine.Debug.Log("This object has the ExposeWebAttribute and has been registered to the web in bliblo");
-                }
             }
             catch (Exception e)
             {

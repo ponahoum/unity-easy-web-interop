@@ -11,18 +11,7 @@ const waitForModule = async function () {
 const runTests = async function () {
     const module = await waitForModule();
     console.log('Module loaded. Test running...');
-    const instance = module.static.RuntimeWebTests.GetNewTestInstance()
-    // Regular method and async methods
-    assertEquals(instance.MyMethodReturningString().value, "returning a random string", "Method returning string works");
-    assertEquals(instance.MyMethodReturningDouble().value, 2147483647125, "Method returning double works");
-    assertEquals(instance.MyMethodReturningInt().value, 450050554, "Method returning int works");
-    assertEquals(instance.TestReturnNullValue().value, null, "Method returning null works");
-    assertEquals((await instance.AsyncTaskReturnString()).value, "A cool result from an async task", "AsyncTaskReturnString (Async Task<string>) returns correct string value");
-    assert(instance.AsyncTaskReturnString().then, "AsyncTaskReturnString (Async Task<string>) is a promise");
-    assertEquals(await instance.AsyncTaskVoidMethod(), undefined, "Awaiting AsyncTaskVoidMethod returns undefined");
-    assert(instance.AsyncTaskVoidMethod().then, "AsyncTaskVoidMethod is a promise");
-    assertEquals(instance.AsyncVoidMethod(), undefined, "AsyncVoidMethod is not a promise and is undefined");
-    assert(arrayContentsEquals(instance.MethodReturningDoubleArray().value, [123, 789, 101112]), "MethodReturningDoubleArray");
+
     // Primitives getters
     assertEquals(module.GetManagedInt(123456).value, 123456, "GetInt works");
     assertEquals(module.GetManagedLong(123456).value, 123456, "GetBool works");
@@ -39,8 +28,19 @@ const runTests = async function () {
     assert(arrayContentsEquals(module.GetManagedBoolArray([true, false, true]).value, [true, false, true]), "GetBoolArray works");
     assert(arrayContentsEquals(module.GetManagedByteArray(new Uint8Array([1, 2, 3])).value, [1, 2, 3]), "GetByteArray works");
 
-    // Methods with parameters
-    // Download image as byte array and pass it to C#
+    // Instance methods and async methods
+    const instance = module.static.RuntimeWebTests.GetNewTestInstance()
+    assertEquals(instance.MyMethodReturningString().value, "returning a random string", "Method returning string works");
+    assertEquals(instance.MyMethodReturningDouble().value, 2147483647125, "Method returning double works");
+    assertEquals(instance.MyMethodReturningInt().value, 450050554, "Method returning int works");
+    assertEquals(instance.TestReturnNullValue().value, null, "Method returning null works");
+    assertEquals((await instance.AsyncTaskReturnString()).value, "A cool result from an async task", "AsyncTaskReturnString (Async Task<string>) returns correct string value");
+    assert(instance.AsyncTaskReturnString().then, "AsyncTaskReturnString (Async Task<string>) is a promise");
+    assertEquals(await instance.AsyncTaskVoidMethod(), undefined, "Awaiting AsyncTaskVoidMethod returns undefined");
+    assert(instance.AsyncTaskVoidMethod().then, "AsyncTaskVoidMethod is a promise");
+    assertEquals(instance.AsyncVoidMethod(), undefined, "AsyncVoidMethod is not a promise and is undefined");
+    assert(arrayContentsEquals(instance.MethodReturningDoubleArray().value, [123, 789, 101112]), "MethodReturningDoubleArray");
+    // Method with parameter - Download image as byte array and pass it to C#
     const imageByteArray = await downloadJPGImageToUint8Array(200, 300);
     const getManagedByteArray = module.GetManagedByteArray(imageByteArray);
     const imageDebug = instance.GetImageInformation(getManagedByteArray);

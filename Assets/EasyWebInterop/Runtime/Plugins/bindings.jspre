@@ -12,40 +12,11 @@ if (!Module["internalJS"])
  */
 Module.internalJS.tempReferences = {};
 
-Module.internalJS.PopulatePointerToNativeObject = function (pointerToNativeObject) {
-
-    // Skip if the pointer is undefined
-    if (pointerToNativeObject === undefined)
-        return;
-    
-    // Check pointerToNativeObject is instance  of PointerToNativeObject
-    if (!(pointerToNativeObject instanceof Module.internalJS.PointerToNativeObject))
-        return;
-
-    // Timer to measure the time it takes
-    var timeStart = performance.now();
-
-    // Add temporary reference to object with an id available in tempReferences
-    let id = pointerToNativeObject.targetGcHandleObjectPtr;
-    Module.internalJS.tempReferences[id] = pointerToNativeObject;
-
-    Module.internal.RequestCompleteReturnedObject(pointerToNativeObject);
-
-    // Set temporary reference to undefined
-    delete Module.internalJS.tempReferences[id];
-
-    // Remove from tempReferences
-    var timeEnd = performance.now();
-    console.log("Tool took " + (timeEnd - timeStart) + " milliseconds to populate pointer to native object of id " + id);
-    console.log("Done populating pointer to native object");
-}
-
-
 /**
  * Given an object and a string array, assign a value to the path specified by the string array
  * For example if the array is ["a", "b", "c"] and the value is 10, the object will be modified to be {a: {b: {c: 10}}}
  */
-Module.internal.assignValueToPath = (targetObject, pathArray, value) => {
+Module.internalJS.assignValueToPath = (targetObject, pathArray, value) => {
     let currentLevel = targetObject;
     for (let i = 0; i < pathArray.length; i++) {
         const key = pathArray[i];
@@ -64,7 +35,6 @@ Module.internal.assignValueToPath = (targetObject, pathArray, value) => {
     }
 }
 
-
 // Declare class that holds references
 Module.internalJS.PointerToNativeObject = class PointerToNativeObject {
     // Constructor to initialize the private integer field
@@ -73,7 +43,7 @@ Module.internalJS.PointerToNativeObject = class PointerToNativeObject {
     }
 
     get value() {
-        return Module.internal.getJsonValueFromGCHandlePtr(this.targetGcHandleObjectPtr);
+        return Module.internalJS.getJsonValueFromGCHandlePtr(this.targetGcHandleObjectPtr);
     }
 
     get managedType() {
@@ -82,7 +52,7 @@ Module.internalJS.PointerToNativeObject = class PointerToNativeObject {
 }
 
 // Declare a wrapper around a C# object pointer that will be collected by the garbage collector
-Module.internalJS.HandleResPtr = function (resPtr, targetId) {
+Module.internalJS.HandleResPtr = function (resPtr, injectDelegateInObject = true) {
     // Check for undefined
     if (resPtr === undefined || resPtr === -2)
         return undefined;
@@ -92,8 +62,30 @@ Module.internalJS.HandleResPtr = function (resPtr, targetId) {
         throw new Error("An exception occured on the C# side.");
     }
 
-    let resultingPtr = new Module.internalJS.PointerToNativeObject(resPtr);
-    Module.internal.managedObjectsFinalizationRegistry.register(resultingPtr, resPtr);
+    // Wrap the pointer in a PointerToNativeObject for ease of use
+    const resultingPtr = new Module.internalJS.PointerToNativeObject(resPtr);
+
+    // Register the object in the finalization registry so that when it's deferenced, it's collected
+    Module.internalJS.managedObjectsFinalizationRegistry.register(resultingPtr, resPtr);
+
+    // If this object is an instance, we inject the methods in the object
+    if (injectDelegateInObject) {
+        // Timer to measure the time it takes
+        var timeStart = performance.now();
+
+        // Set the object to the temporary reference so that the method coming back from the C# side can be called
+        // This way, methods will be populated in the object tempReferences
+        // Once this is done, the object will be removed from tempReferences
+
+        Module.internalJS.tempReferences = resultingPtr;
+        Module.internal.RequestCompleteReturnedObject(resultingPtr);
+        Module.internalJS.tempReferences = undefined;
+
+        // Remove from tempReferences
+        var timeEnd = performance.now();
+        console.log("Tool took " + (timeEnd - timeStart) + " milliseconds to populate pointer to native object of id " + resultingPtr.targetGcHandleObjectPtr);
+    }
+
     return resultingPtr;
 }
 
@@ -262,7 +254,7 @@ Module.GetManagedAction = (callback, managedTypesArray) => {
     }
 
     // Create the callback
-    const jsPtrCallback = Module.internal.createCallback(newCallback, callbackSignature);
+    const jsPtrCallback = Module.internalJS.createCallback(newCallback, callbackSignature);
 
     // Convert the string array 
     const ptrToManagedStringArray = Module.GetManagedStringArray(managedTypesArray);
@@ -296,7 +288,7 @@ isBooleanArray = (array) => {
 /**
  * Givens args, transform them to the expected types if they are of native types
  */
-Module.internal.autoTransformArgs = (argsToTransformArray) => {
+Module.internalJS.autoTransformArgs = (argsToTransformArray) => {
     const newArgs = [];
     for (let i = 0; i < argsToTransformArray.length; i++) {
         const arg = argsToTransformArray[i];
