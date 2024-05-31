@@ -3,6 +3,18 @@ using UnityEngine;
 using System.Threading.Tasks;
 using Nahoum.UnityJSInterop;
 
+namespace Nahoum.UnityJSInterop
+{
+    public class ACoolObject{
+        [ExposeWeb]
+        public string GetName() => "A cool object";
+        [ExposeWeb]
+        public int Age() => 25;
+
+        [ExposeWeb]
+        public static ACoolObject GetNewInstance() => new ACoolObject();
+    }
+}
 
 public class RuntimeWebTests
 {

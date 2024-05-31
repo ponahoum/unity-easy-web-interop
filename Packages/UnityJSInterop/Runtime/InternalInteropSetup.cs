@@ -82,6 +82,9 @@ namespace Nahoum.UnityJSInterop
 
             // Register CollectManagedPtr
             RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Action<IntPtr>>(CollectManagedPtr), nameof(CollectManagedPtr), "vi");
+
+            // Register GetDelegateCount
+            RegisterStaticMethodInternalRegistry(Marshal.GetFunctionPointerForDelegate<Func<IntPtr>>(GetDelegateCount), nameof(GetDelegateCount), "i");
         }
 
         #region 
@@ -287,6 +290,11 @@ namespace Nahoum.UnityJSInterop
         static void CollectManagedPtr(IntPtr ptr)
         {
             GCUtils.CollectManagedObjectFromPtr(ptr);
+        }
+
+        [MonoPInvokeCallback]
+        static IntPtr GetDelegateCount(){
+            return new IntPtr(MethodsRegistry.GetDelegateCount());
         }
 
         #endregion

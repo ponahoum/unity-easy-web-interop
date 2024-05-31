@@ -173,5 +173,10 @@ namespace Nahoum.UnityJSInterop
                 throw new Exception("Delegate to delete not found in registry: " + delegateKey);
             }
         }
+
+        /// <summary>
+        /// Get the count of the delegates in the registry, for debugging purposes
+        /// </summary>
+        internal static int GetDelegateCount() => methodsRegistry.Count;
     }
 }

@@ -11,7 +11,8 @@ namespace Nahoum.UnityJSInterop
     [Preserve]
     public static class AutoRegister
     {
-        internal static void Setup(){
+        internal static void Setup()
+        {
             RegisterAllStaticMethds();
         }
 
@@ -38,13 +39,26 @@ namespace Nahoum.UnityJSInterop
         internal static void RegisterSubService(IntPtr targetId, object instance)
         {
             var exposedMethods = ExposeWebAttribute.GetExposedInstanceMethods(instance.GetType());
+            var staticMethods = ExposeWebAttribute.GetExposedStaticMethods(instance.GetType());
+
+            // Inject instance methods
             foreach (var methodWithExposeWeb in exposedMethods)
-            {
-                MethodInfo method = methodWithExposeWeb.Key;
-                string[] servicePath = new string[] { method.Name };
-                Delegate del = ReflectionUtilities.CreateDelegate(method, instance);
-                MethodsRegistry.RegisterMethod(servicePath, del, targetId.ToInt32());
-            }
+                InjectMethodIntoTarget(methodWithExposeWeb.Key, instance, targetId);
+
+            // Inject static methods
+            foreach (var methodWithExposeWeb in staticMethods)
+                InjectMethodIntoTarget(methodWithExposeWeb.Key, null, targetId);
+        }
+
+
+        /// <summary>
+        /// Inject a method in a JS object of if targetId. This is typically used to populate all methods of instance of returned object
+        /// </summary>
+        private static void InjectMethodIntoTarget(MethodInfo method, object instance, IntPtr targetId)
+        {
+            string[] servicePath = new string[] { method.Name };
+            Delegate del = ReflectionUtilities.CreateDelegate(method, method.IsStatic ? null : instance);
+            MethodsRegistry.RegisterMethod(servicePath, del, targetId.ToInt32());
         }
     }
 }
