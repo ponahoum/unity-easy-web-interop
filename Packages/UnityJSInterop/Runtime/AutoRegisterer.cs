@@ -26,12 +26,8 @@ namespace Nahoum.UnityJSInterop
                 foreach (var method in exposedStaticMethods)
                 {
                     MethodInfo staticMethod = method.Key;
-
-                    // Method name is class name _ method name
-                    string serviceName = exposedType.Name;
-                    string[] servicePath = new string[] {  "static", serviceName, staticMethod.Name };
                     Delegate del = ReflectionUtilities.CreateDelegate(staticMethod, null);
-                    MethodsRegistry.RegisterMethod(servicePath, del);
+                    MethodsRegistry.RegisterMethod(NamingUtility.GetMethodJSPath(method.Key), del);
                 }
             }
         }
