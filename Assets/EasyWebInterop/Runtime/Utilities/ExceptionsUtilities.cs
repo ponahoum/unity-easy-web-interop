@@ -14,25 +14,17 @@ namespace Nahoum.EasyWebInterop
         /// </summary>
         internal static IntPtr HandleExceptionWithIntPtr(Exception e)
         {
-
             // Handle case the exception was raised by DynamicInvoke (the TargetInvocationException being itself of not great help)
             if (e is TargetInvocationException asTarget)
             {
                 // Handle case the exception was raised from the DynamicInvoke inside the DynamicInvoke
                 if (asTarget.InnerException is TargetInvocationException asTargetInner)
-                {
                     Debug.LogError(asTargetInner.InnerException.Message);
-                }
                 else
-                {
                     Debug.LogError(asTarget.InnerException.Message);
-                }
             }
             else
-            {
                 Debug.LogError(e.Message);
-            }
-
             return IntPtrExtension.Exception;
         }
     }

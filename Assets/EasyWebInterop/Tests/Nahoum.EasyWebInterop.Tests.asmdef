@@ -1,10 +1,10 @@
 {
-    "name": "com.nahoum.EasyWebInterop.Tests",
+    "name": "Nahoum.EasyWebInterop,Tests",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "com.nahoum.EasyWebInterop"
+        "Nahoum.EasyWebInterop"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

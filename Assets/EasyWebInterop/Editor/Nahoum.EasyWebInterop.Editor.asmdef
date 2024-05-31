@@ -1,5 +1,5 @@
 {
-    "name": "com.nahoum.EasyWebInterop.Editor",
+    "name": "Nahoum.EasyWebInterop.Editor",
     "rootNamespace": "",
     "references": [
         "GUID:cd52595f0382049afbfcd0cb90670671"

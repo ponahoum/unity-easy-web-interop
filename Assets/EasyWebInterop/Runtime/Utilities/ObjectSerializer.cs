@@ -3,6 +3,9 @@ using System;
 using UnityEngine;
 namespace Nahoum.EasyWebInterop
 {
+    /// <summary>
+    /// A simple serializer that converts an object to a JSON string
+    /// </summary>
     public static class ObjectSerializer
     {
         public static string ToJson(object toSerialize)

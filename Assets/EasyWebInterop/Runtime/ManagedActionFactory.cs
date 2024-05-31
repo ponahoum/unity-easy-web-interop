@@ -8,12 +8,11 @@ namespace Nahoum.EasyWebInterop
 {
     internal static class ManagedActionFactory
     {
-        private static Dictionary<int, MethodInfo> methodInfosByParamCount;
+        private readonly static Dictionary<int, MethodInfo> methodInfosByParamCount = new Dictionary<int, MethodInfo>();
 
         static ManagedActionFactory()
         {
             MethodInfo[] methods = typeof(ManagedActionFactory).GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
-            methodInfosByParamCount = new Dictionary<int, MethodInfo>();
             foreach (MethodInfo thisClassMethod in methods)
             {
                 if (thisClassMethod.Name.Contains(nameof(CreateAction)))

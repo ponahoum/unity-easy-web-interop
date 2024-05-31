@@ -13,20 +13,20 @@ const runTests = async function () {
     console.log('Module loaded. Test running...');
 
     // Primitives getters
-    assertEquals(module.GetManagedInt(123456).value, 123456, "GetInt works");
-    assertEquals(module.GetManagedLong(123456).value, 123456, "GetBool works");
-    assertEquals(module.GetManagedFloat(123456.3).value, 123456.3, "GetFloat works (around 7 decimal digits)");
-    assertEquals(module.GetManagedDouble(123456.3339944).value, 123456.3339944, "GetDouble works (around 13 decimal digits");
-    assertEquals(module.GetManagedBool(true).value, true, "GetBool true works");
-    assertEquals(module.GetManagedBool(false).value, false, "GetBool true works");
-    assertEquals(module.GetManagedString("A string").value, "A string", "GetString works");
+    assertEquals(module.utilities.GetManagedInt(123456).value, 123456, "GetInt works");
+    assertEquals(module.utilities.GetManagedLong(123456).value, 123456, "GetBool works");
+    assertEquals(module.utilities.GetManagedFloat(123456.3).value, 123456.3, "GetFloat works (around 7 decimal digits)");
+    assertEquals(module.utilities.GetManagedDouble(123456.3339944).value, 123456.3339944, "GetDouble works (around 13 decimal digits");
+    assertEquals(module.utilities.GetManagedBool(true).value, true, "GetBool true works");
+    assertEquals(module.utilities.GetManagedBool(false).value, false, "GetBool true works");
+    assertEquals(module.utilities.GetManagedString("A string").value, "A string", "GetString works");
 
     // Primitive arrays getter
-    assert(arrayContentsEquals(module.GetManagedIntArray([1, 2, 3]).value, [1, 2, 3]), "GetIntArray works");
-    assert(arrayContentsEquals(module.GetManagedDoubleArray([1.1, 2.2, 3.3]).value, [1.1, 2.2, 3.3]), "GetDoubleArray works");
-    assert(arrayContentsEquals(module.GetManagedFloatArray([1.1, 2.2, 3.3]).value, [1.1, 2.2, 3.3]), "GetFloatArray works");
-    assert(arrayContentsEquals(module.GetManagedBoolArray([true, false, true]).value, [true, false, true]), "GetBoolArray works");
-    assert(arrayContentsEquals(module.GetManagedByteArray(new Uint8Array([1, 2, 3])).value, [1, 2, 3]), "GetByteArray works");
+    assert(arrayContentsEquals(module.utilities.GetManagedIntArray([1, 2, 3]).value, [1, 2, 3]), "GetIntArray works");
+    assert(arrayContentsEquals(module.utilities.GetManagedDoubleArray([1.1, 2.2, 3.3]).value, [1.1, 2.2, 3.3]), "GetDoubleArray works");
+    assert(arrayContentsEquals(module.utilities.GetManagedFloatArray([1.1, 2.2, 3.3]).value, [1.1, 2.2, 3.3]), "GetFloatArray works");
+    assert(arrayContentsEquals(module.utilities.GetManagedBoolArray([true, false, true]).value, [true, false, true]), "GetBoolArray works");
+    assert(arrayContentsEquals(module.utilities.GetManagedByteArray(new Uint8Array([1, 2, 3])).value, [1, 2, 3]), "GetByteArray works");
 
     // Instance methods and async methods
     const instance = module.static.RuntimeWebTests.GetNewTestInstance()
@@ -42,7 +42,7 @@ const runTests = async function () {
     assert(arrayContentsEquals(instance.MethodReturningDoubleArray().value, [123, 789, 101112]), "MethodReturningDoubleArray");
     // Method with parameter - Download image as byte array and pass it to C#
     const imageByteArray = await downloadJPGImageToUint8Array(200, 300);
-    const getManagedByteArray = module.GetManagedByteArray(imageByteArray);
+    const getManagedByteArray = module.utilities.GetManagedByteArray(imageByteArray);
     const imageDebug = instance.GetImageInformation(getManagedByteArray);
     assert(imageDebug.value.includes("200x300"), "GetManagedByteArray works")
 
@@ -96,7 +96,7 @@ const runExceptionCatchingTests = async function (instance) {
 }
 const runCallbackTests = function (module, instance) {
     let valueToSet = null;
-    const managedActionVoid = module.GetManagedAction(() => {
+    const managedActionVoid = module.utilities.GetManagedAction(() => {
         valueToSet = "Callback invoked";
     }, []);
     instance.InvokeCallbackForTest(managedActionVoid);
@@ -104,7 +104,7 @@ const runCallbackTests = function (module, instance) {
 
     // Test callback Action<string>
     let valueToSet2 = null;
-    const managedActionString = module.GetManagedAction((str) => {
+    const managedActionString = module.utilities.GetManagedAction((str) => {
         valueToSet2 = str;
     }, ["System.String"]);
     instance.InvokeCallbackWithActionString(managedActionString);
@@ -113,7 +113,7 @@ const runCallbackTests = function (module, instance) {
     // Test callback Action<string, double>
     let targetString = null;
     let targetDouble = null;
-    const managedActionStringDouble = module.GetManagedAction((str, dbl) => {
+    const managedActionStringDouble = module.utilities.GetManagedAction((str, dbl) => {
         targetString = str;
         targetDouble = dbl;
     }, ["System.String", "System.Double"]);

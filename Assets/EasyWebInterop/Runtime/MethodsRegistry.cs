@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Scripting;
 using static Nahoum.EasyWebInterop.DyncallSignature;
 
-[assembly: InternalsVisibleTo("com.nahoum.EasyWebInterop.Tests")]
-[assembly: InternalsVisibleTo("com.nahoum.EasyWebInterop.Editor")]
 namespace Nahoum.EasyWebInterop
 {
     [Preserve]

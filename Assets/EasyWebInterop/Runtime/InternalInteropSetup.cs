@@ -283,7 +283,6 @@ namespace Nahoum.EasyWebInterop
         /// Collect the managed object from the GCHandle
         /// Will throw an exception if the GCHandle is not allocated
         /// </summary>
-        /// <param name="ptr"></param>
         [MonoPInvokeCallback]
         static void CollectManagedPtr(IntPtr ptr)
         {

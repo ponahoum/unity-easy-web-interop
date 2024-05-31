@@ -31,6 +31,10 @@ namespace Nahoum.EasyWebInterop
             return GCHandle.FromIntPtr(targetObject).Target;
         }
 
+        /// <summary>
+        /// Given a GCHandle ptr, free the object behind it
+        /// Also handle the null case
+        /// </summary>
         internal static void CollectManagedObjectFromPtr(IntPtr ptrToGcHandle)
         {
             if (ptrToGcHandle == IntPtrExtension.Null)

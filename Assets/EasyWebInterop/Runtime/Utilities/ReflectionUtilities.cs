@@ -5,9 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using static Nahoum.EasyWebInterop.DyncallSignature;
 
 
 namespace Nahoum.EasyWebInterop
@@ -92,7 +90,7 @@ namespace Nahoum.EasyWebInterop
         internal static Delegate CreateDelegate(MethodInfo methodInfo, object target)
         {
             Func<Type[], Type> getType;
-            bool isAction = methodInfo.ReturnType.Equals((typeof(void)));
+            bool isAction = methodInfo.ReturnType.Equals(typeof(void));
             var types = methodInfo.GetParameters().Select(p => p.ParameterType);
 
             if (isAction)
@@ -106,9 +104,7 @@ namespace Nahoum.EasyWebInterop
             }
 
             if (methodInfo.IsStatic)
-            {
                 return Delegate.CreateDelegate(getType(types.ToArray()), methodInfo);
-            }
 
             return Delegate.CreateDelegate(getType(types.ToArray()), target, methodInfo.Name);
         }
