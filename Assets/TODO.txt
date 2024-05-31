@@ -1,0 +1,3 @@
+- Free created callbacks ??
+- Typescript types generations
+- All static types under their namespace ?

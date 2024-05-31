@@ -135,6 +135,12 @@
       },
       "url": "https://packages.unity.com"
     },
+    "org.nahoum.easy-web-interop": {
+      "version": "file:UnityJSInterop",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.modules.ai": {
       "version": "1.0.0",
       "depth": 0,

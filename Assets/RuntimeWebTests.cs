@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using System.Threading.Tasks;
-using Nahoum.EasyWebInterop;
+using Nahoum.UnityJSInterop;
 
 
 public class RuntimeWebTests
