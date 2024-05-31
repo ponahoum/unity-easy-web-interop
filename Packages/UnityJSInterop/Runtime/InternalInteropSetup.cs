@@ -294,7 +294,7 @@ namespace Nahoum.UnityJSInterop
 
         [MonoPInvokeCallback]
         static IntPtr GetDelegateCount(){
-            return new IntPtr(MethodsRegistry.GetDelegateCount());
+            return GCUtils.NewManagedObject(MethodsRegistry.GetDelegateCount());
         }
 
         #endregion
