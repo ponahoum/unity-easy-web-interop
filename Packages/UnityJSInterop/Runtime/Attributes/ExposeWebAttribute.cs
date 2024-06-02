@@ -14,9 +14,9 @@ namespace Nahoum.UnityJSInterop
         static HashSet<Type> exposedTypesCache = null;
 
         // For efficiency, we cache the exposed methods for each type, separated by static and instance methods
+        // We also have a dictionary with all the exposed methods grouped by type (static and instance together)
         // This way the reflection is only done once
-        readonly static Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>> staticExposedMethodsCache = new Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>>();
-        readonly static Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>> instanceExposedMethodsCache = new Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>>();
+        readonly static Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>> allExposedMethodsCache = new Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>>();
         
         /// <summary>
         /// Returns a list of all the possibles types containing methods with the ExposeWebAttribute appearing on them
@@ -35,10 +35,9 @@ namespace Nahoum.UnityJSInterop
             // Get all the types in the assembly
             foreach (Type targetType in availableTypes)
             {
-                var instanceExposes = GetExposedInstanceMethods(targetType);
-                var staticExposed = GetExposedStaticMethods(targetType);
+                var exposedMethods= GetExposedMethods(targetType);
 
-                if (instanceExposes.Count > 0 || staticExposed.Count > 0)
+                if (exposedMethods.Count > 0 )
                     exposedTypesCache.Add(targetType);
             }
             return exposedTypesCache;
@@ -51,25 +50,13 @@ namespace Nahoum.UnityJSInterop
         internal static bool HasExposedMethods(Type targetType) => exposedTypesCache.Contains(targetType);
 
         /// <summary>
-        /// Get all exposed methods on an instance
-        /// Will only return the instance methods, not the static ones
+        /// Get all the exposed methods of a type, wether they are static or not
         /// </summary>
-        internal static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedInstanceMethods(Type targetType){
-            if(instanceExposedMethodsCache.ContainsKey(targetType))
-                return instanceExposedMethodsCache[targetType];
-            var result = GetExposedMethods(targetType, BindingFlags.Instance | BindingFlags.Public);
-            instanceExposedMethodsCache.Add(targetType, result);
-            return result;
-        }
-
-        /// <summary>
-        /// Returns all the static methods with the ExposeWebAttribute of a given type
-        /// </summary>
-        internal static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedStaticMethods(Type targetType){
-            if(staticExposedMethodsCache.ContainsKey(targetType))
-                return staticExposedMethodsCache[targetType];
-            var result = GetExposedMethods(targetType, BindingFlags.Static | BindingFlags.Public);
-            staticExposedMethodsCache.Add(targetType, result);
+        internal static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedMethods(Type targetType){
+            if(allExposedMethodsCache.ContainsKey(targetType))
+                return allExposedMethodsCache[targetType];
+            var result = GetExposedMethods(targetType, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+            allExposedMethodsCache.Add(targetType, result);
             return result;
         }
 

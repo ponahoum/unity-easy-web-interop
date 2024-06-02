@@ -21,7 +21,7 @@ namespace Nahoum.UnityJSInterop
             var allExposedTypes = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
             foreach (var exposedType in allExposedTypes)
             {
-                var exposedStaticMethods = ExposeWebAttribute.GetExposedStaticMethods(exposedType);
+                var exposedStaticMethods = ExposeWebAttribute.GetExposedMethods(exposedType);
 
                 // Get all the static and public methods
                 foreach (var method in exposedStaticMethods)
@@ -38,27 +38,18 @@ namespace Nahoum.UnityJSInterop
         /// </summary>
         internal static void RegisterSubService(IntPtr targetId, object instance)
         {
-            var exposedMethods = ExposeWebAttribute.GetExposedInstanceMethods(instance.GetType());
-            var staticMethods = ExposeWebAttribute.GetExposedStaticMethods(instance.GetType());
+            var exposedMethods = ExposeWebAttribute.GetExposedMethods(instance.GetType());
 
             // Inject instance methods
             foreach (var methodWithExposeWeb in exposedMethods)
-                InjectMethodIntoTarget(methodWithExposeWeb.Key, instance, targetId);
+            {
+                MethodInfo method = methodWithExposeWeb.Key;
+                string[] servicePath = new string[] { method.Name };
+                Delegate del = ReflectionUtilities.CreateDelegate(method, method.IsStatic ? null : instance);
+                MethodsRegistry.RegisterMethod(servicePath, del, targetId.ToInt32());
 
-            // Inject static methods
-            foreach (var methodWithExposeWeb in staticMethods)
-                InjectMethodIntoTarget(methodWithExposeWeb.Key, null, targetId);
-        }
+            }
 
-
-        /// <summary>
-        /// Inject a method in a JS object of if targetId. This is typically used to populate all methods of instance of returned object
-        /// </summary>
-        private static void InjectMethodIntoTarget(MethodInfo method, object instance, IntPtr targetId)
-        {
-            string[] servicePath = new string[] { method.Name };
-            Delegate del = ReflectionUtilities.CreateDelegate(method, method.IsStatic ? null : instance);
-            MethodsRegistry.RegisterMethod(servicePath, del, targetId.ToInt32());
         }
     }
 }
