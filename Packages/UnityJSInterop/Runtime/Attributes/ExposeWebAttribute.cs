@@ -37,7 +37,9 @@ namespace Nahoum.UnityJSInterop
             {
                 var exposedMethods= GetExposedMethods(targetType);
 
-                if (exposedMethods.Count > 0 )
+                // We only allow to expose methods on real classes
+                // Those class can be generic, but the type must be specified
+                if (exposedMethods.Count > 0 && !targetType.IsAbstract && !targetType.IsInterface && !targetType.IsGenericTypeDefinition && targetType.IsClass)
                     exposedTypesCache.Add(targetType);
             }
             return exposedTypesCache;

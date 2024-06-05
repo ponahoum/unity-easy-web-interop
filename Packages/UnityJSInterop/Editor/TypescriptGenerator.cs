@@ -29,39 +29,19 @@ namespace Nahoum.UnityJSInterop
         public static void GenerateTypescript()
         {
             // Gather all types with exposed methods
-            var allTypesWithExposedMethods = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
-            List<Type> typesToGenerate = new List<Type>();
-            foreach (var type in allTypesWithExposedMethods)
-            {
-
-                // For each type, get all the exposed methods
-                var exposedMethods = ExposeWebAttribute.GetExposedMethods(type);
-
-                // For each methods, get the types of the parameters and output
-                foreach (var method in exposedMethods)
-                {
-                    var methodInfo = method.Key;
-                    var parameters = methodInfo.GetParameters();
-                    var returnType = methodInfo.ReturnType;
-                    typesToGenerate.Add(returnType);
-                    foreach (var parameter in parameters)
-                    {
-                        typesToGenerate.Add(parameter.ParameterType);
-                    }
-                }
-            }
+            IReadOnlyCollection<Type> allTypesExposingMethods = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
 
             // Now order types by namespace
             Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = new Dictionary<NamespaceDescriptor, HashSet<Type>>();
-            foreach (var type in typesToGenerate)
+            foreach (Type exposedType in allTypesExposingMethods)
             {
                 // Get the namespace of the type and add it to the dictionary
-                NamespaceDescriptor namespaceName = new NamespaceDescriptor(type.Namespace);
+                NamespaceDescriptor namespaceName = new NamespaceDescriptor(exposedType.Namespace);
                 if (!typesByNamespace.ContainsKey(namespaceName))
                     typesByNamespace.Add(namespaceName, new HashSet<Type>());
 
                 // Add the type to the namespace
-                typesByNamespace[namespaceName].Add(type);
+                typesByNamespace[namespaceName].Add(exposedType);
             }
 
             // Output ts for each namespace
@@ -81,18 +61,53 @@ namespace Nahoum.UnityJSInterop
                         continue;
                     alreadyGeneratedGenericTypes.Add(type);
 
-                    var typeName = GenerateTsNameFromType(type, namespaceName);
-                    sb.AppendLine("export type " + typeName + " = {");
-
-                    // Get all exposed methods within this type
-                    var exposedMethods = ExposeWebAttribute.GetExposedMethods(type);
+                    string typeName = GenerateTsNameFromType(type, namespaceName);
+                    Dictionary<MethodInfo, ExposeWebAttribute> exposedMethods = ExposeWebAttribute.GetExposedMethods(type);
+                    Dictionary<MethodInfo, ExposeWebAttribute> staticMethods = new Dictionary<MethodInfo, ExposeWebAttribute>();
+                    Dictionary<MethodInfo, ExposeWebAttribute> instanceMethods = new Dictionary<MethodInfo, ExposeWebAttribute>();
                     foreach (var method in exposedMethods)
                     {
-                        var methodInfo = method.Key;
-                        var signature = GenerateSignatureFromMethod(methodInfo, namespaceName);
-                        sb.AppendLine(signature + ";");
+                        if (method.Key.IsStatic)
+                            staticMethods.Add(method.Key, method.Value);
+                        else
+                            instanceMethods.Add(method.Key, method.Value);
                     }
-                    sb.AppendLine("}");
+
+                    bool hasStaticMethods = staticMethods.Count > 0;
+                    bool hasInstanceMethods = instanceMethods.Count > 0;
+
+                    if (hasStaticMethods)
+                    {
+                        sb.AppendLine("export type " + typeName + "_static = {");
+                        foreach (var method in staticMethods)
+                        {
+                            var methodInfo = method.Key;
+                            var signature = GenerateSignatureFromMethod(methodInfo, namespaceName);
+                            sb.AppendLine(signature + ";");
+                        }
+                        sb.AppendLine("}");
+                    }
+
+                    if (hasInstanceMethods)
+                    {
+
+                        sb.AppendLine("export type " + typeName + " = {");
+
+                        // Get all exposed methods within this type
+                        foreach (var method in instanceMethods)
+                        {
+                            var methodInfo = method.Key;
+                            var signature = GenerateSignatureFromMethod(methodInfo, namespaceName);
+                            sb.AppendLine(signature + ";");
+                        }
+
+                        sb.AppendLine("}");
+
+                        if(hasStaticMethods)
+                        {
+                            sb.AppendLine("& "+typeName+"_static");
+                        }
+                    }
 
                 }
                 sb.AppendLine("}");
@@ -131,7 +146,7 @@ namespace Nahoum.UnityJSInterop
 
 
             // If the type is in the same namespace, we don't need to prefix it
-            if (fromCurrentNamespace == type.Namespace)
+            if (fromCurrentNamespace.name == type.Namespace)
                 return typeName;
             else
                 return type.Namespace + "." + typeName;
@@ -148,7 +163,7 @@ namespace Nahoum.UnityJSInterop
         }
 
         /// <summary>
-        /// Generate a typescript signature from a method
+        /// Generate a typescript signature from a method info
         /// </summary>
         public static string GenerateSignatureFromMethod(MethodInfo methodInfo, NamespaceDescriptor fromCurrentNamespace)
         {
