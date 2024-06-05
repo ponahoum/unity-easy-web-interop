@@ -26,9 +26,12 @@ namespace Nahoum.UnityJSInterop
                 // Get all the static and public methods
                 foreach (var method in exposedStaticMethods)
                 {
-                    MethodInfo staticMethod = method.Key;
-                    Delegate del = ReflectionUtilities.CreateDelegate(staticMethod, null);
-                    MethodsRegistry.RegisterMethod(NamingUtility.GetMethodJSPath(method.Key), del);
+                    if (method.Key.IsStatic)
+                    {
+                        MethodInfo staticMethod = method.Key;
+                        Delegate del = ReflectionUtilities.CreateDelegate(staticMethod, null);
+                        MethodsRegistry.RegisterMethod(NamingUtility.GetMethodJSPath(method.Key), del);
+                    }
                 }
             }
         }
