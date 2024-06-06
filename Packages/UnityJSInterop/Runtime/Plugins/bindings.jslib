@@ -72,7 +72,7 @@ var easyWebInteropLib = {
     },
     RegisterMethodInRegistry: function (targetId, functionPtr, functionKeyPtr, pathToFunctionArrPtr, pathToFunctionArrLength, functionParamSignaturePtr, isAsyncTaskPtr) {
         const signatureAsString = UTF8ToString(functionParamSignaturePtr);
-
+        
         // Given that pathToFunctionArrPtr is a string[] on the C# side, we need to convert it to a JS array
         const pathToFunctionArr = Module.internalJS.stringArrayPtrToJSArray(pathToFunctionArrPtr, pathToFunctionArrLength);
         const isAsyncTask = isAsyncTaskPtr === 1;

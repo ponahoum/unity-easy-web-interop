@@ -2,8 +2,8 @@ import './style.css'
 import { RuntimeWebTests, UnityInstance } from './testing/testing';
 
 // Create canvas on the page
-const buildUrl = "build/mybuild/Build/";
-var loaderUrl = buildUrl + "/mybuild.loader.js";
+const buildUrl = "build/Build/";
+var loaderUrl = buildUrl + "/build.loader.js";
 const canvas = document.createElement('canvas');
 // Add canvas to app
 document.body.appendChild(canvas);
@@ -20,9 +20,9 @@ canvas.id = "unity-canvas";
 
 
 var config = {
-    dataUrl: buildUrl + "/mybuild.data.gz",
-    frameworkUrl: buildUrl + "/mybuild.framework.js.gz",
-    codeUrl: buildUrl + "/mybuild.wasm.gz",
+    dataUrl: buildUrl + "/build.data.gz",
+    frameworkUrl: buildUrl + "/build.framework.js.gz",
+    codeUrl: buildUrl + "/build.wasm.gz",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "DefaultCompany",
     productName: "Test WASM",
