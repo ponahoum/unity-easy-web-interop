@@ -1,5 +1,5 @@
 import './style.css'
-import { RuntimeWebTests, UnityInstance } from './testing/testing';
+import { RuntimeWebTests, System, UnityInstance } from './testing/testing';
 
 // Create canvas on the page
 const buildUrl = "build/Build/";
@@ -39,7 +39,12 @@ script.onload = () => {
     }).then((unityInstance: UnityInstance) => {
         console.log(unityInstance);
         var module = unityInstance.Module;
-        var dd: RuntimeWebTests = module.static.RuntimeWebTests.GetNewTestInstance();
+        var instanceOfRuntimeWebTests: RuntimeWebTests = module.static.RuntimeWebTests.GetNewTestInstance();
+        var aDouble: System.Double = instanceOfRuntimeWebTests.MyMethodReturningDouble();
+        console.log((aDouble as any).value);
+        var addedOne = instanceOfRuntimeWebTests.AddOneToDouble(aDouble);
+        console.log((addedOne as any).value);
+        //instanceOfRuntimeWebTests.ConcatenateStrings(anInt, anInt);
 
     }).catch((message) => {
         alert(message);

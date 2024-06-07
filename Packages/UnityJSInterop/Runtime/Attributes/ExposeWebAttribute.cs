@@ -17,14 +17,15 @@ namespace Nahoum.UnityJSInterop
         // We also have a dictionary with all the exposed methods grouped by type (static and instance together)
         // This way the reflection is only done once
         readonly static Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>> allExposedMethodsCache = new Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>>();
-        
+
         /// <summary>
         /// Returns a list of all the possibles types containing methods with the ExposeWebAttribute appearing on them
         /// Wether those methods are static or not
         /// </summary>
-        internal static IReadOnlyCollection<Type> GetAllTypesWithWebExposeMethods(){
-            
-            if(exposedTypesCache != null)
+        internal static IReadOnlyCollection<Type> GetAllTypesWithWebExposeMethods()
+        {
+
+            if (exposedTypesCache != null)
                 return exposedTypesCache;
 
             exposedTypesCache = new HashSet<Type>();
@@ -35,12 +36,26 @@ namespace Nahoum.UnityJSInterop
             // Get all the types in the assembly
             foreach (Type targetType in availableTypes)
             {
-                var exposedMethods= GetExposedMethods(targetType);
+                var exposedMethods = GetExposedMethods(targetType);
 
-                // We only allow to expose methods on real classes
-                // Those class can be generic, but the type must be specified
-                if (exposedMethods.Count > 0 && !targetType.IsAbstract && !targetType.IsInterface && !targetType.IsGenericTypeDefinition && targetType.IsClass)
-                    exposedTypesCache.Add(targetType);
+                // Skip if no exposed methods
+                if (exposedMethods.Count == 0)
+                    continue;
+
+                // Protect against all non supported types
+                if (targetType.IsGenericTypeDefinition)
+                    throw new Exception($"Cannot expose generic type {targetType}. Generic types are not supported.");
+
+                if (targetType.IsInterface)
+                    throw new Exception($"Cannot expose interface {targetType}. Interfaces are not supported.");
+
+                if (targetType.IsAbstract)
+                    throw new Exception($"Cannot expose abstract class {targetType}. Abstract classes are not supported.");
+
+                if (!targetType.IsClass)
+                    throw new Exception($"Cannot expose non class type {targetType}. Only classes are supported.");
+
+                exposedTypesCache.Add(targetType);
             }
             return exposedTypesCache;
         }
@@ -54,8 +69,9 @@ namespace Nahoum.UnityJSInterop
         /// <summary>
         /// Get all the exposed methods of a type, wether they are static or not
         /// </summary>
-        internal static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedMethods(Type targetType){
-            if(allExposedMethodsCache.ContainsKey(targetType))
+        internal static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedMethods(Type targetType)
+        {
+            if (allExposedMethodsCache.ContainsKey(targetType))
                 return allExposedMethodsCache[targetType];
             var result = GetExposedMethods(targetType, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
             allExposedMethodsCache.Add(targetType, result);
@@ -88,7 +104,17 @@ namespace Nahoum.UnityJSInterop
         internal static bool HasWebExposeAttribute(MethodInfo method, out ExposeWebAttribute attribute)
         {
             attribute = method.GetCustomAttribute<ExposeWebAttribute>();
-            return attribute != null;
+
+            if(attribute == null)
+                return false;
+            
+            if(!method.IsPublic)
+                throw new Exception($"Method {method.Name} in {method.DeclaringType} is not public. Only public methods can be exposed.");
+
+            if(method.IsGenericMethodDefinition)
+                throw new Exception($"Method {method.Name} in {method.DeclaringType} is a generic method. Generic methods are not supported and cannot be exposed.");
+
+            return true;
         }
     }
 }
