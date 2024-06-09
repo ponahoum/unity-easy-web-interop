@@ -97,7 +97,7 @@ var easyWebInteropLib = {
             // Measure time it took to perform the dyncall
             const resultingManagedObjectPtr = Module.internalJS.HandleResPtr(resultOfCall, true);
 
-            // Handle async task if needed
+            // Handle tasks if needed
             if (methodReturnsTask) {
                 return new Promise((resolve, reject) => {
                     const callBackPtr = Module.internalJS.createCallback((i) => {
@@ -114,7 +114,7 @@ var easyWebInteropLib = {
                 });
             }
 
-            // If the function is not an async task, return the resulting managed object immediately
+            // If the function is not an task, return the resulting managed object immediately
             else {
                 return resultingManagedObjectPtr;
             }
