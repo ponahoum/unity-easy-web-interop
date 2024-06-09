@@ -1,3 +1,4 @@
 - Free created callbacks ??
 - Typescript types generations
 - All static types under their namespace ?
+- Remove async check for tasks. It doesn't matter
