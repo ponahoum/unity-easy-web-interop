@@ -70,12 +70,12 @@ var easyWebInteropLib = {
             return Module.internalJS.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs), false);
         }
     },
-    RegisterMethodInRegistry: function (targetId, functionPtr, functionKeyPtr, pathToFunctionArrPtr, pathToFunctionArrLength, functionParamSignaturePtr, isAsyncTaskPtr) {
+    RegisterMethodInRegistry: function (targetId, functionPtr, functionKeyPtr, pathToFunctionArrPtr, pathToFunctionArrLength, functionParamSignaturePtr, returnsTask) {
         const signatureAsString = UTF8ToString(functionParamSignaturePtr);
         
         // Given that pathToFunctionArrPtr is a string[] on the C# side, we need to convert it to a JS array
         const pathToFunctionArr = Module.internalJS.stringArrayPtrToJSArray(pathToFunctionArrPtr, pathToFunctionArrLength);
-        const isAsyncTask = isAsyncTaskPtr === 1;
+        const methodReturnsTask = returnsTask === 1;
 
         // Create the function that will be injected in the module (if static) / target object (if instance)
         const moduleInjectedFunction = (...args) => {
@@ -98,7 +98,7 @@ var easyWebInteropLib = {
             const resultingManagedObjectPtr = Module.internalJS.HandleResPtr(resultOfCall, true);
 
             // Handle async task if needed
-            if (isAsyncTask) {
+            if (methodReturnsTask) {
                 return new Promise((resolve, reject) => {
                     const callBackPtr = Module.internalJS.createCallback((i) => {
                         // When this piece of code is called, it means the task is completed

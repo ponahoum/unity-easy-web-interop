@@ -1,4 +1,8 @@
 - Free created callbacks ??
 - Typescript types generations
 - All static types under their namespace ?
-- Remove async check for tasks. It doesn't matter
+- Major typed tests
+- Cleanup typescript generation (ugly code)
+- Add utilities JS method to ts
+- Add CSharpArray
+- In CSharpArray return type, return GetElementAt(i)

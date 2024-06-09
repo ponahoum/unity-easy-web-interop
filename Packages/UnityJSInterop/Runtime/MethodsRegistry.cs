@@ -15,7 +15,7 @@ namespace Nahoum.UnityJSInterop
         /// Allows to pass a delegate pointer to the JS side so it can be invoked from there
         /// </summary>
         [DllImport("__Internal")]
-        static extern void RegisterMethodInRegistry(IntPtr targetId, IntPtr methodPtr, IntPtr functionName, IntPtr pathToFunctionArrPtr, int pathToFunctionArrLength, IntPtr functionSignature, IntPtr isAsyncTask);
+        static extern void RegisterMethodInRegistry(IntPtr targetId, IntPtr methodPtr, IntPtr functionName, IntPtr pathToFunctionArrPtr, int pathToFunctionArrLength, IntPtr functionSignature, IntPtr methodReturnsTask);
 
         // Keep reference to all exposed delegates (static or not)
         static Dictionary<int, Delegate> methodsRegistry = new();
@@ -107,7 +107,7 @@ namespace Nahoum.UnityJSInterop
             IntPtr arrayPtr = MarshalUtilities.MarshalStringArray(pathToMethod, out int length, out Action freeArrayPtr);
             IntPtr functionSignature = MarshalUtilities.MarshalString(GetRegistrySignatureFromDelegate(registryData.asDelegate), out Action freeFunctionSignaturePtr);
 
-            RegisterMethodInRegistry(new IntPtr(targetId), registryData.registryPtr, new IntPtr(currentDelegateIndex), arrayPtr, length, functionSignature,  MarshalUtilities.EncodeBool(ReflectionUtilities.IsDelegateAsyncTask(method)));
+            RegisterMethodInRegistry(new IntPtr(targetId), registryData.registryPtr, new IntPtr(currentDelegateIndex), arrayPtr, length, functionSignature,  MarshalUtilities.EncodeBool(ReflectionUtilities.TaskIsDelegate(method)));
 
             // Free the allocated pointers except the function key which is needed to be called later on
             // The rest has been marshalled by js so we can free themÒ

@@ -36,14 +36,16 @@ script.src = loaderUrl;
 script.onload = () => {
     createUnityInstance(canvas, config, (progress: number) => {
         console.log(progress);
-    }).then((unityInstance: UnityInstance) => {
+    }).then(async (unityInstance: UnityInstance) => {
         console.log(unityInstance);
         var module = unityInstance.Module;
         var instanceOfRuntimeWebTests: RuntimeWebTests = module.static.RuntimeWebTests.GetNewTestInstance();
         var aDouble: System.Double = instanceOfRuntimeWebTests.MyMethodReturningDouble();
         console.log((aDouble as any).value);
+        var dd = instanceOfRuntimeWebTests.MyMethodReturningInt();
         var addedOne = instanceOfRuntimeWebTests.AddOneToDouble(aDouble);
-        console.log((addedOne as any).value);
+        var asynmethod =  instanceOfRuntimeWebTests.AsyncTaskReturnString();
+        console.log("GOT",asynmethod);
         //instanceOfRuntimeWebTests.ConcatenateStrings(anInt, anInt);
 
     }).catch((message) => {

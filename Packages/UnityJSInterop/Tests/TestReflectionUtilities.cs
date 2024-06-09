@@ -8,23 +8,23 @@ namespace Nahoum.UnityJSInterop.Tests
     public class TestReflectionUtilities
     {
         [Test]
-        public void TestIsDelegateAsyncTask()
+        public void TestTaskIsDelegate()
         {
-            // Test returns: regular method not async
-            Assert.IsFalse(ReflectionUtilities.IsDelegateAsyncTask(new Func<string>(() => "Hello World")));
+            // Test returns: regular method
+            Assert.IsFalse(ReflectionUtilities.TaskIsDelegate(new Func<string>(() => "Hello World")));
 
-            // Test returns: Task not async case
-            Assert.IsFalse(ReflectionUtilities.IsDelegateAsyncTask(new Func<Task>(() => Task.CompletedTask)));
+            // Test returns: Task  case
+            Assert.IsTrue(ReflectionUtilities.TaskIsDelegate(new Func<Task>(() => Task.CompletedTask)));
 
-            // Test returns: Task<string> not async case
-            Assert.IsFalse(ReflectionUtilities.IsDelegateAsyncTask(new Func<Task<string>>(() => Task.FromResult("Hello World"))));
+            // Test returns: Task<string> case
+            Assert.IsTrue(ReflectionUtilities.TaskIsDelegate(new Func<Task<string>>(() => Task.FromResult("Hello World"))));
 
             // Test return: async regular method (not Task)
             async void RealAsyncMethodNotTask()
             {
                 await Task.Delay(100);
             };
-            Assert.IsFalse(ReflectionUtilities.IsDelegateAsyncTask(new Action(RealAsyncMethodNotTask)));
+            Assert.IsFalse(ReflectionUtilities.TaskIsDelegate(new Action(RealAsyncMethodNotTask)));
 
             // Test: returns async Task<string> case
             async Task<string> RealAsyncMethod()
@@ -32,11 +32,35 @@ namespace Nahoum.UnityJSInterop.Tests
                 await Task.Delay(100);
                 return "Hello World";
             };
-            Assert.IsTrue(ReflectionUtilities.IsDelegateAsyncTask(new Func<Task<string>>(RealAsyncMethod)));
+            Assert.IsTrue(ReflectionUtilities.TaskIsDelegate(new Func<Task<string>>(RealAsyncMethod)));
 
             // Test returns: async Task case
             async Task RealAsyncMethodNoReturn() { await Task.Delay(100); };
-            Assert.IsTrue(ReflectionUtilities.IsDelegateAsyncTask(new Func<Task>(RealAsyncMethodNoReturn)));
+            Assert.IsTrue(ReflectionUtilities.TaskIsDelegate(new Func<Task>(RealAsyncMethodNoReturn)));
+            
+
+        }
+
+        [Test]
+        public void TestIsTypeTask(){
+
+            // Check regular Task
+            bool isTask = ReflectionUtilities.IsTypeTask(typeof(Task), out bool hasReturnValueTask, out Type returnTypeTask);
+            Assert.IsTrue(isTask);
+            Assert.IsFalse(hasReturnValueTask);
+            Assert.IsNull(returnTypeTask);
+
+            // Check Task<string>
+            isTask = ReflectionUtilities.IsTypeTask(typeof(Task<string>), out hasReturnValueTask, out returnTypeTask);
+            Assert.IsTrue(isTask);
+            Assert.IsTrue(hasReturnValueTask);
+            Assert.AreEqual(typeof(string), returnTypeTask);
+
+            // Check a regular random type such as a string
+            isTask = ReflectionUtilities.IsTypeTask(typeof(string), out hasReturnValueTask, out returnTypeTask);
+            Assert.IsFalse(isTask);
+            Assert.IsFalse(hasReturnValueTask);
+            Assert.IsNull(returnTypeTask);
 
         }
 

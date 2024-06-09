@@ -13,16 +13,15 @@ namespace Nahoum.UnityJSInterop
     internal static class ReflectionUtilities
     {
         /// <summary>
-        /// Check if a delegate is an async task
-        /// Will return false if the method does not return a value (async only) or if it doesn't return a Task or Task<T>
+        /// Check if a delegate return type is task
+        /// Will return false if the method does not return doesn't return a Task or Task<T>
         /// </summary>
-        internal static bool IsDelegateAsyncTask(Delegate d)
+        internal static bool TaskIsDelegate(Delegate d)
         {
             bool hasReturnType = d.Method.ReturnType != typeof(void);
-            bool isAsync = d.Method.GetCustomAttributes(typeof(AsyncStateMachineAttribute), false).Length > 0;
 
             // If the method does not return a value, it cannot be a task
-            if (!hasReturnType || !isAsync)
+            if (!hasReturnType)
                 return false;
 
             // Case Task<T>
@@ -51,17 +50,35 @@ namespace Nahoum.UnityJSInterop
 
             // Check if the task is a generic task (async Task == Task<VoidTaskResult>, so an async task will still be generic)
             Type objectType = objectToCheck.GetType();
-            if (objectType.IsGenericType && objectType.GetGenericTypeDefinition() == typeof(Task<>))
-            {
+            return IsTypeTask(objectType, out hasReturnValue, out _);
+        }
 
+
+        /// <summary>
+        /// Tells if the provided type is a Task or Task<T>
+        /// If there is a return value, hasReturnValue will be true and the return type will be in the out parameter returnType
+        /// </summary>
+        internal static bool IsTypeTask(Type type, out bool hasReturnValue, out Type taskReturnType)
+        {
+            hasReturnValue = false;
+            taskReturnType = null;
+
+            // Check if is regular Task
+            if (type == typeof(Task))
+                return true;
+            // Check if the task is a generic task (async Task == Task<VoidTaskResult>, so an async task will still be generic)
+            else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+            {
                 // The only case in which we typically have no return type but still the task is generic is when the task is async
                 // C# wraps the "Task" return type in a Task<VoidTaskResult> when the method is async
                 // Hence if we're in this case, we consider we have no return type
-                bool returnTypeIsVoid = objectType.GetGenericArguments()[0].Name == "VoidTaskResult";
+                bool returnTypeIsVoid = type.GetGenericArguments()[0].Name == "VoidTaskResult";
                 hasReturnValue = !returnTypeIsVoid;
+                taskReturnType = type.GetGenericArguments()[0];
+                return true;
             }
-
-            return true;
+            else
+                return false;
         }
 
         /// <summary>
