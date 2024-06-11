@@ -39,6 +39,7 @@ script.onload = () => {
     }).then(async (unityInstance: UnityInstance) => {
         console.log(unityInstance);
         var module = unityInstance.Module;
+        window.targetmodule = module;
         var instanceOfRuntimeWebTests: RuntimeWebTests = module.static.RuntimeWebTests.GetNewTestInstance();
         var aDouble: System.Double = instanceOfRuntimeWebTests.MyMethodReturningDouble();
         console.log((aDouble as any).value);

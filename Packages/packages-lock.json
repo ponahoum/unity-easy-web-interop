@@ -136,7 +136,7 @@
       "url": "https://packages.unity.com"
     },
     "org.nahoum.easy-web-interop": {
-      "version": "file:UnityJSInterop",
+      "version": "file:org.nahoum.easy-web-interop",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

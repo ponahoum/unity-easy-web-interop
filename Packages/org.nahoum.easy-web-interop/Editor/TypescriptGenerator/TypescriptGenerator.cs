@@ -4,11 +4,18 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
+using UnityEngine;
 
 namespace Nahoum.UnityJSInterop.Editor
 {
     public class TypescriptGenerator
     {
+        static HashSet<Type> ignoredTypes = new HashSet<Type>(){
+          typeof(System.String), typeof(System.Double), typeof(System.Int32), typeof(System.Byte), typeof(System.Boolean), typeof(System.Single), typeof(System.Int64), typeof(Action)
+        };
+
+        static readonly string mainTemplatePath = "Packages/org.nahoum.easy-web-interop/Editor/TypescriptGenerator/Templates/MainTemplate.ts";
+
         /// <summary>
         /// A menu item to generate a typescript file describing all exposed methods
         /// One may also call GenerateTypescript() directly to get the typescript type string
@@ -49,6 +56,10 @@ namespace Nahoum.UnityJSInterop.Editor
 
                 foreach (Type type in types)
                 {
+                    // Skip ignored types to avoid eventual conflicts with the template already containing a few types not to be redefined
+                    if (ignoredTypes.Contains(type))
+                        continue;
+
                     // Get the exposed methods for this type
                     ExposedWebAttributeEditorUtilities.GetExposedMethodsSorted(type, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out Dictionary<MethodInfo, ExposeWebAttribute> instanceMethods);
 
@@ -110,6 +121,20 @@ namespace Nahoum.UnityJSInterop.Editor
         }
 
         /// <summary>
+        /// Get the hardcoded typescript file to be appended to the generated typescript file
+        /// </summary>
+        private static string ReadDefaultTemplate()
+        {
+            // Get absolute path
+            string absolutePath = System.IO.Path.GetFullPath(mainTemplatePath);
+
+            // Read file
+            string hardcodedTs = System.IO.File.ReadAllText(absolutePath);
+
+            return hardcodedTs;
+        }
+
+        /// <summary>
         /// Given a type, generate a typescript name for it
         // This is done in the context of a provided namespace, so that the generated type is relative to the provided namespace
         /// </summary>
@@ -124,7 +149,7 @@ namespace Nahoum.UnityJSInterop.Editor
             // Handle array case
             else if (type.IsArray)
             {
-                return "CSharpArray<"+GenerateTsNameFromType(type.GetElementType(), fromCurrentNamespace) + ">";
+                return "CSharpArray<" + GenerateTsNameFromType(type.GetElementType(), fromCurrentNamespace) + ">";
             }
             // If type is async Task<T> or Task (async doesn't matter)
             else if (ReflectionUtilities.IsTypeTask(type, out bool hasReturnValue, out Type returnType))
@@ -185,9 +210,6 @@ namespace Nahoum.UnityJSInterop.Editor
         private static string GenerateStaticModuleSignature()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("export type UnityInstance = {");
-            sb.AppendLine("Module: {");
-            sb.AppendLine("static: {");
 
             // For each static method under each namespace > type > method, we want to create a nested object in the static module
             // For example, for static class ACoolObject under the namespace Nahoum.UnityJSInterop, we would have: Nahoum.UnityJSInterop.ACoolObject_static
@@ -226,10 +248,13 @@ namespace Nahoum.UnityJSInterop.Editor
                     sb.AppendLine($"{new string('\t', i)}}};");
                 }
             }
-            sb.AppendLine("}");
-            sb.AppendLine("}");
-            sb.AppendLine("}");
-            return sb.ToString();
+
+            // Get main template
+            string hardcodedTs = ReadDefaultTemplate();
+
+            // Replace the placeholder with the generated static module
+            hardcodedTs = hardcodedTs.Replace("/*STATIC_MODULE_PLACEHOLDER*/", sb.ToString());
+            return hardcodedTs;
         }
     }
 }
