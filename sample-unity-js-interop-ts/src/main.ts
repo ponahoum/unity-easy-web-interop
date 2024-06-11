@@ -1,5 +1,6 @@
+import { UnityInstance } from './UnityJSInterop';
 import './style.css'
-import { RuntimeWebTests, System, UnityInstance } from './testing/testing';
+import { RunAllTests } from './tests/run-all-tests';
 
 // Create canvas on the page
 const buildUrl = "build/Build/";
@@ -37,27 +38,10 @@ script.onload = () => {
     createUnityInstance(canvas, config, (progress: number) => {
         console.log(progress);
     }).then(async (unityInstance: UnityInstance) => {
-        console.log(unityInstance);
-        var module = unityInstance.Module;
-        window.targetmodule = module;
-        var instanceOfRuntimeWebTests: RuntimeWebTests = module.static.RuntimeWebTests.GetNewTestInstance();
-        var aDouble: System.Double = instanceOfRuntimeWebTests.MyMethodReturningDouble();
-        console.log((aDouble as any).value);
-        var dd = instanceOfRuntimeWebTests.MyMethodReturningInt();
-        var addedOne = instanceOfRuntimeWebTests.AddOneToDouble(aDouble);
-        var asynmethod =  instanceOfRuntimeWebTests.AsyncTaskReturnString();
-        console.log("GOT",asynmethod);
-        //instanceOfRuntimeWebTests.ConcatenateStrings(anInt, anInt);
-
-    }).catch((message) => {
+        RunAllTests(unityInstance);
+    }).catch((message: any) => {
         alert(message);
     });
 };
 
 document.body.appendChild(script);
-
-//var consoleService = Module.exposed.System.Console;
-//const uu = new MyClassExample();
-//MyClassExample.GetBranch();
-//console.log(consoleService.GetBranch());
-//Module.exposed.SystemD.Bruh.GetBranch(uu);
