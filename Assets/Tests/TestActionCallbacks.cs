@@ -2,7 +2,7 @@ namespace Nahoum.UnityJSInterop.Tests
 {
     public class TestActionCallbacks
     {
-        public static GetInstance()
+        public static TestActionCallbacks GetInstance()
         {
             return new TestActionCallbacks();
         }
@@ -32,15 +32,9 @@ namespace Nahoum.UnityJSInterop.Tests
         }
 
         [ExposeWeb]
-        public void TestInvokeCallbackObject(System.Action<object> action)
+        public void TestInvokeDoubleStringCallback(System.Action<double, string> action)
         {
-            action(new { Name = "John Doe", Age = 42 });
-        }
-
-        [ExposeWeb]
-        public void TestInvokeDoubleStringCallback(System.Action<string, string> action)
-        {
-            action(SampleValues.TestString, SampleValues.TestString);
+            action(SampleValues.TestDouble, SampleValues.TestString);
         }
     }
 }

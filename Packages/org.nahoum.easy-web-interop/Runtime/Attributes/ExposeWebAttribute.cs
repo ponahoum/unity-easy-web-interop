@@ -49,9 +49,6 @@ namespace Nahoum.UnityJSInterop
                 if (targetType.IsInterface)
                     throw new Exception($"Cannot expose interface {targetType}. Interfaces are not supported.");
 
-                if (targetType.IsAbstract)
-                    throw new Exception($"Cannot expose abstract class {targetType}. Abstract classes are not supported.");
-
                 if (!targetType.IsClass)
                     throw new Exception($"Cannot expose non class type {targetType}. Only classes are supported.");
 
