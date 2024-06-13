@@ -1,0 +1,46 @@
+namespace Nahoum.UnityJSInterop.Tests
+{
+    public class TestActionCallbacks
+    {
+        public static GetInstance()
+        {
+            return new TestActionCallbacks();
+        }
+
+        [ExposeWeb]
+        public void TestInvokeCallbackVoid(System.Action action)
+        {
+            action();
+        }
+
+        [ExposeWeb]
+        public void TestInvokeCallbackInt(System.Action<int> action)
+        {
+            action(SampleValues.TestInt);
+        }
+
+        [ExposeWeb]
+        public void TestInvokeCallbackString(System.Action<string> action)
+        {
+            action(SampleValues.TestString);
+        }
+
+        [ExposeWeb]
+        public void TestInvokeCallbackFloat(System.Action<float> action)
+        {
+            action(SampleValues.TestFloat);
+        }
+
+        [ExposeWeb]
+        public void TestInvokeCallbackObject(System.Action<object> action)
+        {
+            action(new { Name = "John Doe", Age = 42 });
+        }
+
+        [ExposeWeb]
+        public void TestInvokeDoubleStringCallback(System.Action<string, string> action)
+        {
+            action(SampleValues.TestString, SampleValues.TestString);
+        }
+    }
+}
