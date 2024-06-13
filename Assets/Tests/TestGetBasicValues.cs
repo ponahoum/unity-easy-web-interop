@@ -3,13 +3,13 @@ namespace Nahoum.UnityJSInterop.Tests
     public class TestGetBasicValues
     {
         [ExposeWeb]
-        public static string GetTestString() => "This is a test string";
+        public static string GetTestString() => SampleValues.TestString;
 
         [ExposeWeb]
-        public static double GetTestDouble() => 123456789.123456789;
+        public static double GetTestDouble() => SampleValues.TestDouble;
 
         [ExposeWeb]
-        public static int GetTestInt() => 123456789;
+        public static int GetTestInt() => SampleValues.TestInt;
 
         [ExposeWeb]
         public static bool GetTestBoolTrue() => true;
