@@ -2,8 +2,7 @@
 // Contains all hardcoded utility types and functions for the generated TypeScript file to work correctly
 
 export type CSharpArray<T> = {
-    key: 'CSharpArray ';
-    value: T[];
+    key: 'CSharpArray';
 }
 
 export namespace System {
