@@ -1,4 +1,5 @@
 import { UnityInstance } from "../UnityJSInterop";
+import { RunTestCallbackActions } from "./test-callbacks-actions";
 import { RunEmbeddedUtilitiesTests } from "./test-embedded-utilities";
 import { RunTestExceptions } from "./test-exceptions";
 import { RunTestGetBasicValues } from "./test-get-basic-values";
@@ -11,6 +12,7 @@ export async function RunAllTests(unityInstance: UnityInstance) {
         RunEmbeddedUtilitiesTests(unityInstance);
         RunTestGetBasicValues(unityInstance);
         RunTestInstanceMethods(unityInstance);
+        RunTestCallbackActions(unityInstance);
         await RunTestExceptions(unityInstance);
         await RunTestTasks(unityInstance);
 
