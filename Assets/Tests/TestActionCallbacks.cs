@@ -2,6 +2,7 @@ namespace Nahoum.UnityJSInterop.Tests
 {
     public class TestActionCallbacks
     {
+        [ExposeWeb]
         public static TestActionCallbacks GetInstance()
         {
             return new TestActionCallbacks();

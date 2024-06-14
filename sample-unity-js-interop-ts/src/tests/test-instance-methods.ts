@@ -29,5 +29,4 @@ export function RunTestInstanceMethods(unityInstance: UnityInstance){
     var stringA = unityInstance.Module.utilities.GetManagedString("Hello");
     var stringB = unityInstance.Module.utilities.GetManagedString(" World");
     assertEqual(instance.TestAdditionString(stringA, stringB).value, "Hello World", "TestInstanceMethods.TestAdditionString");
-    
 }

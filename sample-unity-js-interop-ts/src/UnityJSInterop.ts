@@ -1,4 +1,8 @@
 export namespace Nahoum.UnityJSInterop.Tests {
+export type TestActionCallbacks_static = {
+key: 'Nahoum.UnityJSInterop.Tests.TestActionCallbacks';
+GetInstance(): TestActionCallbacks;
+}
 export type TestActionCallbacks = {
 key: 'Nahoum.UnityJSInterop.Tests.TestActionCallbacks';
 TestInvokeCallbackVoid(action: System.Action): void;
@@ -7,7 +11,7 @@ TestInvokeCallbackString(action: System.MulticastDelegate1$String): void;
 TestInvokeCallbackFloat(action: System.MulticastDelegate1$Single): void;
 TestInvokeDoubleStringCallback(action: System.MulticastDelegate2$Double$String): void;
 }
-export type TestTasks_static = {
+ & TestActionCallbacks_static;export type TestTasks_static = {
 key: 'Nahoum.UnityJSInterop.Tests.TestTasks';
 GetInstance(): TestTasks;
 }
@@ -22,12 +26,12 @@ AsyncVoidMethod(): void;
  & TestTasks_static;export type TestExceptions_static = {
 key: 'Nahoum.UnityJSInterop.Tests.TestExceptions';
 ThrowSimpleException(): void;
-}
-export type TestExceptions = {
-key: 'Nahoum.UnityJSInterop.Tests.TestExceptions';
 TestUnraisedException(): void;
 ThrowSimpleExceptionAsync(): Promise<void>;
 TestUnraisedExceptionAsync(): Promise<void>;
+}
+export type TestExceptions = {
+key: 'Nahoum.UnityJSInterop.Tests.TestExceptions';
 }
  & TestExceptions_static;export type TestGetBasicValues_static = {
 key: 'Nahoum.UnityJSInterop.Tests.TestGetBasicValues';
@@ -144,6 +148,7 @@ export type UnityInstance = {
             Nahoum: {
 	UnityJSInterop: {
 		Tests: {
+TestActionCallbacks: Nahoum.UnityJSInterop.Tests.TestActionCallbacks_static;
 TestTasks: Nahoum.UnityJSInterop.Tests.TestTasks_static;
 TestExceptions: Nahoum.UnityJSInterop.Tests.TestExceptions_static;
 TestGetBasicValues: Nahoum.UnityJSInterop.Tests.TestGetBasicValues_static;

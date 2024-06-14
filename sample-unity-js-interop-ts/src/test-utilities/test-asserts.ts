@@ -22,6 +22,26 @@ export function assertArrayEqual<T>(actual: T[], expected: T[], testName: string
     console.log(`Test named ${testName} passed ! Expected ${expected}, and got ${actual}`);
 }
 
+export function assertThrows(fn: () => void, testName: string): void {
+    try {
+        fn();
+        throw new Error(`Expected an error, but no error was thrown.`);
+    }
+    catch (error) {
+        console.log(`Test named ${testName} passed ! Expected an error, and got an error: ${error}`);
+    }
+}
+
+export async function assertThrowsAsync(fn: () => Promise<void>, testName: string): Promise<void> {
+    try {
+        await fn();
+        throw new Error(`Expected an error, but no error was thrown.`);
+    }
+    catch (error) {
+        console.log(`Test named ${testName} passed ! Expected an error, and got an error: ${error}`);
+    }
+}
+
 export function assertNotEqual<T>(actual: T, expected: T, testName: string): void {
     if (actual === expected) {
         throw new Error(`Expected ${expected} to be different from ${actual}.`);

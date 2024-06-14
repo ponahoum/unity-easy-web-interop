@@ -11,21 +11,21 @@ namespace Nahoum.UnityJSInterop.Tests
         }
 
         [ExposeWeb]
-        public void TestUnraisedException()
+        public static void TestUnraisedException()
         {
             string obj = null;
             obj.ToString();
         }
 
         [ExposeWeb]
-        public async Task ThrowSimpleExceptionAsync()
+        public static async Task ThrowSimpleExceptionAsync()
         {
             await Task.Yield();
             throw new System.Exception(SampleValues.TestExceptionValue);
         }
 
         [ExposeWeb]
-        public async Task TestUnraisedExceptionAsync()
+        public static async Task TestUnraisedExceptionAsync()
         {
             await Task.Yield();
             string obj = null;
