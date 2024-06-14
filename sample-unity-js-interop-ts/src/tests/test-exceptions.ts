@@ -6,6 +6,8 @@ export async function RunTestExceptions(unityInstance: UnityInstance){
     assertThrows(() => instance.ThrowSimpleException(), "Simple exception");
     assertThrows(() => instance.TestUnraisedException(), "Complex exception");
     await assertThrowsAsync(() => instance.ThrowSimpleExceptionAsync(), "Simple exception async");
+    
+    // Not supported yet
     //await assertThrowsAsync(() => instance.TestUnraisedExceptionAsync(), "Complex exception async");
 
 }
