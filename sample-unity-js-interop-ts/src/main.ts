@@ -38,6 +38,7 @@ script.onload = () => {
     createUnityInstance(canvas, config, (progress: number) => {
         console.log(progress);
     }).then(async (unityInstance: UnityInstance) => {
+        (window as any).debugModule = unityInstance;
         RunAllTests(unityInstance);
     }).catch((message: any) => {
         alert(message);

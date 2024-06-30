@@ -1,3 +1,7 @@
+using AnotherNamespace;
+using Nahoum.UnityJSInterop;
+using Nahoum.UnityJSInterop.Tests;
+
 namespace Nahoum.UnityJSInterop.Tests
 {
     public class TestActionCallbacks
@@ -37,5 +41,20 @@ namespace Nahoum.UnityJSInterop.Tests
         {
             action(SampleValues.TestDouble, SampleValues.TestString);
         }
+
+        [ExposeWeb]
+        public void TestInvokeActionWithClassOutsideNamespace(System.Action<SomeClass> action)
+        {
+            action(new SomeClass());
+        }
+    }
+}
+
+namespace AnotherNamespace
+{
+    public class SomeClass
+    {
+        [ExposeWeb]
+        public int TestGetSimpleValue() => SampleValues.TestInt;
     }
 }
