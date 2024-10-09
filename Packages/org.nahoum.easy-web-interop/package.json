@@ -6,5 +6,6 @@
     "keywords": ["web", "javascript", "interop", "typescript","expose"],
     "description": "A simple package allowing you to expose C# methods (static methods or instance methods) to Unity WebGL build via javascript.",
     "dependencies": {
-    }
+    },
+    "author": "Pierre-Olivier NAHOUM"
   }
