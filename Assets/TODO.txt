@@ -1,8 +1,0 @@
-- Free created callbacks ??
-- Typescript types generations
-- All static types under their namespace ?
-- Major typed tests
-- Cleanup typescript generation (ugly code)
-- Add utilities JS method to ts
-- Add CSharpArray
-- In CSharpArray return type, return GetElementAt(i)
