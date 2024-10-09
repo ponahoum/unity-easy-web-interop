@@ -11,20 +11,20 @@ namespace Nahoum.UnityJSInterop.Tests
         public void TestTaskIsDelegate()
         {
             // Test returns: regular method
-            Assert.IsFalse(ReflectionUtilities.TaskIsDelegate(new Func<string>(() => "Hello World")));
+            Assert.IsFalse(ReflectionUtilities.DelegateReturnsTask(new Func<string>(() => "Hello World")));
 
             // Test returns: Task  case
-            Assert.IsTrue(ReflectionUtilities.TaskIsDelegate(new Func<Task>(() => Task.CompletedTask)));
+            Assert.IsTrue(ReflectionUtilities.DelegateReturnsTask(new Func<Task>(() => Task.CompletedTask)));
 
             // Test returns: Task<string> case
-            Assert.IsTrue(ReflectionUtilities.TaskIsDelegate(new Func<Task<string>>(() => Task.FromResult("Hello World"))));
+            Assert.IsTrue(ReflectionUtilities.DelegateReturnsTask(new Func<Task<string>>(() => Task.FromResult("Hello World"))));
 
             // Test return: async regular method (not Task)
             async void RealAsyncMethodNotTask()
             {
                 await Task.Delay(100);
             };
-            Assert.IsFalse(ReflectionUtilities.TaskIsDelegate(new Action(RealAsyncMethodNotTask)));
+            Assert.IsFalse(ReflectionUtilities.DelegateReturnsTask(new Action(RealAsyncMethodNotTask)));
 
             // Test: returns async Task<string> case
             async Task<string> RealAsyncMethod()
@@ -32,11 +32,11 @@ namespace Nahoum.UnityJSInterop.Tests
                 await Task.Delay(100);
                 return "Hello World";
             };
-            Assert.IsTrue(ReflectionUtilities.TaskIsDelegate(new Func<Task<string>>(RealAsyncMethod)));
+            Assert.IsTrue(ReflectionUtilities.DelegateReturnsTask(new Func<Task<string>>(RealAsyncMethod)));
 
             // Test returns: async Task case
             async Task RealAsyncMethodNoReturn() { await Task.Delay(100); };
-            Assert.IsTrue(ReflectionUtilities.TaskIsDelegate(new Func<Task>(RealAsyncMethodNoReturn)));
+            Assert.IsTrue(ReflectionUtilities.DelegateReturnsTask(new Func<Task>(RealAsyncMethodNoReturn)));
             
 
         }
@@ -113,6 +113,45 @@ namespace Nahoum.UnityJSInterop.Tests
             while(!taskResultAsync.IsCompleted)
                 await Task.Yield();
             Assert.AreEqual("Hello World", ReflectionUtilities.GetTaskResult(taskResultAsync));
+        }
+
+        private delegate string MyCustomDelegate(int abcd);
+
+        [Test]
+        public void TestTypeIsDelegate(){
+            // Test simple case
+            Assert.IsTrue(ReflectionUtilities.TypeIsDelegate(typeof(Func<string>) , out Type returnType, out Type[] parametersTypes));
+            Assert.AreEqual(typeof(string), returnType);
+            Assert.AreEqual(0, parametersTypes.Length);
+
+            // Test with parameters
+            Assert.IsTrue(ReflectionUtilities.TypeIsDelegate(typeof(Func<int, string>) , out returnType, out parametersTypes));
+            Assert.AreEqual(typeof(string), returnType);
+            Assert.AreEqual(1, parametersTypes.Length);
+            Assert.AreEqual(typeof(int), parametersTypes[0]);
+
+            // Test action
+            Assert.IsTrue(ReflectionUtilities.TypeIsDelegate(typeof(Action) , out returnType, out parametersTypes));
+            Assert.AreEqual(typeof(void), returnType);
+            Assert.AreEqual(0, parametersTypes.Length);
+
+            // Test action with parameters
+            Assert.IsTrue(ReflectionUtilities.TypeIsDelegate(typeof(Action<int>) , out returnType, out parametersTypes));
+            Assert.AreEqual(typeof(void), returnType);
+            Assert.AreEqual(1, parametersTypes.Length);
+            Assert.AreEqual(typeof(int), parametersTypes[0]);
+
+            // Test custom delegate
+            Assert.IsTrue(ReflectionUtilities.TypeIsDelegate(typeof(MyCustomDelegate) , out returnType, out parametersTypes));
+            Assert.AreEqual(typeof(string), returnType);
+            Assert.AreEqual(1, parametersTypes.Length);
+            Assert.AreEqual(typeof(int), parametersTypes[0]);
+            
+            // Test something that is not a delegate
+            Assert.IsFalse(ReflectionUtilities.TypeIsDelegate(typeof(string), out returnType, out parametersTypes));
+            Assert.IsNull(returnType);
+            Assert.IsNull(parametersTypes);
+
         }
     }
 }

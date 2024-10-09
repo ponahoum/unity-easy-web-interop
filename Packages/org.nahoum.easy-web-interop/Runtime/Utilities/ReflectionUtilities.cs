@@ -16,7 +16,7 @@ namespace Nahoum.UnityJSInterop
         /// Check if a delegate return type is task
         /// Will return false if the method does not return doesn't return a Task or Task<T>
         /// </summary>
-        internal static bool TaskIsDelegate(Delegate d)
+        internal static bool DelegateReturnsTask(Delegate d)
         {
             bool hasReturnType = d.Method.ReturnType != typeof(void);
 
@@ -31,6 +31,25 @@ namespace Nahoum.UnityJSInterop
             else if (d.Method.ReturnType == typeof(Task))
                 return true;
             return false;
+        }
+
+        /// <summary>
+        /// Check if a type is a delegate
+        /// If it is, it will return  true and the return type and the parameters types
+        /// If not, will return false and null for the return type and parameters types
+        /// </summary>
+        internal static bool TypeIsDelegate(Type t, out Type returnType, out Type[] parametersTypes){
+            bool isDelegate = typeof(Delegate).IsAssignableFrom(t);
+            returnType = null;
+            parametersTypes = null;
+
+            // Not sure of this part, might need to refine...
+            if(isDelegate){
+                var methodInfo = t.GetMethod("Invoke");
+                returnType = methodInfo.ReturnType;
+                parametersTypes = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
+            }
+            return isDelegate;
         }
 
         /// <summary>

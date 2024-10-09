@@ -107,7 +107,7 @@ namespace Nahoum.UnityJSInterop
             IntPtr arrayPtr = MarshalUtilities.MarshalStringArray(pathToMethod, out int length, out Action freeArrayPtr);
             IntPtr functionSignature = MarshalUtilities.MarshalString(GetRegistrySignatureFromDelegate(registryData.asDelegate), out Action freeFunctionSignaturePtr);
 
-            RegisterMethodInRegistry(new IntPtr(targetId), registryData.registryPtr, new IntPtr(currentDelegateIndex), arrayPtr, length, functionSignature,  MarshalUtilities.EncodeBool(ReflectionUtilities.TaskIsDelegate(method)));
+            RegisterMethodInRegistry(new IntPtr(targetId), registryData.registryPtr, new IntPtr(currentDelegateIndex), arrayPtr, length, functionSignature,  MarshalUtilities.EncodeBool(ReflectionUtilities.DelegateReturnsTask(method)));
 
             // Free the allocated pointers except the function key which is needed to be called later on
             // The rest has been marshalled by js so we can free themÒ
