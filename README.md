@@ -1,5 +1,6 @@
 This repo is work in progress - Please do not use for production usage
-Document will be done soon
+
+Documentation will be done soon
 
 TODO: 
 
