@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 public/build
+
+# Mac
+.DS_Store
