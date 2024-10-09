@@ -1,11 +1,17 @@
-This repo is work in progress - Please do not use for production usage
+# Unity Easy Web Interop
 
-Documentation will be done soon
+> **This repository is a work in progress. Please do not use it in production.**  
+> Full documentation will be provided soon.
 
-TODO: 
+## TODO List
 
-- Callbacks might not be correctly freed in garbage collector. Confirm and fix
-- Improve typescript types generations (ugly code for now, lacks some types, especially for delegates)
-- All static types under their namespace ?
-- Add utilities JS method to ts ()
-- Better support for arrays in the js side, GetElementAt(i) direct call in ts etc.
+- Ensure callbacks are correctly freed in the garbage collector. Confirm and fix any issues.
+- Improve TypeScript type generation (currently contains ugly code and lacks some types, especially for delegates).
+- Organize all static types under their appropriate namespace.
+- Add utility JavaScript methods to TypeScript.
+- Enhance support for arrays on the JavaScript side (e.g., direct call in TypeScript for `GetElementAt(i)`).
+
+## Installation
+
+To install, use Unity's Package Manager. Add the following URL to your project dependencies:
+```https://github.com/ponahoum/unity-easy-web-interop.git?path=/Packages/org.nahoum.easy-web-interop```
