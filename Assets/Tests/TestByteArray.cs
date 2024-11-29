@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Nahoum.UnityJSInterop.Tests
 {
-    public static class TestLoadTexture
+    public static class TestByteArray
     {
         [ExposeWeb]
         public static Texture2D LoadTexture(byte[] imageBytes)
@@ -25,6 +25,12 @@ namespace Nahoum.UnityJSInterop.Tests
         {
             // Release the texture
             UnityEngine.Object.Destroy(tex);
-        }   
+        }
+
+        [ExposeWeb]
+        public static int GetByteArrayLength(byte[] byteArray)
+        {
+            return byteArray.Length;
+        }
     }
 }
