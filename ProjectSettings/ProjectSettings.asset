@@ -634,7 +634,7 @@ PlayerSettings:
   webGLShowDiagnostics: 0
   webGLDataCaching: 1
   webGLDebugSymbols: 0
-  webGLEmscriptenArgs: '-s ALLOW_TABLE_GROWTH -s EXPORTED_RUNTIME_METHODS=[''ccall,cwrap,addFunction,addRunDependency,removeRunDependency,FS_createDataFile,FS_createPath,UTF8ToString'']'
+  webGLEmscriptenArgs: '-s ALLOW_TABLE_GROWTH -s EXPORTED_RUNTIME_METHODS=[''addFunction,hasOwnProperty,printErr,print,clearInterval,setInterval,QuitCleanup,getCompilationInfo,errorHandler,ccall,cacheControl,abortHandler,addRunDependency,removeRunDependency,startupErrorHandler,readBodyWithProgress,onQuit,_getMetricsInfo,FS_createPath,FS_createDataFile,exit,requestFullscreen,customSections,symbols,locateFile,get,create,ready,realPrint,preRun,setStatus,callMain,emscripten_trace_enter_context,emscripten_trace_exit_context,resolve,runMain,_resolveFilename,_nodeModulePaths,request,parse,dirname,basename,join'']'
   webGLModulesDirectory: 
   webGLTemplate: PROJECT:TestTemplate
   webGLAnalyzeBuildSize: 0
