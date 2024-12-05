@@ -14,12 +14,15 @@ import { RunTests as RunInstanceMethodsTests } from "./test-instance-methods.js"
 import { RunTests as RunTestsAsyncMethods } from "./test-async-methods.js";
 import { RunTests as RunTestsExceptionsHandling } from "./test-exceptions-handling.js";
 import { RunTests as RunTestDelegates } from "./test-delegates.js";
+import { RunTests as RunTestsAbstractAndInterfaces } from "./test-interface-abstract-class-methods.js";
+
 
 // Run all tests sequentially
 RunPrimitiveGettersTests(unityModule);
 RunTestGetBasicValuesStaticTests(unityModule);
 RunInstanceMethodsTests(unityModule);
 RunTestDelegates(unityModule);
+RunTestsAbstractAndInterfaces(unityModule);
 
 // Some tests are async, hence the await
 await RunTestsByteArrayTests(unityModule);

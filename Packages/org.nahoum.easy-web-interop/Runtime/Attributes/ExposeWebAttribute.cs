@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
-using NUnit.Framework;
 using UnityEngine.Scripting;
 
 namespace Nahoum.UnityJSInterop
 {
-    // Expose web attribute on methods and classes
-    [AttributeUsage(AttributeTargets.Method)]
+    /// <summary>
+    ///  Expose web attribute on methods and classes
+    ///  Inherited because for example if we put in an a interface, we want to expose the methods in all inheriting classes from the interface
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, Inherited = true)]
     public class ExposeWebAttribute : PreserveAttribute
     {
         // Called once when the class is loaded
@@ -24,7 +27,6 @@ namespace Nahoum.UnityJSInterop
         /// </summary>
         internal static IReadOnlyCollection<Type> GetAllTypesWithWebExposeMethods()
         {
-
             if (exposedTypesCache != null)
                 return exposedTypesCache;
 
@@ -36,21 +38,11 @@ namespace Nahoum.UnityJSInterop
             // Get all the types in the assembly
             foreach (Type targetType in availableTypes)
             {
-                var exposedMethods = GetExposedMethods(targetType);
+                Dictionary<MethodInfo, ExposeWebAttribute> exposedMethods = GetExposedMethods(targetType);
 
                 // Skip if no exposed methods
                 if (exposedMethods.Count == 0)
                     continue;
-
-                // Protect against all non supported types
-                if (targetType.IsGenericTypeDefinition)
-                    throw new Exception($"Cannot expose generic type {targetType}. Generic types are not supported.");
-
-                if (targetType.IsInterface)
-                    throw new Exception($"Cannot expose interface {targetType}. Interfaces are not supported.");
-
-                if (!targetType.IsClass)
-                    throw new Exception($"Cannot expose non class type {targetType}. Only classes are supported.");
 
                 exposedTypesCache.Add(targetType);
             }
@@ -70,7 +62,8 @@ namespace Nahoum.UnityJSInterop
         {
             if (allExposedMethodsCache.ContainsKey(targetType))
                 return allExposedMethodsCache[targetType];
-            var result = GetExposedMethods(targetType, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+
+            Dictionary<MethodInfo, ExposeWebAttribute> result = GetExposedMethods(targetType, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
             allExposedMethodsCache.Add(targetType, result);
             return result;
         }
@@ -81,9 +74,9 @@ namespace Nahoum.UnityJSInterop
         /// </summary>
         private static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedMethods(Type targetType, BindingFlags flags)
         {
-            var result = new Dictionary<MethodInfo, ExposeWebAttribute>();
+            Dictionary<MethodInfo, ExposeWebAttribute> result = new Dictionary<MethodInfo, ExposeWebAttribute>();
 
-            // Get all static methods
+            // Get all methods with the ExposeWebAttribute directly in the type
             MethodInfo[] methods = targetType.GetMethods(flags);
             foreach (MethodInfo method in methods)
             {
@@ -100,15 +93,15 @@ namespace Nahoum.UnityJSInterop
         /// </summary>
         internal static bool HasWebExposeAttribute(MethodInfo method, out ExposeWebAttribute attribute)
         {
-            attribute = method.GetCustomAttribute<ExposeWebAttribute>();
+            attribute = method.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
 
-            if(attribute == null)
+            if (attribute == null)
                 return false;
-            
-            if(!method.IsPublic)
+
+            if (!method.IsPublic)
                 throw new Exception($"Method {method.Name} in {method.DeclaringType} is not public. Only public methods can be exposed.");
 
-            if(method.IsGenericMethodDefinition)
+            if (method.IsGenericMethodDefinition)
                 throw new Exception($"Method {method.Name} in {method.DeclaringType} is a generic method. Generic methods are not supported and cannot be exposed.");
 
             return true;

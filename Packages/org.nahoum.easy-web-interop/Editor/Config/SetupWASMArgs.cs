@@ -20,7 +20,6 @@ namespace Nahoum.UnityJSInterop.Editor
             string methodsArray = string.Join(",", GetExportedMethods());
             string emscriptenArgs = CFLAGS.Replace("%exportedMethods%", methodsArray);
             PlayerSettings.WebGL.emscriptenArgs = emscriptenArgs;
-            Debug.Log("Emscripten Args: " + emscriptenArgs);
         }
 
         /// <summary>

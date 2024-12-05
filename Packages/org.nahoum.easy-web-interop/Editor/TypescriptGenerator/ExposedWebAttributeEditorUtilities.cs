@@ -90,10 +90,5 @@ namespace Nahoum.UnityJSInterop.Editor
                     instanceMethods.Add(method.Key, method.Value);
             }
         }
-
-
-
-
-
     }
 }
