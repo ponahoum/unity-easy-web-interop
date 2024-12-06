@@ -10,6 +10,7 @@ namespace Nahoum.UnityJSInterop.Editor
 {
     public class TypescriptGenerator
     {
+        // A GUID generator
         static HashSet<Type> ignoredTypes = new HashSet<Type>(){
           typeof(System.String), typeof(System.Double), typeof(System.Int32), typeof(System.Byte), typeof(System.Boolean), typeof(System.Single), typeof(System.Int64), typeof(Action)
         };
@@ -43,11 +44,16 @@ namespace Nahoum.UnityJSInterop.Editor
         public static string GenerateTypescript()
         {
             // For each type, additions the parameters and return types of each exposed methods
-            var typesByNamespace = ExposedWebAttributeEditorUtilities.GetExposedTypesByNamespace();
+            Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = ExposedWebAttributeEditorUtilities.GetExposedTypesByNamespace(excludeTestsAssemblies: true);
+
+            // Keep track of generated types to avoid duplicates
+            // If we have duplicates, it could be due to a type with the ame name but in different assemblies
+            // As assemblies are not part of the typescript type, we need to throw
+            HashSet<string> GeneratedTypename = new HashSet<string>();
 
             // Output ts for each namespace
             StringBuilder sb = new StringBuilder();
-            foreach (var namespaceEntry in typesByNamespace)
+            foreach (KeyValuePair<NamespaceDescriptor, HashSet<Type>> namespaceEntry in typesByNamespace)
             {
                 NamespaceDescriptor targetNamespace = namespaceEntry.Key;
                 HashSet<Type> types = namespaceEntry.Value;
@@ -64,15 +70,22 @@ namespace Nahoum.UnityJSInterop.Editor
                     ExposedWebAttributeEditorUtilities.GetExposedMethodsSorted(type, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out Dictionary<MethodInfo, ExposeWebAttribute> instanceMethods);
 
                     string typeName = GenerateTsNameFromType(type, targetNamespace);
+
+                    // Sanity check (for issues between same named classes in different assemblies)
+                    if (GeneratedTypename.Contains(typeName))
+                        throw new Exception($"Duplicate type name {typeName} found in typescript generation. This is likely due to a type with the same name but in different assemblies. Please rename the type in C# to avoid conflicts.");
+                    GeneratedTypename.Add(typeName);
+
                     bool isStaticType = type.IsAbstract && type.IsSealed;
                     bool hasStaticMethods = staticMethods.Count > 0;
 
                     if (hasStaticMethods)
                     {
-                        sb.AppendLine("export type " + typeName + "_static = {");
+                        sb.AppendLine("export interface " + typeName + "_static {");
 
                         // Add key to fully differentiate between types in typescript (name is not enough)
-                        sb.AppendLine($"key: '{type.FullName}';");
+                        sb.AppendLine($"fullTypeName_{GetGuid()}: '{type.FullName}';");
+                        sb.AppendLine($"assembly_{GetGuid()}: '{type.Assembly.FullName}';");
 
                         foreach (var method in staticMethods)
                         {
@@ -85,11 +98,12 @@ namespace Nahoum.UnityJSInterop.Editor
 
                     if (!isStaticType)
                     {
-
-                        sb.AppendLine("export type " + typeName + " = {");
+                        string staticMethodsExtra = hasStaticMethods ? ("extends " + typeName + "_static") : "";
+                        sb.AppendLine($"export interface {typeName} {staticMethodsExtra}" + " {");
 
                         // Add key to fully differentiate between types in typescript (name is not enough)
-                        sb.AppendLine($"key: '{type.FullName}';");
+                        sb.AppendLine($"fullTypeName_{GetGuid()}: '{type.FullName}';");
+                        sb.AppendLine($"assembly_{GetGuid()}: '{type.Assembly.FullName}';");
 
                         // Get all exposed methods within this type
                         foreach (var method in instanceMethods)
@@ -101,14 +115,9 @@ namespace Nahoum.UnityJSInterop.Editor
 
                         sb.AppendLine("}");
 
-                        if (hasStaticMethods)
-                        {
-                            sb.Append(" & " + typeName + "_static;");
-                        }
                     }
-
-
                 }
+
                 if (targetNamespace.HasNamespace)
                     sb.AppendLine("}");
             }
@@ -118,6 +127,14 @@ namespace Nahoum.UnityJSInterop.Editor
 
             return result;
 
+        }
+
+        /// <summary>
+        /// Random GUID
+        /// </summary>
+        private static string GetGuid()
+        {
+            return Guid.NewGuid().ToString().Replace("-", "");
         }
 
         /// <summary>

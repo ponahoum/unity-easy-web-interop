@@ -1,5 +1,6 @@
 namespace Nahoum.UnityJSInterop.Tests
 {
+
     public class TestInstanceMethods
     {
         [ExposeWeb] public static TestInstanceMethods GetNewInstance() => new TestInstanceMethods();
@@ -16,5 +17,13 @@ namespace Nahoum.UnityJSInterop.Tests
         [ExposeWeb] public float TestAdditionFloat(float a, float b) => (a + b);
         [ExposeWeb] public double TestAdditionDouble(double a, double b) => (a + b);
         [ExposeWeb] public string TestAdditionString(string a, string b) => (a + b);
+
+        // Test simple unity types
+        [ExposeWeb] public UnityEngine.Vector2 TestGetVector2() => SampleValues.TestVector2;
+        [ExposeWeb] public UnityEngine.Vector3 TestGetVector3() => SampleValues.TestVector3;
+        [ExposeWeb] public UnityEngine.Vector4 TestGetVector4() => SampleValues.TestVector4;
+        [ExposeWeb] public UnityEngine.Quaternion TestGetQuaternion() => SampleValues.TestQuaternion;
+        [ExposeWeb] public UnityEngine.Color TestGetColor() => SampleValues.TestColor;
+        [ExposeWeb] public UnityEngine.Color32 TestGetColor32() => SampleValues.TestColor32;
     }
 }

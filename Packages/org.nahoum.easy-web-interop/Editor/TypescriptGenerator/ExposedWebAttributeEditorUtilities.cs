@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Nahoum.UnityJSInterop.Editor
@@ -11,7 +12,7 @@ namespace Nahoum.UnityJSInterop.Editor
         /// Also includes all types that are used as parameters or return types in the exposed methods
         /// This allows to easily generate typescript definitions for all required types
         /// </summary>
-        internal static Dictionary<NamespaceDescriptor, HashSet<Type>> GetExposedTypesByNamespace()
+        internal static Dictionary<NamespaceDescriptor, HashSet<Type>> GetExposedTypesByNamespace(bool excludeTestsAssemblies = false)
         {
             // Gather all types with exposed methods
             IReadOnlyCollection<Type> allTypesExposingMethods = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
@@ -55,6 +56,14 @@ namespace Nahoum.UnityJSInterop.Editor
             // Add all types we'll need to generate in a sorted dictionary
             foreach (Type exposedType in allTypesExposingMethods)
             {
+
+                // Check if assembly contains nunit as dependency
+                if (excludeTestsAssemblies && IsTypeInTestAssembly(exposedType))
+                {
+                    UnityEngine.Debug.Log("Detected dependent NUnit assembly, skipping: " + exposedType.Assembly.FullName);
+                    continue;
+                }
+
                 // Get the namespace of the type and add it to the dictionary
                 TryAddTypeToNamespace(exposedType);
 
@@ -71,6 +80,28 @@ namespace Nahoum.UnityJSInterop.Editor
                 }
             }
             return typesByNamespace;
+        }
+
+        /// <summary>
+        /// Tests if an assembly is a test assembly
+        /// </summary>
+        internal static bool IsTestAssembly(Assembly assembly)
+        {
+            var dependencies = assembly.GetReferencedAssemblies();
+            foreach (var dependency in dependencies)
+            {
+                if (dependency.FullName.ToLower().Contains("nunit"))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Tests if a type is in a test assembly
+        /// </summary>
+        internal static bool IsTypeInTestAssembly(Type type)
+        {
+            return IsTestAssembly(type.Assembly);
         }
 
         /// <summary>

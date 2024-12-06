@@ -1,4 +1,4 @@
-import { assertEquals, assertArrayContentsEquals } from "./testing-utilities.js";
+import { assertEquals, assertArrayContentsEquals, assertObjectEqualsByValues  } from "./testing-utilities.js";
 import { SampleValues } from "./testing-utilities.js";
 
 export function RunTests(module) {
@@ -38,4 +38,13 @@ export function RunTests(module) {
     var part1 = module.utilities.GetManagedString("Hello, ")
     var part2 = module.utilities.GetManagedString("World!")
     assertEquals(instance.TestAdditionString(part1, part2).value, "Hello, World!", "TestAdditionString to concatenate two strings works");
+
+    // Simple unity types
+    console.log(instance.TestGetVector2().value);
+    assertObjectEqualsByValues(instance.TestGetVector2().value, SampleValues.TestVector2, "TestGetVector2 to get a Vector2 from an instance works");
+    assertObjectEqualsByValues(instance.TestGetVector3().value, SampleValues.TestVector3, "TestGetVector3 to get a Vector3 from an instance works");
+    assertObjectEqualsByValues(instance.TestGetVector4().value, SampleValues.TestVector4, "TestGetVector4 to get a Vector4 from an instance works");
+    assertObjectEqualsByValues(instance.TestGetQuaternion().value, SampleValues.TestQuaternion, "TestGetQuaternion to get a Quaternion from an instance works");
+    assertObjectEqualsByValues(instance.TestGetColor().value, SampleValues.TestColor, "TestGetColor to get a Color from an instance works");
+    assertObjectEqualsByValues(instance.TestGetColor32().value, SampleValues.TestColor32, "TestGetColor32 to get a Color32 from an instance works");
 }

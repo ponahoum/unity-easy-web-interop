@@ -14,6 +14,20 @@ export const assertEquals = function (actual, expected, testName) {
   else console.log("%cThe following test passed: " + testName, "color: green");
 };
 
+
+/**
+ * Check if two objects are equal by comparing their values and log the result
+ * Don't compare by reference
+ */
+export const assertObjectEqualsByValues = function (actual, expected, testName) {
+  const expectedSerialized = JSON.stringify(expected);
+  const actualSerialized = JSON.stringify(actual);
+  if (expectedSerialized !== actualSerialized) {
+    throw Error("%cThe following test failed: " + testName + ". Expected: " + expectedSerialized + " but got: " + actualSerialized, "color: red");
+  }
+  console.log("%cThe following test passed: " + testName, "color: green");
+}
+
 /**
  * Check two array have the same values inside
  */
@@ -87,7 +101,15 @@ export const SampleValues = {
   TestBoolFalse: false,
   TestByte: 255,
   TestByteArray: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  TestExceptionValue: "This is a test exception"
+  TestExceptionValue: "This is a test exception",
+
+  // Add a few serialized values from unity aka 
+  TestVector2: { x: 1, y: 2 },
+  TestVector3: { x: 1, y: 2, z: 3 },
+  TestVector4: { x: 1, y: 2, z: 3, w: 4 },
+  TestQuaternion: { x: 1, y: 2, z: 3, w: 4 },
+  TestColor: { r: 1, g: 2, b: 3, a: 4 },
+  TestColor32: { r: 1, g: 2, b: 3, a: 4 },
 };
 
 export const DefaultExceptionMessage = "An exception occured on the C# side.";
