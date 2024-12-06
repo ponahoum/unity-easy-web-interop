@@ -108,6 +108,12 @@ namespace Nahoum.UnityJSInterop.Editor
                         sb.AppendLine($"fullTypeName_{GetGuid()}: '{type.FullName}';");
                         sb.AppendLine($"assembly_{GetGuid()}: '{type.Assembly.FullName}';");
 
+                        // For all objects, we may gather the value of the serializer instance object
+                        if (ObjectSerializer.TryGetSerializer(type, out IJsJsonSerializer serializer) && serializer.CanSerialize(type, out ITsTypeDescriptor tsDescriptor))
+                            sb.AppendLine($"value: {tsDescriptor.GetTsTypeDefinition(type)};");
+                        else
+                            sb.AppendLine($"value: any;");
+
                         // Get all exposed methods within this type
                         foreach (var method in instanceMethods)
                         {

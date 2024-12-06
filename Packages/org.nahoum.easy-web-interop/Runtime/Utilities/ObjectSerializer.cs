@@ -1,79 +1,86 @@
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 namespace Nahoum.UnityJSInterop
 {
+
     /// <summary>
     /// A simple serializer that converts an object to a JSON string
     /// </summary>
     public static class ObjectSerializer
     {
+        static HashSet<IJsJsonSerializer> RegisteredSerializers = new HashSet<IJsJsonSerializer>();
+
+        static ObjectSerializer()
+        {
+            // Add basic serializers for primitive types and arrays of primitive types
+            RegisterSerializer(new BasicTypesSerializer());
+            RegisterSerializer(new BasicCollectionSerializer());
+        }
+
+        /// <summary>
+        /// Register a serializer for a specific type
+        /// You may also use the attribute <see cref="ExposeWebSerializationAttribute"/> to register a serializer on a given type
+        /// </summary>
+        public static void RegisterSerializer(IJsJsonSerializer serializer)
+        {
+            if (RegisteredSerializers.Contains(serializer))
+                Debug.LogWarning($"A serializer {serializer} is already registered. Overwriting it");
+
+            RegisteredSerializers.Add(serializer);
+        }
+
+        /// <summary>
+        /// Returns a proper JS serialization for the provided object
+        /// This method could be improved and cache the serializers for each type // TODO
+        /// </summary>
+        internal static bool TryGetSerializer(Type toSerializeType, out IJsJsonSerializer serializer)
+        {
+            serializer = null;
+
+            // First try to get the serializer from the registered serializers
+            foreach (IJsJsonSerializer registeredSerializer in RegisteredSerializers)
+            {
+                if (registeredSerializer.CanSerialize(toSerializeType, out _))
+                {
+                    serializer = registeredSerializer;
+                    return true;
+                }
+            }
+
+            // If no serializer is found, try to look for one in the attributes
+            if (ExposeWebSerializationAttribute.TryGetSerializer(toSerializeType, out serializer, out _))
+            {
+                // Register the serializer for future use
+                RegisterSerializer(serializer);
+                return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Set this to override the default serializer
         /// </summary>
-        public static IJsonSerializer OverrideSerializer { get; set; } = null;
         internal static string ToJson(object toSerialize)
         {
             string baseJson = "{\"value\":%value%}";
+
+            // If null, return null
             if (toSerialize == null)
-                baseJson = baseJson.Replace("%value%", "null");
-            else if (OverrideSerializer != null && OverrideSerializer.CanSerialize(toSerialize.GetType()))
-                baseJson = baseJson.Replace("%value%", OverrideSerializer.Serialize(toSerialize));
-            if (toSerialize.GetType().IsArray)
-                baseJson = baseJson.Replace("%value%", SerializeArray(toSerialize));
-            else
-                baseJson = baseJson.Replace("%value%", SerializeNativeType(toSerialize));
-            return baseJson;
-        }
+                return baseJson.Replace("%value%", "null");
 
-        private static string SerializeNativeType(object targetObject)
-        {
-            if (targetObject == null)
-                return "null";
-            else if (targetObject is int || targetObject is float || targetObject is double || targetObject is long)
-                return targetObject.ToString().Replace(",", ".");
-            else if (targetObject is string)
-                return "\"" + targetObject.ToString() + "\"";
-            else if (targetObject is byte)
-                return targetObject.ToString();
-            else if (targetObject is sbyte)
-                return targetObject.ToString();
-            else if (targetObject is bool)
-                return targetObject.ToString().ToLower();
-            else if (targetObject is Type asType)
-                return "\"" + asType.FullName + "\"";
-            else
-                return JsonUtility.ToJson(targetObject);
-        }
-
-        private static string SerializeArray(object array)
-        {
-            // Check object is an array or throw
-            if (!array.GetType().IsArray)
-                throw new ArgumentException("Object is not an array");
-
-            string result = "[";
-            var asArray = (Array)array;
-            foreach (var item in asArray)
+            // Otherwise look for a serializer
+            if (TryGetSerializer(toSerialize.GetType(), out IJsJsonSerializer serializer))
             {
-                result += SerializeNativeType(item) + ",";
+                baseJson = baseJson.Replace("%value%", serializer.Serialize(toSerialize));
+                return baseJson;
             }
-            if (asArray.Length > 0)
-                result = result.Remove(result.Length - 1);
 
-            result += "]";
-            return result;
+            // Otherwise return empty object
+            Debug.LogWarning($"No serializer found for type {toSerialize.GetType()}. It's highly recommended to add a serializer for this type");
+            return baseJson.Replace("%value%", "{}");
         }
-    }
-
-    /// <summary>
-    /// A simple serializer that converts an object to a JSON string
-    /// You must implement the CanSerialize method to determine if the serializer can serialize the object
-    /// And serialize will be used to serialize the object
-    /// </summary>
-    public interface IJsonSerializer
-    {
-        string Serialize(object targetObject);
-        bool CanSerialize(Type targetType);
     }
 }

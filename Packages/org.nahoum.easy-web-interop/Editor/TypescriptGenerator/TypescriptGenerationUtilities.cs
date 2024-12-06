@@ -61,7 +61,7 @@ namespace Nahoum.UnityJSInterop.Editor
                 // Check if assembly contains nunit as dependency
                 if (excludeTestsAssemblies && IsTypeInTestAssembly(exposedType))
                 {
-                    UnityEngine.Debug.Log("Detected dependent NUnit assembly, skipping: " + exposedType.Assembly.FullName);
+                    UnityEngine.Debug.Log("Detected dependent NUnit assembly, skipping: " + exposedType.Assembly.FullName + " for generating typescript");
                     continue;
                 }
 
