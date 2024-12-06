@@ -40,11 +40,13 @@ namespace Nahoum.UnityJSInterop.Editor
 
         /// <summary>
         /// Generate a typescript file describing all exposed methods
+        /// Save it in a .ts file of your choice then assign it directly to unity module in your js project
         /// </summary>
         public static string GenerateTypescript()
         {
             // For each type, additions the parameters and return types of each exposed methods
-            Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = ExposedWebAttributeEditorUtilities.GetExposedTypesByNamespace(excludeTestsAssemblies: true);
+            Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = TypescriptGenerationUtilities.GetExposedTypesByNamespace(excludeTestsAssemblies: true);
+            HashSet<Type> allTypesExported = TypescriptGenerationUtilities.GetExposedTypesFlatenned(excludeTestsAssemblies: true);
 
             // Keep track of generated types to avoid duplicates
             // If we have duplicates, it could be due to a type with the ame name but in different assemblies
@@ -67,7 +69,7 @@ namespace Nahoum.UnityJSInterop.Editor
                         continue;
 
                     // Get the exposed methods for this type
-                    ExposedWebAttributeEditorUtilities.GetExposedMethodsSorted(type, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out Dictionary<MethodInfo, ExposeWebAttribute> instanceMethods);
+                    TypescriptGenerationUtilities.GetExposedMethodsSorted(type, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out Dictionary<MethodInfo, ExposeWebAttribute> instanceMethods);
 
                     string typeName = GenerateTsNameFromType(type, targetNamespace);
 
@@ -79,9 +81,10 @@ namespace Nahoum.UnityJSInterop.Editor
                     bool isStaticType = type.IsAbstract && type.IsSealed;
                     bool hasStaticMethods = staticMethods.Count > 0;
 
+                    // If the type has static methods, we separate the static methods from the instance methods
                     if (hasStaticMethods)
                     {
-                        sb.AppendLine("export interface " + typeName + "_static {");
+                        sb.AppendLine("export type " + typeName + "_static = {");
 
                         // Add key to fully differentiate between types in typescript (name is not enough)
                         sb.AppendLine($"fullTypeName_{GetGuid()}: '{type.FullName}';");
@@ -96,10 +99,10 @@ namespace Nahoum.UnityJSInterop.Editor
                         sb.AppendLine("}");
                     }
 
+                    // If the type is not static, we need to generate a type for it, otherwise the static type generated above is enough
                     if (!isStaticType)
                     {
-                        string staticMethodsExtra = hasStaticMethods ? ("extends " + typeName + "_static") : "";
-                        sb.AppendLine($"export interface {typeName} {staticMethodsExtra}" + " {");
+                        sb.AppendLine($"export type {typeName}" + " = {");
 
                         // Add key to fully differentiate between types in typescript (name is not enough)
                         sb.AppendLine($"fullTypeName_{GetGuid()}: '{type.FullName}';");
@@ -115,7 +118,28 @@ namespace Nahoum.UnityJSInterop.Editor
 
                         sb.AppendLine("}");
 
+                        // If it has static methods, add & typeName_static at the end to extend the static method signature
+                        if (hasStaticMethods)
+                        {
+                            sb.Append($"& {typeName}_static");
+                        }
+
+                        // Also add the types from which this type inherits
+                        HashSet<Type> inheritingTypes = TypescriptGenerationUtilities.GetAllInheritingTypes(type);
+                        foreach (var inheritingType in inheritingTypes)
+                        {
+                            // If the inheriting type is not exposed, skip because in any case it will be totally useless
+                            if (!allTypesExported.Contains(inheritingType))
+                                continue;
+
+                            string inheritingTypeName = GenerateTsNameFromType(inheritingType, targetNamespace);
+                            sb.Append($"& {inheritingTypeName}");
+                        }
+
+                        sb.Append(";");
                     }
+
+                    // Get all classes and interface from which this type inherits
                 }
 
                 if (targetNamespace.HasNamespace)
@@ -230,7 +254,7 @@ namespace Nahoum.UnityJSInterop.Editor
 
             // For each static method under each namespace > type > method, we want to create a nested object in the static module
             // For example, for static class ACoolObject under the namespace Nahoum.UnityJSInterop, we would have: Nahoum.UnityJSInterop.ACoolObject_static
-            var sortedMethods = ExposedWebAttributeEditorUtilities.GetExposedTypesByNamespace();
+            var sortedMethods = TypescriptGenerationUtilities.GetExposedTypesByNamespace();
             foreach (var namespaceEntry in sortedMethods)
             {
                 NamespaceDescriptor targetNamespace = namespaceEntry.Key;
@@ -247,7 +271,7 @@ namespace Nahoum.UnityJSInterop.Editor
                 foreach (Type type in types)
                 {
                     // Get the exposed methods for this type
-                    ExposedWebAttributeEditorUtilities.GetExposedMethodsSorted(type, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out _);
+                    TypescriptGenerationUtilities.GetExposedMethodsSorted(type, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out _);
 
                     // If no static methods, skip
                     if (staticMethods.Count == 0)

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 
 namespace Nahoum.UnityJSInterop.Editor
 {
-    internal static class ExposedWebAttributeEditorUtilities
+    internal static class TypescriptGenerationUtilities
     {
         /// <summary>
         /// Get all types that are exposed by the ExposeWeb attribute, ordered by namespace
@@ -80,6 +81,49 @@ namespace Nahoum.UnityJSInterop.Editor
                 }
             }
             return typesByNamespace;
+        }
+
+        /// <summary>
+        /// Returns all exposed types in a flat list - Includes all types that are used as parameters or return types in the exposed methods, in addition to the types with exposed methods
+        /// This is useful for generating typescript definitions
+        /// </summary>
+        internal static HashSet<Type> GetExposedTypesFlatenned(bool excludeTestsAssemblies = false)
+        {
+            Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = GetExposedTypesByNamespace(excludeTestsAssemblies);
+            HashSet<Type> exposedTypes = new HashSet<Type>();
+            foreach (var namespaceTypes in typesByNamespace.Values)
+            {
+                foreach (var type in namespaceTypes)
+                {
+                    exposedTypes.Add(type);
+                }
+            }
+            return exposedTypes;
+        }
+
+        /// <summary>
+        /// Gets all the types from which a provided type directly inherits (first level inheritance)
+        /// This can return a list of abstract classes, classes or interfaces
+        /// </summary>
+        internal static HashSet<Type> GetAllInheritingTypes(Type target)
+        {
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
+
+            // Retrieve all loaded assemblies
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            // Collect all types that directly inherit the target type
+            var inheritingTypes = new HashSet<Type>();
+            foreach (var assembly in assemblies)
+            {
+                var allTypesInAssembly = assembly.GetTypes();
+                IEnumerable<Type> types = allTypesInAssembly.Where(type => target.BaseType == type || (type.IsInterface && target.GetInterfaces().Contains(type)));
+
+                foreach (var type in types)
+                    inheritingTypes.Add(type);
+            }
+            return inheritingTypes;
         }
 
         /// <summary>

@@ -29,7 +29,7 @@ namespace Nahoum.UnityJSInterop.Tests
 
         /// <summary>
         /// Test returning a string (direct interface implementation / aka c# feature) on any instance
-        /// This WONT work as it is not static, and that's ok
+        /// This WONT work as it is not static, and that's ok - it's just a test to ensure it doesn't bug on generation but is just ignored
         /// </summary>
         [ExposeWeb] public string TestGetStringFromInterface() => SampleValues.TestString;
 
