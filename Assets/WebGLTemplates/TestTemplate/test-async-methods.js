@@ -3,7 +3,7 @@ import { SampleValues } from "./testing-utilities.js";
 
 export async function RunTests(module) {
   // Get instance
-  const instance = module.static.Nahoum.UnityJSInterop.Tests.TestTasks.GetInstance();
+  const instance = module.static["Nahoum.UnityJSInterop.Tests"].TestTasks.GetInstance();
 
   // Tasks returning void should return undefined in javascript
   assertEquals(await instance.TestTaskVoid(), undefined, "Asynchonous void Task");

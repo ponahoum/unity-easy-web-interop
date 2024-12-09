@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
@@ -11,8 +12,21 @@ namespace Nahoum.UnityJSInterop.Editor
     public class TypescriptGenerator
     {
         // A GUID generator
-        static HashSet<Type> ignoredTypes = new HashSet<Type>(){
-          typeof(System.String), typeof(System.Double), typeof(System.Int32), typeof(System.Byte), typeof(System.Boolean), typeof(System.Single), typeof(System.Int64), typeof(Action)
+        static HashSet<Type> additionalTypesToGenerate = new HashSet<Type>(){
+          typeof(System.String),
+            typeof(System.Double),
+            typeof(System.Int32),
+            typeof(System.Byte),
+            typeof(System.Boolean),
+            typeof(System.Single),
+            typeof(System.Int64),
+            typeof(Action),
+            typeof(string[]),
+            typeof(int[]),
+            typeof(bool[]),
+            typeof(double[]),
+            typeof(byte[]),
+            typeof(float[]),
         };
 
         static readonly string mainTemplatePath = "Packages/org.nahoum.easy-web-interop/Editor/TypescriptGenerator/Templates/MainTemplate.ts";
@@ -44,8 +58,8 @@ namespace Nahoum.UnityJSInterop.Editor
         /// </summary>
         public static string GenerateTypescript()
         {
-            // For each type, additions the parameters and return types of each exposed methods
-            Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = TypescriptGenerationUtilities.GetExposedTypesByNamespace(excludeTestsAssemblies: true);
+            // For each type, additions the parameters and return types of each exposed methodsmethods
+            Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = TypescriptGenerationUtilities.GetExposedTypesByNamespace(excludeTestsAssemblies: true, additionalTypesToGenerate.ToArray());
             HashSet<Type> allTypesExported = TypescriptGenerationUtilities.GetExposedTypesFlatenned(excludeTestsAssemblies: true);
 
             // Keep track of generated types to avoid duplicates
@@ -64,10 +78,6 @@ namespace Nahoum.UnityJSInterop.Editor
 
                 foreach (Type type in types)
                 {
-                    // Skip ignored types to avoid eventual conflicts with the template already containing a few types not to be redefined
-                    if (ignoredTypes.Contains(type))
-                        continue;
-
                     // Get the exposed methods for this type
                     TypescriptGenerationUtilities.GetExposedMethodsSorted(type, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out Dictionary<MethodInfo, ExposeWebAttribute> instanceMethods);
 
@@ -196,7 +206,7 @@ namespace Nahoum.UnityJSInterop.Editor
             // Handle array case
             else if (type.IsArray)
             {
-                return "CSharpArray<" + GenerateTsNameFromType(type.GetElementType(), fromCurrentNamespace) + ">";
+                return GenerateTsNameFromType(type.GetElementType(), fromCurrentNamespace) + "_CSharpArray";
             }
             // If type is async Task<T> or Task (async doesn't matter)
             else if (ReflectionUtilities.IsTypeTask(type, out bool hasReturnValue, out Type returnType))
@@ -266,12 +276,10 @@ namespace Nahoum.UnityJSInterop.Editor
                 NamespaceDescriptor targetNamespace = namespaceEntry.Key;
                 HashSet<Type> types = namespaceEntry.Value;
 
-                // First build for the namespace the nested entry
-                string[] namespaceSplit = string.IsNullOrEmpty(targetNamespace.name) ? new string[] { } : targetNamespace.name.Split('.');
-                for (int i = 0; i < namespaceSplit.Length; i++)
-                {
-                    sb.AppendLine($"{new string('\t', i)}{namespaceSplit[i]}: {{");
-                }
+                // Open the namespace
+                bool hasNamespace = targetNamespace.HasNamespace;
+                if (hasNamespace)
+                    sb.AppendLine($"\"{targetNamespace.name}\":{{");
 
                 // Expose static signatures here
                 foreach (Type type in types)
@@ -289,11 +297,9 @@ namespace Nahoum.UnityJSInterop.Editor
                     sb.AppendLine($"{simpleTypeName}: {fullyQualifiedTypeName}_static;");
                 }
 
-                // Close the namespace
-                for (int i = namespaceSplit.Length - 1; i >= 0; i--)
-                {
-                    sb.AppendLine($"{new string('\t', i)}}};");
-                }
+                // Exit the namespace
+                if (hasNamespace)
+                    sb.AppendLine("};");
             }
 
             // Get main template

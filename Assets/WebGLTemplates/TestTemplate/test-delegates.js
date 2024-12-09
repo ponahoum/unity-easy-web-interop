@@ -5,7 +5,7 @@ import { SampleValues } from "./testing-utilities.js";
  * Few tests to handling delegates
  */
 export function RunTests(module) {
-    const instance = module.static.Nahoum.UnityJSInterop.Tests.TestActionCallbacks.GetInstance();
+    const instance = module.static["Nahoum.UnityJSInterop.Tests"].TestActionCallbacks.GetInstance();
 
     // Test callback with no arguments
     let valueToSet = null;

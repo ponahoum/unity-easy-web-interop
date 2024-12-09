@@ -4,7 +4,7 @@ import { SampleValues } from "./testing-utilities.js";
 export function RunTests(module) {
 
     // Get instance
-    const instance = module.static.Nahoum.UnityJSInterop.Tests.TestInstanceMethods.GetNewInstance();
+    const instance = module.static["Nahoum.UnityJSInterop.Tests"].TestInstanceMethods.GetNewInstance();
     
     // Test methods of the instance
     // Regular values

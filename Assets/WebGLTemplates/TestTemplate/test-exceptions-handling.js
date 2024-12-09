@@ -6,7 +6,7 @@ import { DefaultExceptionMessage } from "./testing-utilities.js";
  */
 export async function RunTests(module) {
   // Get static class
-  const staticClass = module.static.Nahoum.UnityJSInterop.Tests.TestExceptions;
+  const staticClass = module.static["Nahoum.UnityJSInterop.Tests"].TestExceptions;
 
   // Test regular exception
   assertThrows(staticClass.ThrowSimpleException, DefaultExceptionMessage, "ThrowSimpleException");

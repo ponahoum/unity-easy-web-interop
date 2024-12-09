@@ -7,9 +7,9 @@ namespace Nahoum.UnityJSInterop
     /// </summary>
     public static class NamingUtility
     {
-
         /// <summary>
         /// Get the path of a method on the JS side
+        /// Only use for static methods
         /// </summary>
         public static string[] GetMethodJSPath(MethodInfo method)
         {
@@ -19,24 +19,18 @@ namespace Nahoum.UnityJSInterop
 
             string namespaceName = method.DeclaringType.Namespace;
             bool hasNamespace = !string.IsNullOrEmpty(namespaceName);
+
             // Split the namespace to get the class name
             string staticPrefix = "static";
-            string[] namespaceSplit = hasNamespace ? namespaceName.Split('.') : new string[0];
             string className = method.DeclaringType.Name;
             string methodName = method.Name;
 
             // Add aggregate path (concat namespace split and classname and method name)
-            string[] res = new string[namespaceSplit.Length + 3];
-            res[0] = staticPrefix;
-            for (int i = 0; i < namespaceSplit.Length; i++)
-            {
-                res[i + 1] = namespaceSplit[i];
-            }
-            res[namespaceSplit.Length + 1] = className;
-            res[namespaceSplit.Length + 2] = methodName;
-            return res;
+            if (hasNamespace)
+                return new string[] { staticPrefix, namespaceName, className, methodName };
+            else
+                return new string[] { staticPrefix, className, methodName };
 
         }
-
     }
 }

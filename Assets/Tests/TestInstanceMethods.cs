@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Nahoum.UnityJSInterop.Tests
 {
 
@@ -9,6 +12,7 @@ namespace Nahoum.UnityJSInterop.Tests
         [ExposeWeb] public int TestGetInt() => SampleValues.TestInt;
         [ExposeWeb] public float TestGetFloat() => SampleValues.TestFloat;
         [ExposeWeb] public float[] TestGetFloatArray() => SampleValues.TestFloatArray;
+        [ExposeWeb] public List<float> TestGetFloatList() => SampleValues.TestFloatArray.ToList();
         [ExposeWeb] public double[] TestGetDoubleArray() => SampleValues.TestDoubleArray;
         [ExposeWeb] public bool TestGetBoolTrue() => SampleValues.TestBoolTrue;
         [ExposeWeb] public bool TestGetBoolFalse() => SampleValues.TestBoolFalse;

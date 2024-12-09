@@ -7,7 +7,7 @@ import { SampleValues } from "./testing-utilities.js";
  */
 export async function RunTests(module) {
   // Get static class
-  const staticClass = module.static.Nahoum.UnityJSInterop.Tests.TestByteArray;
+  const staticClass = module.static["Nahoum.UnityJSInterop.Tests"].TestByteArray;
 
   // Build a UInt8Array
   const width = 500;

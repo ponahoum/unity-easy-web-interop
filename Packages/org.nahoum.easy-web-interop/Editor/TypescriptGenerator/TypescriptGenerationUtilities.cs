@@ -13,7 +13,7 @@ namespace Nahoum.UnityJSInterop.Editor
         /// Also includes all types that are used as parameters or return types in the exposed methods
         /// This allows to easily generate typescript definitions for all required types
         /// </summary>
-        internal static Dictionary<NamespaceDescriptor, HashSet<Type>> GetExposedTypesByNamespace(bool excludeTestsAssemblies = false)
+        internal static Dictionary<NamespaceDescriptor, HashSet<Type>> GetExposedTypesByNamespace(bool excludeTestsAssemblies = false, System.Type[] additionalTypesToGenerate = null)
         {
             // Gather all types with exposed methods
             IReadOnlyCollection<Type> allTypesExposingMethods = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
@@ -40,12 +40,6 @@ namespace Nahoum.UnityJSInterop.Editor
                         return false;
                 }
 
-                // Handle array case
-                if (type.IsArray)
-                {
-                    return TryAddTypeToNamespace(type.GetElementType());
-                }
-
                 // Add key to the dictionary if it doesn't exist
                 if (!typesByNamespace.ContainsKey(namespaceName))
                     typesByNamespace.Add(namespaceName, new HashSet<Type>());
@@ -57,7 +51,6 @@ namespace Nahoum.UnityJSInterop.Editor
             // Add all types we'll need to generate in a sorted dictionary
             foreach (Type exposedType in allTypesExposingMethods)
             {
-
                 // Check if assembly contains nunit as dependency
                 if (excludeTestsAssemblies && IsTypeInTestAssembly(exposedType))
                 {
@@ -80,6 +73,16 @@ namespace Nahoum.UnityJSInterop.Editor
 
                 }
             }
+
+            // Add additional types to generate
+            if (additionalTypesToGenerate != null)
+            {
+                foreach (Type type in additionalTypesToGenerate)
+                {
+                    TryAddTypeToNamespace(type);
+                }
+            }
+
             return typesByNamespace;
         }
 
