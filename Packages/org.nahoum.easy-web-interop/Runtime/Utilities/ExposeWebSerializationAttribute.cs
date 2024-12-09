@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using UnityEngine.Scripting;
 namespace Nahoum.UnityJSInterop
@@ -106,7 +107,7 @@ namespace Nahoum.UnityJSInterop
         public bool CanSerialize(Type targetType, out ITsTypeDescriptor typeDescriptor)
         {
             typeDescriptor = new TsTypeDescriptor(GetTsTypeDefinition());
-            return false;
+            return targetType == typeof(T);
         }
 
         public string Serialize(object targetObject)
