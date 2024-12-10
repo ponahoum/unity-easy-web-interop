@@ -16,7 +16,8 @@ namespace Nahoum.UnityJSInterop
         {
             // Add basic serializers for primitive types and arrays of primitive types
             RegisterSerializer(new BasicTypesSerializer());
-            RegisterSerializer(new BasicCollectionSerializer());
+            RegisterSerializer(new BasicArraySerializer());
+            RegisterSerializer(new BasicListSerializer());
         }
 
         /// <summary>

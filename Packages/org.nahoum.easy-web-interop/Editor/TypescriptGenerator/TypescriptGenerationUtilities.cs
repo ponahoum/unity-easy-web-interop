@@ -58,10 +58,10 @@ namespace Nahoum.UnityJSInterop.Editor
                     continue;
                 }
 
-                // Get the namespace of the type and add it to the dictionary
+                // Adds the type to the namespace
                 TryAddTypeToNamespace(exposedType);
 
-                // Get exposed methods
+                // Get exposed methods for the type and add their return types and parameters
                 Dictionary<MethodInfo, ExposeWebAttribute> exposedMethods = ExposeWebAttribute.GetExposedMethods(exposedType);
                 foreach (var method in exposedMethods)
                 {
@@ -70,7 +70,6 @@ namespace Nahoum.UnityJSInterop.Editor
                     foreach (ParameterInfo parameter in parameters)
                         TryAddTypeToNamespace(parameter.ParameterType);
                     TryAddTypeToNamespace(methodInfo.ReturnType);
-
                 }
             }
 

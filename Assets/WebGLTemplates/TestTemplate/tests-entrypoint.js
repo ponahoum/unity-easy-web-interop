@@ -17,6 +17,8 @@ import { RunTests as RunTestsDelegates } from "./test-delegates.js";
 import { RunTests as RunTestsAbstractAndInterfaces } from "./test-interface-abstract-class-methods.js";
 import { RunTests as RunTestsGettersAndSetters } from "./test-getters-setters.js";
 import { RunTests as RunTestsStructs } from "./test-struct.js";
+import { RunTests as RunTestsGenericInheritance } from "./test-generic-inheritance.js";
+
 
 
 // Run all tests sequentially
@@ -27,6 +29,7 @@ RunTestsDelegates(unityModule);
 RunTestsAbstractAndInterfaces(unityModule);
 RunTestsGettersAndSetters(unityModule);
 RunTestsStructs(unityModule);
+RunTestsGenericInheritance(unityModule);
 
 // Some tests are async, hence the await
 await RunTestsByteArrayTests(unityModule);

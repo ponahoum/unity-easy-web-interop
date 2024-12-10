@@ -13,13 +13,13 @@ namespace Nahoum.UnityJSInterop.Editor
     {
         // A GUID generator
         static HashSet<Type> additionalTypesToGenerate = new HashSet<Type>(){
-          typeof(System.String),
-            typeof(System.Double),
-            typeof(System.Int32),
-            typeof(System.Byte),
-            typeof(System.Boolean),
-            typeof(System.Single),
-            typeof(System.Int64),
+            typeof(String),
+            typeof(Double),
+            typeof(Int32),
+            typeof(Byte),
+            typeof(Boolean),
+            typeof(Single),
+            typeof(Int64),
             typeof(Action),
             typeof(string[]),
             typeof(int[]),
@@ -104,9 +104,12 @@ namespace Nahoum.UnityJSInterop.Editor
                         {
                             var methodInfo = method.Key;
                             var signature = GenerateSignatureFromMethod(methodInfo, targetNamespace);
-                            sb.AppendLine(signature + ";");
+                            sb.Append(signature + ";");
                         }
                         sb.AppendLine("}");
+
+                        // Append additional line
+                        sb.AppendLine();
                     }
 
                     // If the type is not static, we need to generate a type for it, otherwise the static type generated above is enough
@@ -132,7 +135,7 @@ namespace Nahoum.UnityJSInterop.Editor
                             sb.AppendLine(signature + ";");
                         }
 
-                        sb.AppendLine("}");
+                        sb.Append("}");
 
                         // If it has static methods, add & typeName_static at the end to extend the static method signature
                         if (hasStaticMethods)
@@ -152,10 +155,11 @@ namespace Nahoum.UnityJSInterop.Editor
                             sb.Append($"& {inheritingTypeName}");
                         }
 
-                        sb.Append(";");
+                        sb.AppendLine(";");
                     }
 
-                    // Get all classes and interface from which this type inherits
+                    // Append additional line
+                    sb.AppendLine();
                 }
 
                 if (targetNamespace.HasNamespace)
@@ -221,7 +225,7 @@ namespace Nahoum.UnityJSInterop.Editor
             // For example, for Action<string, int> we would get Action2$System_String$System_Int32
             else if (type.IsGenericType)
             {
-                typeName = type.BaseType.Name;
+                typeName = type.Name.Substring(0, type.Name.IndexOf('`'));
                 typeName += type.GetGenericArguments().Length;
                 foreach (var genericArgument in type.GetGenericArguments())
                 {
@@ -234,7 +238,6 @@ namespace Nahoum.UnityJSInterop.Editor
                 return typeName;
             else
                 return (type.Namespace + ".").Replace(".", useUnderScoreForNamespace ? "_" : ".") + typeName;
-
         }
 
         /// <summary>
@@ -271,10 +274,14 @@ namespace Nahoum.UnityJSInterop.Editor
             // For each static method under each namespace > type > method, we want to create a nested object in the static module
             // For example, for static class ACoolObject under the namespace Nahoum.UnityJSInterop, we would have: Nahoum.UnityJSInterop.ACoolObject_static
             var sortedMethods = TypescriptGenerationUtilities.GetExposedTypesByNamespace();
-            foreach (var namespaceEntry in sortedMethods)
+            foreach (KeyValuePair<NamespaceDescriptor, HashSet<Type>> namespaceEntry in sortedMethods)
             {
                 NamespaceDescriptor targetNamespace = namespaceEntry.Key;
                 HashSet<Type> types = namespaceEntry.Value;
+
+                // Skip if no types
+                if(types.Count == 0)
+                    continue;
 
                 // Open the namespace
                 bool hasNamespace = targetNamespace.HasNamespace;
