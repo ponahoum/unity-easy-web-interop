@@ -307,9 +307,8 @@ namespace Nahoum.UnityJSInterop.Editor
                         continue;
 
                     // Otherwise, add the static type
-                    string simpleTypeName = type.Name;
                     string fullyQualifiedTypeName = GenerateTsNameFromType(type, new NamespaceDescriptor());
-                    sb.AppendLine($"{simpleTypeName}: {fullyQualifiedTypeName}_static;");
+                    sb.AppendLine($"{fullyQualifiedTypeName}: {fullyQualifiedTypeName}_static;");
                 }
 
                 // Exit the namespace
