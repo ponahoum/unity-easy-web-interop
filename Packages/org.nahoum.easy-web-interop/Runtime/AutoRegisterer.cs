@@ -50,9 +50,7 @@ namespace Nahoum.UnityJSInterop
                 string[] servicePath = new string[] { method.Name };
                 Delegate del = ReflectionUtilities.CreateDelegate(method, method.IsStatic ? null : instance);
                 MethodsRegistry.RegisterMethod(servicePath, del, targetId.ToInt32());
-
             }
-
         }
     }
 }

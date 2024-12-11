@@ -1,11 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
-using UnityEngine;
 
 namespace Nahoum.UnityJSInterop.Editor
 {
@@ -27,6 +27,10 @@ namespace Nahoum.UnityJSInterop.Editor
             typeof(double[]),
             typeof(byte[]),
             typeof(float[]),
+            typeof(IList),
+            typeof(ICollection),
+            typeof(IEnumerable),
+            typeof(IEnumerator),
         };
 
         static readonly string mainTemplatePath = "Packages/org.nahoum.easy-web-interop/Editor/TypescriptGenerator/Templates/MainTemplate.ts";
@@ -61,6 +65,10 @@ namespace Nahoum.UnityJSInterop.Editor
             // For each type, additions the parameters and return types of each exposed methodsmethods
             Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = TypescriptGenerationUtilities.GetExposedTypesByNamespace(excludeTestsAssemblies: true, additionalTypesToGenerate.ToArray());
             HashSet<Type> allTypesExported = TypescriptGenerationUtilities.GetExposedTypesFlatenned(excludeTestsAssemblies: true);
+
+            // Add additional types to generate
+            foreach (Type additionnalType in additionalTypesToGenerate)
+                allTypesExported.Add(additionnalType);
 
             // Keep track of generated types to avoid duplicates
             // If we have duplicates, it could be due to a type with the ame name but in different assemblies
@@ -280,7 +288,7 @@ namespace Nahoum.UnityJSInterop.Editor
                 HashSet<Type> types = namespaceEntry.Value;
 
                 // Skip if no types
-                if(types.Count == 0)
+                if (types.Count == 0)
                     continue;
 
                 // Open the namespace
