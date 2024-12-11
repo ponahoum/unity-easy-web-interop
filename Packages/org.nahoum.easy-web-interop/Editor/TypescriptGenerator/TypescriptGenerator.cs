@@ -44,7 +44,7 @@ namespace Nahoum.UnityJSInterop.Editor
         {
 
             // Prompt for path on disk for a .ts file
-            string path = EditorUtility.SaveFilePanel("Save Typescript file", "", "UnityJSInterop.ts", "ts");
+            string path = EditorUtility.SaveFilePanel("Save Typescript file", "", "UnityJSInterop.d.ts", "ts");
 
             if (string.IsNullOrEmpty(path))
                 return;
@@ -307,9 +307,9 @@ namespace Nahoum.UnityJSInterop.Editor
                         continue;
 
                     // Otherwise, add the static type
-                    string staticKey = GenerateTsNameFromType(type, targetNamespace);
+                    string simpleTypeName = type.Name;
                     string fullyQualifiedTypeName = GenerateTsNameFromType(type, new NamespaceDescriptor());
-                    sb.AppendLine($"{staticKey}: {fullyQualifiedTypeName}_static;");
+                    sb.AppendLine($"\"{simpleTypeName}\": {fullyQualifiedTypeName}_static;");
                 }
 
                 // Exit the namespace

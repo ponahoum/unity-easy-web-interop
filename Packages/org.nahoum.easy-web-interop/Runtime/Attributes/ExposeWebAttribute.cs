@@ -101,7 +101,8 @@ namespace Nahoum.UnityJSInterop
             if (!method.IsPublic)
                 throw new Exception($"Method {method.Name} in {method.DeclaringType} is not public. Only public methods can be exposed.");
 
-            if (method.IsGenericMethodDefinition)
+            // Case the method is Generic like Method<T> or returns T like T Method()
+            if (method.IsGenericMethod || method.ReturnType.IsGenericParameter)
                 throw new Exception($"Method {method.Name} in {method.DeclaringType} is a generic method. Generic methods are not supported and cannot be exposed.");
 
             return true;
