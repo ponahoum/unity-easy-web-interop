@@ -18,6 +18,11 @@ namespace Nahoum.UnityJSInterop.Tests
         /// Gets the interface instance
         /// </summary>
         [ExposeWeb] public static ITestInterface GetNewInstanceOfInterface() => new TestClassImplementingInterface();
+
+        /// <summary>
+        /// This one is not exposed, but it is used by the interface
+        /// </summary>
+        public float GetSampleFloat() => SampleValues.TestFloat;
     }
 
     public interface ITestInterface
@@ -26,6 +31,11 @@ namespace Nahoum.UnityJSInterop.Tests
         /// Test returning a string (direct interface implementation / aka c# feature) on static
         /// </summary>
         [ExposeWeb] public static string TestGetStringFromInterfaceStatic() => SampleValues.TestString;
+
+        /// <summary>
+        /// Test what it gives to exposeweb on the interface but not on the implementation
+        /// </summary>
+        [ExposeWeb] public float GetSampleFloat();
 
         /// <summary>
         /// Test returning a string (direct interface implementation / aka c# feature) on any instance

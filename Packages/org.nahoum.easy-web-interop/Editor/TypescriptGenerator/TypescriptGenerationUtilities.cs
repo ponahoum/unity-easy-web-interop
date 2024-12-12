@@ -9,22 +9,14 @@ namespace Nahoum.UnityJSInterop.Editor
     internal static class TypescriptGenerationUtilities
     {
         /// <summary>
-        /// Get all types that are exposed by the ExposeWeb attribute, ordered by namespace
-        /// Also includes all types that are used as parameters or return types in the exposed methods
-        /// This allows to easily generate typescript definitions for all required types
+        /// Returns all types we should generate a type description for
         /// </summary>
-        internal static Dictionary<NamespaceDescriptor, HashSet<Type>> GetExposedTypesByNamespace(bool excludeTestsAssemblies = false, System.Type[] additionalTypesToGenerate = null)
+        internal static ISet<Type> GetTypesToGenerateTypesFileFrom(bool excludeTestsAssemblies = false)
         {
-            // Gather all types with exposed methods
-            IReadOnlyCollection<Type> allTypesExposingMethods = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
+            ISet<Type> typesToGenerate = new HashSet<Type>();
 
-            // Now order types by namespace
-            Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = new Dictionary<NamespaceDescriptor, HashSet<Type>>();
-
-            bool TryAddTypeToNamespace(Type type)
+            bool TryAdd(Type type)
             {
-                NamespaceDescriptor namespaceName = new NamespaceDescriptor(type);
-
                 // If void, don't add it
                 if (type == typeof(void))
                     return false;
@@ -33,74 +25,39 @@ namespace Nahoum.UnityJSInterop.Editor
                 if (ReflectionUtilities.IsTypeTask(type, out bool hasReturnValue, out Type taskReturnType))
                 {
                     if (hasReturnValue)
-                    {
-                        return TryAddTypeToNamespace(taskReturnType);
-                    }
+                        return TryAdd(taskReturnType);
                     else
                         return false;
                 }
 
-                // Add key to the dictionary if it doesn't exist
-                if (!typesByNamespace.ContainsKey(namespaceName))
-                    typesByNamespace.Add(namespaceName, new HashSet<Type>());
-
-                // Classify the type as part of the namespace
-                return typesByNamespace[namespaceName].Add(type);
+                // Add the type
+                return typesToGenerate.Add(type);
             }
 
-            // Add all types we'll need to generate in a sorted dictionary
+            // Gather all types with exposed methods
+            IReadOnlyCollection<Type> allTypesExposingMethods = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
+
             foreach (Type exposedType in allTypesExposingMethods)
             {
-                // Check if assembly contains nunit as dependency
+                // Check if assembly contains nunit as dependency - Skip if it does
                 if (excludeTestsAssemblies && IsTypeInTestAssembly(exposedType))
-                {
-                    UnityEngine.Debug.Log("Detected dependent NUnit assembly, skipping: " + exposedType.Assembly.FullName + " for generating typescript");
                     continue;
-                }
 
                 // Adds the type to the namespace
-                TryAddTypeToNamespace(exposedType);
+                TryAdd(exposedType);
 
                 // Get exposed methods for the type and add their return types and parameters
-                Dictionary<MethodInfo, ExposeWebAttribute> exposedMethods = ExposeWebAttribute.GetExposedMethods(exposedType);
+                ISet<MethodInfo> exposedMethods = ExposeWebAttribute.GetExposedMethods(exposedType);
                 foreach (var method in exposedMethods)
                 {
-                    MethodInfo methodInfo = method.Key;
+                    MethodInfo methodInfo = method;
                     ParameterInfo[] parameters = methodInfo.GetParameters();
                     foreach (ParameterInfo parameter in parameters)
-                        TryAddTypeToNamespace(parameter.ParameterType);
-                    TryAddTypeToNamespace(methodInfo.ReturnType);
+                        TryAdd(parameter.ParameterType);
+                    TryAdd(methodInfo.ReturnType);
                 }
             }
-
-            // Add additional types to generate
-            if (additionalTypesToGenerate != null)
-            {
-                foreach (Type type in additionalTypesToGenerate)
-                {
-                    TryAddTypeToNamespace(type);
-                }
-            }
-
-            return typesByNamespace;
-        }
-
-        /// <summary>
-        /// Returns all exposed types in a flat list - Includes all types that are used as parameters or return types in the exposed methods, in addition to the types with exposed methods
-        /// This is useful for generating typescript definitions
-        /// </summary>
-        internal static HashSet<Type> GetExposedTypesFlatenned(bool excludeTestsAssemblies = false)
-        {
-            Dictionary<NamespaceDescriptor, HashSet<Type>> typesByNamespace = GetExposedTypesByNamespace(excludeTestsAssemblies);
-            HashSet<Type> exposedTypes = new HashSet<Type>();
-            foreach (var namespaceTypes in typesByNamespace.Values)
-            {
-                foreach (var type in namespaceTypes)
-                {
-                    exposedTypes.Add(type);
-                }
-            }
-            return exposedTypes;
+            return typesToGenerate;
         }
 
         /// <summary>
@@ -113,13 +70,13 @@ namespace Nahoum.UnityJSInterop.Editor
                 throw new ArgumentNullException(nameof(target));
 
             // Retrieve all loaded assemblies
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
             // Collect all types that directly inherit the target type
-            var inheritingTypes = new HashSet<Type>();
+            HashSet<Type> inheritingTypes = new HashSet<Type>();
             foreach (var assembly in assemblies)
             {
-                var allTypesInAssembly = assembly.GetTypes();
+                Type[] allTypesInAssembly = assembly.GetTypes();
                 IEnumerable<Type> types = allTypesInAssembly.Where(type => target.BaseType == type || (type.IsInterface && target.GetInterfaces().Contains(type)));
 
                 foreach (var type in types)
@@ -131,7 +88,7 @@ namespace Nahoum.UnityJSInterop.Editor
         /// <summary>
         /// Tests if an assembly is a test assembly
         /// </summary>
-        internal static bool IsTestAssembly(Assembly assembly)
+        private static bool IsTestAssembly(Assembly assembly)
         {
             var dependencies = assembly.GetReferencedAssemblies();
             foreach (var dependency in dependencies)
@@ -145,7 +102,7 @@ namespace Nahoum.UnityJSInterop.Editor
         /// <summary>
         /// Tests if a type is in a test assembly
         /// </summary>
-        internal static bool IsTypeInTestAssembly(Type type)
+        private static bool IsTypeInTestAssembly(Type type)
         {
             return IsTestAssembly(type.Assembly);
         }
@@ -154,17 +111,17 @@ namespace Nahoum.UnityJSInterop.Editor
         /// Get all exposed methods for a type, sorted by static and instance methods
         /// Methods is here and not available at runtime because the sorting is not required at runtime
         /// </summary>
-        internal static void GetExposedMethodsSorted(Type targetType, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out Dictionary<MethodInfo, ExposeWebAttribute> instanceMethods)
+        internal static void GetExposedMethodsSorted(Type targetType, out ISet<MethodInfo> staticMethods, out ISet<MethodInfo> instanceMethods)
         {
-            Dictionary<MethodInfo, ExposeWebAttribute> exposedMethods = ExposeWebAttribute.GetExposedMethods(targetType);
-            staticMethods = new Dictionary<MethodInfo, ExposeWebAttribute>();
-            instanceMethods = new Dictionary<MethodInfo, ExposeWebAttribute>();
+            ISet<MethodInfo> exposedMethods = ExposeWebAttribute.GetExposedMethods(targetType);
+            staticMethods = new HashSet<MethodInfo>();
+            instanceMethods = new HashSet<MethodInfo>();
             foreach (var method in exposedMethods)
             {
-                if (method.Key.IsStatic)
-                    staticMethods.Add(method.Key, method.Value);
+                if (method.IsStatic)
+                    staticMethods.Add(method);
                 else
-                    instanceMethods.Add(method.Key, method.Value);
+                    instanceMethods.Add(method);
             }
         }
     }

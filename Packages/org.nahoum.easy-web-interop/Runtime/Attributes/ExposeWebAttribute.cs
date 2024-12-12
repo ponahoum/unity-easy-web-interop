@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using UnityEngine.Scripting;
 
@@ -10,16 +9,16 @@ namespace Nahoum.UnityJSInterop
     ///  Expose web attribute on methods and classes
     ///  Inherited because for example if we put in an a interface, we want to expose the methods in all inheriting classes from the interface
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Interface, Inherited = true)]
     public class ExposeWebAttribute : PreserveAttribute
     {
         // Called once when the class is loaded
         static HashSet<Type> exposedTypesCache = null;
 
-        // For efficiency, we cache the exposed methods for each type, separated by static and instance methods
+        // For efficiency, we cache the exposed methods for each method's containing type, separated by static and instance methods
         // We also have a dictionary with all the exposed methods grouped by type (static and instance together)
         // This way the reflection is only done once
-        readonly static Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>> allExposedMethodsCache = new Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>>();
+        readonly static Dictionary<Type, HashSet<MethodInfo>> allExposedMethodsCache = new Dictionary<Type, HashSet<MethodInfo>>();
 
         /// <summary>
         /// Returns a list of all the possibles types containing methods with the ExposeWebAttribute appearing on them
@@ -38,7 +37,7 @@ namespace Nahoum.UnityJSInterop
             // Get all the types in the assembly
             foreach (Type targetType in availableTypes)
             {
-                Dictionary<MethodInfo, ExposeWebAttribute> exposedMethods = GetExposedMethods(targetType);
+                ISet<MethodInfo> exposedMethods = GetExposedMethods(targetType);
 
                 // Skip if no exposed methods
                 if (exposedMethods.Count == 0)
@@ -58,12 +57,12 @@ namespace Nahoum.UnityJSInterop
         /// <summary>
         /// Get all the exposed methods of a type, wether they are static or not
         /// </summary>
-        internal static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedMethods(Type targetType)
+        internal static ISet<MethodInfo> GetExposedMethods(Type targetType)
         {
             if (allExposedMethodsCache.ContainsKey(targetType))
                 return allExposedMethodsCache[targetType];
 
-            Dictionary<MethodInfo, ExposeWebAttribute> result = GetExposedMethods(targetType, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+            HashSet<MethodInfo> result = GetExposedMethods(targetType, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
             allExposedMethodsCache.Add(targetType, result);
             return result;
         }
@@ -72,16 +71,16 @@ namespace Nahoum.UnityJSInterop
         /// Given a type, return all the methods with the ExposeWebAttribute
         /// Wether those methods are static or not
         /// </summary>
-        private static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedMethods(Type targetType, BindingFlags flags)
+        private static HashSet<MethodInfo> GetExposedMethods(Type targetType, BindingFlags flags)
         {
-            Dictionary<MethodInfo, ExposeWebAttribute> result = new Dictionary<MethodInfo, ExposeWebAttribute>();
+            HashSet<MethodInfo> result = new HashSet<MethodInfo>();
 
             // Get all methods with the ExposeWebAttribute directly in the type
             MethodInfo[] methods = targetType.GetMethods(flags);
             foreach (MethodInfo method in methods)
             {
                 if (HasWebExposeAttribute(method, out ExposeWebAttribute attr))
-                    result.Add(method, attr);
+                    result.Add(method);
             }
 
             return result;
@@ -91,10 +90,16 @@ namespace Nahoum.UnityJSInterop
         /// Check if a method has the ExposeWebAttribute
         /// Will return the attribute if it has it
         /// </summary>
-        internal static bool HasWebExposeAttribute(MethodInfo method, out ExposeWebAttribute attribute)
+        private static bool HasWebExposeAttribute(MethodInfo method, out ExposeWebAttribute attribute)
         {
             attribute = method.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
 
+            // If attribute is still null, try to get it from the method's containing class / type
+            // BETA - Might not work in all cases
+            if (attribute == null)
+                attribute = method.DeclaringType.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
+
+            // At this point, if the attribute is still null, the method is not exposed
             if (attribute == null)
                 return false;
 

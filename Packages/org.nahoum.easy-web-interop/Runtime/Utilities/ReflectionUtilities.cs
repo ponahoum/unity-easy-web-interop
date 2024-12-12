@@ -4,9 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-
 
 namespace Nahoum.UnityJSInterop
 {
@@ -38,13 +36,15 @@ namespace Nahoum.UnityJSInterop
         /// If it is, it will return  true and the return type and the parameters types
         /// If not, will return false and null for the return type and parameters types
         /// </summary>
-        internal static bool TypeIsDelegate(Type t, out Type returnType, out Type[] parametersTypes){
+        internal static bool TypeIsDelegate(Type t, out Type returnType, out Type[] parametersTypes)
+        {
             bool isDelegate = typeof(Delegate).IsAssignableFrom(t);
             returnType = null;
             parametersTypes = null;
 
             // Not sure of this part, might need to refine...
-            if(isDelegate){
+            if (isDelegate)
+            {
                 var methodInfo = t.GetMethod("Invoke");
                 returnType = methodInfo.ReturnType;
                 parametersTypes = methodInfo.GetParameters().Select(p => p.ParameterType).ToArray();
@@ -71,7 +71,6 @@ namespace Nahoum.UnityJSInterop
             Type objectType = objectToCheck.GetType();
             return IsTypeTask(objectType, out hasReturnValue, out _);
         }
-
 
         /// <summary>
         /// Tells if the provided type is a Task or Task<T>
@@ -148,7 +147,8 @@ namespace Nahoum.UnityJSInterop
         /// <summary>
         /// Returns a gigantic list of all the types in all the available assemblies
         /// </summary>
-        internal static List<Type> GetAllAssembliesTypes(){
+        internal static List<Type> GetAllAssembliesTypes()
+        {
             List<Type> types = new List<Type>();
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (Assembly assembly in assemblies)
