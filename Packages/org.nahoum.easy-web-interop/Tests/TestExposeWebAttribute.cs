@@ -10,7 +10,7 @@ namespace Nahoum.UnityJSInterop.Tests
         public void TestExposeWebInheritance()
         {
             // Get all types with exposed methods
-            System.Collections.Generic.IReadOnlyCollection<System.Type> allTypesWithExposedMethods = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
+            System.Collections.Generic.IReadOnlyCollection<System.Type> allTypesWithExposedMethods = ExposeWebAttribute.GetAllTypesWithWebExposedMethods();
 
             // Ensure in the exposed types we have our class
             Assert.IsTrue(allTypesWithExposedMethods.Contains(typeof(TestClassInterface)));

@@ -147,7 +147,7 @@ namespace Nahoum.UnityJSInterop
         /// <summary>
         /// Returns a gigantic list of all the types in all the available assemblies
         /// </summary>
-        internal static List<Type> GetAllAssembliesTypes()
+        internal static IReadOnlyCollection<Type> GetAllAssembliesTypes()
         {
             List<Type> types = new List<Type>();
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();

@@ -1,5 +1,6 @@
 namespace Nahoum.UnityJSInterop.Tests
 {
+
     public class TestClassImplementingInterface : ITestInterface
     {
         [ExposeWeb]
@@ -19,31 +20,33 @@ namespace Nahoum.UnityJSInterop.Tests
         /// </summary>
         [ExposeWeb] public static ITestInterface GetNewInstanceOfInterface() => new TestClassImplementingInterface();
 
+        [ExposeWeb]
         /// <summary>
         /// This one is not exposed, but it is used by the interface
         /// </summary>
         public float GetSampleFloat() => SampleValues.TestFloat;
     }
 
+    [ExposeWeb]
     public interface ITestInterface
     {
         /// <summary>
         /// Test returning a string (direct interface implementation / aka c# feature) on static
         /// </summary>
-        [ExposeWeb] public static string TestGetStringFromInterfaceStatic() => SampleValues.TestString;
+        public static string TestGetStringFromInterfaceStatic() => SampleValues.TestString;
 
         /// <summary>
         /// Test what it gives to exposeweb on the interface but not on the implementation
         /// </summary>
-        [ExposeWeb] public float GetSampleFloat();
+        public float GetSampleFloat();
 
         /// <summary>
         /// Test returning a string (direct interface implementation / aka c# feature) on any instance
         /// This WONT work as it is not static, and that's ok - it's just a test to ensure it doesn't bug on generation but is just ignored
         /// </summary>
-        [ExposeWeb] public string TestGetStringFromInterface() => SampleValues.TestString;
+        public string TestGetStringFromInterface() => SampleValues.TestString;
 
-        [ExposeWeb] public string TestGetStringFromInterfaceDeclaration();
+        public string TestGetStringFromInterfaceDeclaration();
 
     }
 }

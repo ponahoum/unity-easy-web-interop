@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using UnityEngine.Scripting;
 
@@ -24,7 +25,7 @@ namespace Nahoum.UnityJSInterop
         /// Returns a list of all the possibles types containing methods with the ExposeWebAttribute appearing on them
         /// Wether those methods are static or not
         /// </summary>
-        internal static IReadOnlyCollection<Type> GetAllTypesWithWebExposeMethods()
+        internal static IReadOnlyCollection<Type> GetAllTypesWithWebExposedMethods()
         {
             if (exposedTypesCache != null)
                 return exposedTypesCache;
@@ -32,7 +33,7 @@ namespace Nahoum.UnityJSInterop
             exposedTypesCache = new HashSet<Type>();
 
             // Cache all the types with exposed methods
-            List<Type> availableTypes = ReflectionUtilities.GetAllAssembliesTypes();
+            IReadOnlyCollection<Type> availableTypes = ReflectionUtilities.GetAllAssembliesTypes();
 
             // Get all the types in the assembly
             foreach (Type targetType in availableTypes)
@@ -90,7 +91,7 @@ namespace Nahoum.UnityJSInterop
         /// Check if a method has the ExposeWebAttribute
         /// Will return the attribute if it has it
         /// </summary>
-        private static bool HasWebExposeAttribute(MethodInfo method, out ExposeWebAttribute attribute)
+        internal static bool HasWebExposeAttribute(MethodInfo method, out ExposeWebAttribute attribute)
         {
             attribute = method.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
 

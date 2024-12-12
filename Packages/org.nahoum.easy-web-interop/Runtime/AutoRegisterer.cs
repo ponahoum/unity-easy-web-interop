@@ -18,7 +18,7 @@ namespace Nahoum.UnityJSInterop
 
         private static void RegisterAllStaticMethds()
         {
-            var allExposedTypes = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
+            var allExposedTypes = ExposeWebAttribute.GetAllTypesWithWebExposedMethods();
             foreach (var exposedType in allExposedTypes)
             {
                 System.Collections.Generic.ISet<MethodInfo> exposedStaticMethods = ExposeWebAttribute.GetExposedMethods(exposedType);

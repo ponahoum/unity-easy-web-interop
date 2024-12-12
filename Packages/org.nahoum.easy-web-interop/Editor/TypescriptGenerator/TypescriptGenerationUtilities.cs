@@ -35,7 +35,7 @@ namespace Nahoum.UnityJSInterop.Editor
             }
 
             // Gather all types with exposed methods
-            IReadOnlyCollection<Type> allTypesExposingMethods = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
+            IReadOnlyCollection<Type> allTypesExposingMethods = ExposeWebAttribute.GetAllTypesWithWebExposedMethods();
 
             foreach (Type exposedType in allTypesExposingMethods)
             {
