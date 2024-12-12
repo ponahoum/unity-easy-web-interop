@@ -311,13 +311,7 @@ namespace Nahoum.UnityJSInterop.Editor
 
                 // Add properties
                 foreach (var property in Properties)
-                {
-                    stringBuilder.Append(property.Key);
-                    stringBuilder.Append(": ");
-                    stringBuilder.Append(property.Value);
-                    stringBuilder.Append(";");
-                    stringBuilder.AppendLine();
-                }
+                    property.WriteProperty(stringBuilder);
 
                 // Close the type definition
                 stringBuilder.Append("}");
@@ -353,6 +347,15 @@ namespace Nahoum.UnityJSInterop.Editor
                 Key = key;
                 Value = value;
             }
+
+            public void WriteProperty(StringBuilder stringBuilder)
+            {
+                stringBuilder.Append(Key);
+                stringBuilder.Append(": ");
+                stringBuilder.Append(Value);
+                stringBuilder.Append(";");
+                stringBuilder.AppendLine();
+            }
         }
 
         /// <summary>
@@ -365,7 +368,6 @@ namespace Nahoum.UnityJSInterop.Editor
 
             public void WriteStartExportNamespace(StringBuilder stringBuilder)
             {
-
                 if (string.IsNullOrEmpty(NamespaceName))
                     return;
 
@@ -426,7 +428,7 @@ namespace Nahoum.UnityJSInterop.Editor
             // For each static method under each namespace > type > method, we want to create a nested object in the static module
             // For example, for static class ACoolObject under the namespace Nahoum.UnityJSInterop, we would have: Nahoum.UnityJSInterop.ACoolObject_static
             ISet<Type> allTypes = TypescriptGenerationUtilities.GetTypesToGenerateTypesFileFrom(excludeTestsAssemblies: true);
-            Dictionary<TsNamespaceDescriptor, HashSet<TsTypeDescriptor>> sortedTypes = new Dictionary<TsNamespaceDescriptor, HashSet<TsTypeDescriptor>>();
+            Dictionary<TsNamespaceDescriptor, HashSet<TsProperty>> sortedTypes = new Dictionary<TsNamespaceDescriptor, HashSet<TsProperty>>();
 
             foreach (Type type in allTypes)
             {
@@ -437,28 +439,27 @@ namespace Nahoum.UnityJSInterop.Editor
                 // Otheriwse we can expose the type
                 TsNamespaceDescriptor namespaceDescriptor = TsNamespaceDescriptor.CreateFrom(type);
                 if (!sortedTypes.ContainsKey(namespaceDescriptor))
-                    sortedTypes[namespaceDescriptor] = new HashSet<TsTypeDescriptor>();
+                    sortedTypes[namespaceDescriptor] = new HashSet<TsProperty>();
 
                 // Create the type descriptor
-                TsTypeDescriptor staticTypeDescriptor = new TsTypeDescriptor()
+                TsProperty staticTypeDescriptor = new TsProperty()
                 {
-                    TypeName = GenerateTsNameFromType(type, namespaceDescriptor) + "_static",
+                    Key = GenerateTsNameFromType(type, namespaceDescriptor) + "_static",
+                    Value = GenerateTsNameFromType(type, TsNamespaceDescriptor.Empty()) + "_static",
                 };
                 sortedTypes[namespaceDescriptor].Add(staticTypeDescriptor);
             }
 
             StringBuilder sb = new StringBuilder();
-            foreach (KeyValuePair<TsNamespaceDescriptor, HashSet<TsTypeDescriptor>> item in sortedTypes)
+            foreach (KeyValuePair<TsNamespaceDescriptor, HashSet<TsProperty>> item in sortedTypes)
             {
                 // Write the namespace
                 TsNamespaceDescriptor namespaceDescriptor = item.Key;
                 namespaceDescriptor.WriteStartNamespaceNameAsKey(sb);
 
                 // Write each static type in the namespace
-                foreach (TsTypeDescriptor typeDesc in item.Value)
-                {
-                    sb.AppendLine(typeDesc.TypeName + ",");
-                }
+                foreach (TsProperty typeDesc in item.Value)
+                    typeDesc.WriteProperty(sb);
 
                 // Close namespace
                 namespaceDescriptor.WriteEndNamespaceNameAsKey(sb);
