@@ -16,10 +16,21 @@ namespace Nahoum.UnityJSInterop
         // Called once when the class is loaded
         static HashSet<Type> exposedTypesCache = null;
 
+        // An informative description of the method
+        string description = null;
+
         // For efficiency, we cache the exposed methods for each method's containing type, separated by static and instance methods
         // We also have a dictionary with all the exposed methods grouped by type (static and instance together)
         // This way the reflection is only done once
         readonly static Dictionary<Type, HashSet<MethodInfo>> allExposedMethodsCache = new Dictionary<Type, HashSet<MethodInfo>>();
+
+        /// <summary>
+        /// Expose a method to the web. You can provide a description for the method
+        /// </summary>
+        public ExposeWebAttribute(string description = null)
+        {
+            this.description = description;
+        }
 
         /// <summary>
         /// Returns a list of all the possibles types containing methods with the ExposeWebAttribute appearing on them
