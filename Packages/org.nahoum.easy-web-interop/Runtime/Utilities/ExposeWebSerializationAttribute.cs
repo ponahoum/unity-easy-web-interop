@@ -1,54 +1,9 @@
 ﻿
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using UnityEngine.Scripting;
 namespace Nahoum.UnityJSInterop
 {
-    /// <summary>
-    /// Add this attribute anywhere to notice one may want to expose the method to the web
-    /// </summary>
-    [AttributeUsage(AttributeTargets.All, Inherited = false, AllowMultiple = true)]
-    public class GlobalExposeWebSerializationAttribute : PreserveAttribute
-    {
-        static Dictionary<Type, IJsJsonSerializer> serializers = new Dictionary<Type, IJsJsonSerializer>();
-
-        public GlobalExposeWebSerializationAttribute(Type serializerType, Type objectTypeToSerialize)
-        {
-            // Check the type is the one of an object that implements IJsJsonSerializer
-            if (!typeof(IJsJsonSerializer).IsAssignableFrom(serializerType))
-                throw new Exception($"Type {serializerType} does not implement {typeof(IJsJsonSerializer)}");
-
-            if (serializers.ContainsKey(objectTypeToSerialize))
-                throw new Exception($"A serializer for {objectTypeToSerialize} is already registered in global scope.");
-
-            // Create an instance of the serializer
-            IJsJsonSerializer serializer = (IJsJsonSerializer)Activator.CreateInstance(serializerType);
-
-            // Check if the serializer can serialize the type
-            if (!serializer.CanSerialize(objectTypeToSerialize, out _))
-                throw new Exception($"Serializer {serializerType} cannot serialize {objectTypeToSerialize}");
-
-            // Register the serializer for the type
-            serializers[objectTypeToSerialize] = serializer;
-        }
-
-        /// <summary>
-        /// Given a type, tries to get a global serializer for it
-        /// </summary>
-        internal static bool TryGetGlobalSerializer(Type targetType, out IJsJsonSerializer serializer, out ITsTypeDescriptor typescriptDescriptor)
-        {
-            serializer = null;
-            typescriptDescriptor = null;
-
-            if (serializers.TryGetValue(targetType, out serializer) && serializer.CanSerialize(targetType, out typescriptDescriptor))
-                return true;
-
-            return false;
-        }
-    }
-
     /// <summary>
     /// To put on a class to tell how a class should be exposed to the web
     /// Both for serialization and for generating the typescript
