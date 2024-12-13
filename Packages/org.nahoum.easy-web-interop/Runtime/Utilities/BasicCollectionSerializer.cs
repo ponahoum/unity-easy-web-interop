@@ -100,12 +100,9 @@ namespace Nahoum.UnityJSInterop
                 {
                     Type elementType = targetType.GetElementType();
                     if (basicTypesSerializer.CanSerialize(elementType, out ITsTypeDescriptor typeDescriptor))
-                        return typeDescriptor.GetTsTypeDefinition(elementType) + "[]";
-
+                        // Important to add () if the object is nullable (aka string |null for example)
+                        return $"({typeDescriptor.GetTsTypeDefinition(elementType)})[]";
                 }
-
-
-
                 throw new Exception($"Type {targetType} is not supported by the BasicCollectionSerializerTsDescriptor");
             }
         }
