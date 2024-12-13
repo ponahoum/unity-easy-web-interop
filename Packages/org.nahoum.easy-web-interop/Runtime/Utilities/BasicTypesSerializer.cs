@@ -83,8 +83,8 @@ namespace Nahoum.UnityJSInterop
                 Vector3 center = asBounds.center;
                 Vector3 extents = asBounds.extents;
                 string result = "{";
-                result += $"center: {JsonUtility.ToJson(center)},";
-                result += $"extents: {JsonUtility.ToJson(extents)}";
+                result += $"\"center\": {JsonUtility.ToJson(center)},";
+                result += $"\"extents\": {JsonUtility.ToJson(extents)}";
                 result += "}";
                 return result;
             }
