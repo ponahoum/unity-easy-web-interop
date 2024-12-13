@@ -444,7 +444,7 @@ namespace Nahoum.UnityJSInterop.Editor
                 // Create the type descriptor
                 TsProperty staticTypeDescriptor = new TsProperty()
                 {
-                    Key = GenerateTsNameFromType(type, namespaceDescriptor) + "_static",
+                    Key = GenerateTsNameFromType(type, namespaceDescriptor),
                     Value = GenerateTsNameFromType(type, TsNamespaceDescriptor.Empty()) + "_static",
                 };
                 sortedTypes[namespaceDescriptor].Add(staticTypeDescriptor);
