@@ -44,7 +44,7 @@ namespace Nahoum.UnityJSInterop
                 else if (targetType == typeof(Color32))
                     return "{r: number, g: number, b: number, a: number}";
                 else if (targetType == typeof(Bounds))
-                    return "{center: " + GetTsTypeDefinition(typeof(Vector3)) + ", size: " + GetTsTypeDefinition(typeof(Vector3)) + "}";
+                    return "{center: " + GetTsTypeDefinition(typeof(Vector3)) + ", extents: " + GetTsTypeDefinition(typeof(Vector3)) + "}";
                 else
                     throw new Exception($"Type {targetType} is not supported by the BasicTypesDescriptorTsGenerator");
             }
@@ -81,10 +81,10 @@ namespace Nahoum.UnityJSInterop
             else if (targetObject is Bounds asBounds)
             {
                 Vector3 center = asBounds.center;
-                Vector3 size = asBounds.size;
+                Vector3 extents = asBounds.extents;
                 string result = "{";
                 result += $"center: {JsonUtility.ToJson(center)},";
-                result += $"size: {JsonUtility.ToJson(size)}";
+                result += $"extents: {JsonUtility.ToJson(extents)}";
                 result += "}";
                 return result;
             }
