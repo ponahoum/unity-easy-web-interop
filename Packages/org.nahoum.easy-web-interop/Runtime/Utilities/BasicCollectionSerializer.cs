@@ -84,7 +84,6 @@ namespace Nahoum.UnityJSInterop
         }
     }
 
-
     /// <summary>
     /// This is a basic serializer that serializes Arrays of basic types
     /// </summary>
