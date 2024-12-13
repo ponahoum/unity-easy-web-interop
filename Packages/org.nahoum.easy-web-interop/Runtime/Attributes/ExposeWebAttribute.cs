@@ -17,7 +17,7 @@ namespace Nahoum.UnityJSInterop
         static HashSet<Type> exposedTypesCache = null;
 
         // An informative description of the method
-        public string description { get; }
+        public string description { get; set; }
 
         // For efficiency, we cache the exposed methods for each method's containing type, separated by static and instance methods
         // We also have a dictionary with all the exposed methods grouped by type (static and instance together)
