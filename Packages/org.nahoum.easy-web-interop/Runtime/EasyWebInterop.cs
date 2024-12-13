@@ -7,19 +7,19 @@ namespace Nahoum.UnityJSInterop
 {
     public static class UnityJSInterop
     {
-#if !UNITY_EDITOR && UNITY_WEBGL
         // Protection against double setup
         static bool isSetup = false;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void Setup()
         {
-            if(isSetup)
-            throw new System.Exception("UnityJSInterop is already setup. You should only call this method once.");
+            if (isSetup)
+                throw new System.Exception("UnityJSInterop is already setup. You should only call this method once.");
+#if !UNITY_EDITOR && UNITY_WEBGL
             InternalInteropSetup.Setup();
             AutoRegister.Setup();
+#endif
             isSetup = true;
         }
-#endif
     }
 }
