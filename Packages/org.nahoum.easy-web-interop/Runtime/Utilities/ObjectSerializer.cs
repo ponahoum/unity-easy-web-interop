@@ -58,6 +58,14 @@ namespace Nahoum.UnityJSInterop
                 return true;
             }
 
+            // Next try getting the serializer from the global serializers
+            if (GlobalExposeWebSerializationAttribute.TryGetGlobalSerializer(toSerializeType, out serializer, out _))
+            {
+                // Register the serializer for future use
+                RegisterSerializer(serializer);
+                return true;
+            }
+
             return false;
         }
 
