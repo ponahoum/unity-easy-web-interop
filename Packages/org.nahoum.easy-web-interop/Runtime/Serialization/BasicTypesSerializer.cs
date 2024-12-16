@@ -45,6 +45,17 @@ namespace Nahoum.UnityJSInterop
                     return "{r: number, g: number, b: number, a: number}";
                 else if (targetType == typeof(Bounds))
                     return "{center: " + GetTsTypeDefinition(typeof(Vector3)) + ", extents: " + GetTsTypeDefinition(typeof(Vector3)) + "}";
+                // Case enum
+                else if (targetType.IsEnum)
+                {
+                    string result = "{";
+                    foreach (string name in Enum.GetNames(targetType))
+                    {
+                        result += $"{name}: {targetType}.{name},";
+                    }
+                    result += "}";
+                    return result;
+                }
                 else
                     throw new Exception($"Type {targetType} is not supported by the BasicTypesDescriptorTsGenerator");
             }
@@ -92,6 +103,11 @@ namespace Nahoum.UnityJSInterop
             else if (targetObject is Vector2 || targetObject is Vector3 || targetObject is Vector4 || targetObject is Quaternion || targetObject is Color || targetObject is Color32)
             {
                 return JsonUtility.ToJson(targetObject);
+            }
+            // Enum
+            else if (targetObject.GetType().IsEnum)
+            {
+                return targetObject.ToString();
             }
             else
                 throw new Exception($"Type {targetObject.GetType()} is not supported by the BasicTypesSerializer");
