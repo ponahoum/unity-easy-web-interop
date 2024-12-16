@@ -19,7 +19,7 @@ namespace Nahoum.UnityJSInterop
             sw.Start();
             AssertAllExposedMethodsFromInterfaceAreExposed();
             sw.Stop();
-            UnityEngine.Debug.Log($"Sanity checks took {sw.ElapsedMilliseconds}ms. To be improved.");
+            UnityEngine.Debug.LogWarning($"Sanity checks took {sw.ElapsedMilliseconds}ms. To be improved.");
         }
 
         /// <summary>

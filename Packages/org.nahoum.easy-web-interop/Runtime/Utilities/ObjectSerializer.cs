@@ -51,7 +51,15 @@ namespace Nahoum.UnityJSInterop
             }
 
             // If no serializer is found, try to look for one in the attributes
-            if (ExposeWebSerializationAttribute.TryGetSerializer(toSerializeType, out serializer, out _))
+            if (ExposeWebSerializationAttribute.TryGetSerializer(toSerializeType, out serializer))
+            {
+                // Register the serializer for future use
+                RegisterSerializer(serializer);
+                return true;
+            }
+
+            // If still, no serializer is found, try to get from the attributes put on the serializers themselves
+            if (ExposeWebSerializerAttribute.TryGetSerializer(toSerializeType, out serializer))
             {
                 // Register the serializer for future use
                 RegisterSerializer(serializer);
