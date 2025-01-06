@@ -108,13 +108,17 @@ Module.utilities.GetManagedBoolArray = (array) => {
 }
 
 Module.utilities.GetManagedAction = (callback, managedTypesArray) => {
+
+    // If array is null, just replace it with empty array (optionnal arg)
+    const inputTypeStringArray = managedTypesArray == null ? [] : managedTypesArray;
+
     // Check managed types array is a string array
-    if (!isStringArray(managedTypesArray))
+    if (!isStringArray(inputTypeStringArray))
         throw new Error("The second parameter must be an array of strings.");
 
     // Get callback signature depending on the length of the managed types array
     let callbackSignature = "v";
-    for (let i = 0; i < managedTypesArray.length; i++)
+    for (let i = 0; i < inputTypeStringArray.length; i++)
         callbackSignature += "i";
 
     // Ensure the the callback is a function
@@ -122,7 +126,7 @@ Module.utilities.GetManagedAction = (callback, managedTypesArray) => {
         throw new Error("The first parameter must be a function.");
 
     // Make sure the function number of parameters matches the number of managed types
-    if (callback.length !== managedTypesArray.length)
+    if (callback.length !== inputTypeStringArray.length)
         throw new Error("The number of parameters of the callback must match the number of managed types.");
 
     // Now, create a callback that wraps this callback so that its returns GC collect ptrs
