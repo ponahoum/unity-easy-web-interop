@@ -129,7 +129,7 @@ Module.utilities.GetManagedAction = (callback, managedTypesArray) => {
   const jsPtrCallback = Module.internalJS.createCallback(newCallback, callbackSignature);
 
   // Convert the string array
-  const ptrToManagedStringArray = Module.utilities.GetManagedStringArray(managedTypesArray);
+  const ptrToManagedStringArray = Module.utilities.GetManagedStringArray(inputTypeStringArray);
 
   // Get the action pointer on the C# side
   const managedAction = Module.internal.GetManagedWrappedAction(ptrToManagedStringArray, jsPtrCallback);
