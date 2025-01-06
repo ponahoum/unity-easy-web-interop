@@ -246,7 +246,6 @@ namespace Nahoum.UnityJSInterop
             return GCUtils.NewManagedObject(actionWrapped);
         }
 
-
         /// <summary>
         /// Given an intptr to a returned object, check if the object has the ExposeWebAttribute
         /// If it does, expose the object methods to the web
@@ -293,7 +292,8 @@ namespace Nahoum.UnityJSInterop
         }
 
         [MonoPInvokeCallback]
-        static IntPtr GetDelegateCount(){
+        static IntPtr GetDelegateCount()
+        {
             return GCUtils.NewManagedObject(MethodsRegistry.GetDelegateCount());
         }
 

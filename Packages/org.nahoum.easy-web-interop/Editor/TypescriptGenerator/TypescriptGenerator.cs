@@ -1,17 +1,36 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
-using UnityEngine;
 
 namespace Nahoum.UnityJSInterop.Editor
 {
     public class TypescriptGenerator
     {
-        static HashSet<Type> ignoredTypes = new HashSet<Type>(){
-          typeof(System.String), typeof(System.Double), typeof(System.Int32), typeof(System.Byte), typeof(System.Boolean), typeof(System.Single), typeof(System.Int64), typeof(Action)
+        // A GUID generator
+        static HashSet<Type> additionalTypesToGenerate = new HashSet<Type>(){
+            typeof(String),
+            typeof(Double),
+            typeof(Int32),
+            typeof(Byte),
+            typeof(Boolean),
+            typeof(Single),
+            typeof(Int64),
+            typeof(Action),
+            typeof(string[]),
+            typeof(int[]),
+            typeof(bool[]),
+            typeof(double[]),
+            typeof(byte[]),
+            typeof(float[]),
+            typeof(IList),
+            typeof(ICollection),
+            typeof(IEnumerable),
+            typeof(IEnumerator),
         };
 
         static readonly string mainTemplatePath = "Packages/org.nahoum.easy-web-interop/Editor/TypescriptGenerator/Templates/MainTemplate.ts";
@@ -25,7 +44,7 @@ namespace Nahoum.UnityJSInterop.Editor
         {
 
             // Prompt for path on disk for a .ts file
-            string path = EditorUtility.SaveFilePanel("Save Typescript file", "", "UnityJSInterop.ts", "ts");
+            string path = EditorUtility.SaveFilePanel("Save Typescript file", "", "UnityJSInterop.d.ts", "ts");
 
             if (string.IsNullOrEmpty(path))
                 return;
@@ -38,87 +57,153 @@ namespace Nahoum.UnityJSInterop.Editor
         }
 
         /// <summary>
-        /// Generate a typescript file describing all exposed methods
+        /// Generate a typescript file describing all exposed methods with the ExposeWebAttribute
+        /// Save it in a .d.ts file of your choice then assign it directly to unity module in your js project
         /// </summary>
         public static string GenerateTypescript()
         {
-            // For each type, additions the parameters and return types of each exposed methods
-            var typesByNamespace = ExposedWebAttributeEditorUtilities.GetExposedTypesByNamespace();
+            // Generate the typescript description
+            Dictionary<TsNamespaceDescriptor, HashSet<TsTypeDescriptor>> typescriptDescription = GenerateTypescriptTypesToExportDescription();
 
-            // Output ts for each namespace
-            StringBuilder sb = new StringBuilder();
-            foreach (var namespaceEntry in typesByNamespace)
+            // Generate the typescript file
+            string typescriptString = GenerateTypescriptFromTsDescriptor(typescriptDescription);
+
+            // Append the static module signature
+            typescriptString += GenerateStaticModuleSignature();
+
+            return typescriptString;
+        }
+
+        /// <summary>
+        /// Generate a typescript file describing all exposed types
+        /// Classified by namespace
+        /// </summary>
+        internal static Dictionary<TsNamespaceDescriptor, HashSet<TsTypeDescriptor>> GenerateTypescriptTypesToExportDescription()
+        {
+            // For each type, additions the parameters and return types of each exposed methodsmethods
+            ISet<Type> allTypesExported = TypescriptGenerationUtilities.GetTypesToGenerateTypesFileFrom(excludeTestsAssemblies: true);
+
+            // Add additional types to generate
+            foreach (Type additionnalType in additionalTypesToGenerate)
+                allTypesExported.Add(additionnalType);
+
+            // Create a list of all types to generate
+            Dictionary<TsNamespaceDescriptor, HashSet<TsTypeDescriptor>> typesToGenerate = new Dictionary<TsNamespaceDescriptor, HashSet<TsTypeDescriptor>>();
+
+            // Generate the types to generate
+            foreach (Type type in allTypesExported)
             {
-                NamespaceDescriptor targetNamespace = namespaceEntry.Key;
-                HashSet<Type> types = namespaceEntry.Value;
-                if (targetNamespace.HasNamespace)
-                    sb.AppendLine("export namespace " + targetNamespace.name + " {");
+                TsNamespaceDescriptor namespaceDescriptor = TsNamespaceDescriptor.CreateFrom(type);
 
-                foreach (Type type in types)
+                if (!typesToGenerate.ContainsKey(namespaceDescriptor))
+                    typesToGenerate[namespaceDescriptor] = new HashSet<TsTypeDescriptor>();
+
+                // Get the exposed methods for this type
+                TypescriptGenerationUtilities.GetExposedMethodsSorted(type, out ISet<MethodInfo> staticMethods, out ISet<MethodInfo> instanceMethods);
+
+                bool isStaticType = type.IsAbstract && type.IsSealed;
+                bool hasStaticMethods = staticMethods.Count > 0;
+                string typeName = GenerateTsNameFromType(type, namespaceDescriptor);
+
+                // Handle static methods
+                if (hasStaticMethods)
                 {
-                    // Skip ignored types to avoid eventual conflicts with the template already containing a few types not to be redefined
-                    if (ignoredTypes.Contains(type))
-                        continue;
-
-                    // Get the exposed methods for this type
-                    ExposedWebAttributeEditorUtilities.GetExposedMethodsSorted(type, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out Dictionary<MethodInfo, ExposeWebAttribute> instanceMethods);
-
-                    string typeName = GenerateTsNameFromType(type, targetNamespace);
-                    bool isStaticType = type.IsAbstract && type.IsSealed;
-                    bool hasStaticMethods = staticMethods.Count > 0;
-
-                    if (hasStaticMethods)
+                    TsTypeDescriptor staticTypeDescriptor = new TsTypeDescriptor()
                     {
-                        sb.AppendLine("export type " + typeName + "_static = {");
+                        TypeName = typeName + "_static",
+                    };
 
-                        // Add key to fully differentiate between types in typescript (name is not enough)
-                        sb.AppendLine($"key: '{type.FullName}';");
-
-                        foreach (var method in staticMethods)
-                        {
-                            var methodInfo = method.Key;
-                            var signature = GenerateSignatureFromMethod(methodInfo, targetNamespace);
-                            sb.AppendLine(signature + ";");
-                        }
-                        sb.AppendLine("}");
-                    }
-
-                    if (!isStaticType)
+                    HashSet<TsProperty> properties = new HashSet<TsProperty>
                     {
+                        new TsProperty($"fullTypeName_{GetGuid()}", $"'{type.FullName}'"),
+                        new TsProperty($"assembly_{GetGuid()}", $"'{type.Assembly.FullName}'")
+                    };
 
-                        sb.AppendLine("export type " + typeName + " = {");
+                    foreach (MethodInfo method in staticMethods)
+                        properties.Add(GenerateSignatureFromMethod(method, namespaceDescriptor));
 
-                        // Add key to fully differentiate between types in typescript (name is not enough)
-                        sb.AppendLine($"key: '{type.FullName}';");
-
-                        // Get all exposed methods within this type
-                        foreach (var method in instanceMethods)
-                        {
-                            var methodInfo = method.Key;
-                            var signature = GenerateSignatureFromMethod(methodInfo, targetNamespace);
-                            sb.AppendLine(signature + ";");
-                        }
-
-                        sb.AppendLine("}");
-
-                        if (hasStaticMethods)
-                        {
-                            sb.Append(" & " + typeName + "_static;");
-                        }
-                    }
-
-
+                    staticTypeDescriptor.Properties = properties;
+                    typesToGenerate[namespaceDescriptor].Add(staticTypeDescriptor);
                 }
-                if (targetNamespace.HasNamespace)
-                    sb.AppendLine("}");
+
+                // Handle instance methods
+                if (!isStaticType)
+                {
+                    TsTypeDescriptor instanceTypeDescriptor = new TsTypeDescriptor()
+                    {
+                        TypeName = typeName,
+                    };
+                    HashSet<TsProperty> properties = new HashSet<TsProperty>
+                    {
+                        new TsProperty($"fullTypeName_{GetGuid()}", $"'{type.FullName}'"),
+                        new TsProperty($"assembly_{GetGuid()}", $"'{type.Assembly.FullName}'")
+                    };
+
+                    // For all objects, we may gather the value of the serializer instance object
+                    if (ObjectSerializer.TryGetSerializer(type, out IJsJsonSerializer serializer) && serializer.CanSerialize(type, out ITsTypeDescriptor tsDescriptor))
+                        properties.Add(new TsProperty("value", tsDescriptor.GetTsTypeDefinition(type)));
+                    else
+                        properties.Add(new TsProperty("value", "any"));
+
+                    // Get all exposed methods within this type
+                    foreach (MethodInfo method in instanceMethods)
+                        properties.Add(GenerateSignatureFromMethod(method, namespaceDescriptor));
+                    instanceTypeDescriptor.Properties = properties;
+
+                    // Add inherited types
+                    HashSet<Type> inheritingTypes = TypescriptGenerationUtilities.GetAllInheritingTypes(type);
+                    ISet<string> inheritingTypesString = new HashSet<string>();
+                    foreach (Type inheritingType in inheritingTypes)
+                    {
+                        // If the inheriting type is not exposed, skip because in any case it will be totally useless
+                        if (!allTypesExported.Contains(inheritingType))
+                            continue;
+
+                        string inheritingTypeName = GenerateTsNameFromType(inheritingType, namespaceDescriptor);
+                        inheritingTypesString.Add(inheritingTypeName);
+                    }
+
+                    // Also add the static marker if applicable
+                    if (hasStaticMethods)
+                        inheritingTypesString.Add(typeName + "_static");
+
+                    instanceTypeDescriptor.InheritedTypes = inheritingTypesString;
+                    typesToGenerate[namespaceDescriptor].Add(instanceTypeDescriptor);
+                }
+            }
+
+            return typesToGenerate;
+        }
+
+        /// <summary>
+        /// Given a dictionary of types to export organized be namespace, generate a string representing the typescript file with all types exported, classified by namespace
+        /// </summary>
+        private static string GenerateTypescriptFromTsDescriptor(Dictionary<TsNamespaceDescriptor, HashSet<TsTypeDescriptor>> keyValuePairs)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var namespaceEntry in keyValuePairs)
+            {
+                TsNamespaceDescriptor targetNamespace = namespaceEntry.Key;
+                HashSet<TsTypeDescriptor> types = namespaceEntry.Value;
+                targetNamespace.WriteStartExportNamespace(sb);
+
+                foreach (var type in types)
+                {
+                    sb.AppendLine(type.GetExportTypeTsString());
+                }
+
+                targetNamespace.WriteEndExportNamespace(sb);
             }
 
             var result = sb.ToString();
-            result += GenerateStaticModuleSignature();
 
             return result;
-
         }
+
+        /// <summary>
+        /// Generates a random GUID
+        /// </summary>
+        private static string GetGuid() => Guid.NewGuid().ToString().Replace("-", "");
 
         /// <summary>
         /// Get the hardcoded typescript file to be appended to the generated typescript file
@@ -138,7 +223,7 @@ namespace Nahoum.UnityJSInterop.Editor
         /// Given a type, generate a typescript name for it
         // This is done in the context of a provided namespace, so that the generated type is relative to the provided namespace
         /// </summary>
-        private static string GenerateTsNameFromType(Type type, NamespaceDescriptor fromCurrentNamespace, bool useUnderScoreForNamespace = false)
+        private static string GenerateTsNameFromType(Type type, TsNamespaceDescriptor fromCurrentNamespace, bool useUnderScoreForNamespace = false)
         {
             // Get the default name
             string typeName = type.Name;
@@ -146,107 +231,238 @@ namespace Nahoum.UnityJSInterop.Editor
             // Handle void case
             if (type == typeof(void))
                 return "void";
-            // Handle array case
+
+            // Handle array case, for which we take the element type and add _CSharpArray
             else if (type.IsArray)
             {
-                return "CSharpArray<" + GenerateTsNameFromType(type.GetElementType(), fromCurrentNamespace) + ">";
+                return GenerateTsNameFromType(type.GetElementType(), fromCurrentNamespace) + "_CSharpArray";
             }
-            // If type is async Task<T> or Task (async doesn't matter)
+            // If type is async Task<T> or Task (async doesn't matter), we return Promise<T> or Promise<void>
             else if (ReflectionUtilities.IsTypeTask(type, out bool hasReturnValue, out Type returnType))
             {
-                if (!hasReturnValue)
-                    return "Promise<void>";
-                else
-                    return "Promise<" + GenerateTsNameFromType(returnType, fromCurrentNamespace) + ">";
+                return $"Promise<{(!hasReturnValue ? "void" : GenerateTsNameFromType(returnType, fromCurrentNamespace))}>";
             }
             // Get a name that makes sense in typescript, expecially for generics
             // For generics, we add the number of parameters to the name, plus the name of each parameter with a $
             // For example, for Action<string, int> we would get Action2$System_String$System_Int32
             else if (type.IsGenericType)
             {
-                typeName = type.BaseType.Name;
+                typeName = type.Name.Substring(0, type.Name.IndexOf('`'));
                 typeName += type.GetGenericArguments().Length;
                 foreach (var genericArgument in type.GetGenericArguments())
                 {
-                    typeName += "$" + GenerateTsNameFromType(genericArgument, new NamespaceDescriptor(type), true);
+                    typeName += "$" + GenerateTsNameFromType(genericArgument, TsNamespaceDescriptor.CreateFrom(type), true);
                 }
             }
 
             // If the type is in the same namespace, we don't need to prefix it
-            if (fromCurrentNamespace.name == type.Namespace)
+            if (fromCurrentNamespace.NamespaceName == type.Namespace)
                 return typeName;
             else
                 return (type.Namespace + ".").Replace(".", useUnderScoreForNamespace ? "_" : ".") + typeName;
-
         }
 
         /// <summary>
         /// Generate a typescript signature from a method info
         /// </summary>
-        internal static string GenerateSignatureFromMethod(MethodInfo methodInfo, NamespaceDescriptor fromCurrentNamespace)
+        internal static TsProperty GenerateSignatureFromMethod(MethodInfo methodInfo, TsNamespaceDescriptor fromCurrentNamespace)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(methodInfo.Name);
-            sb.Append("(");
+            string methodSignature = methodInfo.Name + "(";
+            string methodReturnType = GenerateTsNameFromType(methodInfo.ReturnType, fromCurrentNamespace);
+
+            // Handle method name
             var parameters = methodInfo.GetParameters();
             for (int i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
-                sb.Append(parameter.Name);
-                sb.Append(": ");
-                sb.Append(GenerateTsNameFromType(parameter.ParameterType, fromCurrentNamespace));
+                methodSignature += parameter.Name;
+                methodSignature += ": ";
+                methodSignature += GenerateTsNameFromType(parameter.ParameterType, fromCurrentNamespace);
                 if (i < parameters.Length - 1)
-                    sb.Append(", ");
+                    methodSignature += ", ";
             }
-            sb.Append("): ");
-            sb.Append(GenerateTsNameFromType(methodInfo.ReturnType, fromCurrentNamespace));
-            return sb.ToString();
+            methodSignature += ")";
+
+            // Handle return type
+            return new TsProperty(methodSignature, methodReturnType);
 
         }
 
         /// <summary>
-        /// Generate the static module signature to expose all static 
+        /// Describes a type in typescript, with its properties and inherited types
+        /// Used to export a type in typescript like "export type ..."
+        /// </summary>
+        internal struct TsTypeDescriptor
+        {
+            public string TypeName;
+
+            // Typically the entries of the type, aka method / type
+            public ISet<TsProperty> Properties;
+
+            // The types to inherit from
+            public ISet<string> InheritedTypes;
+
+            internal string GetExportTypeTsString()
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.Append("export type ");
+                stringBuilder.Append(TypeName);
+                stringBuilder.AppendLine(" = {");
+
+                // Add properties
+                foreach (var property in Properties)
+                    property.WriteProperty(stringBuilder);
+
+                // Close the type definition
+                stringBuilder.Append("}");
+
+                // Add inherited types
+                if (InheritedTypes != null)
+                {
+                    foreach (var inheritedType in InheritedTypes)
+                    {
+                        stringBuilder.Append("& ");
+                        stringBuilder.Append(inheritedType);
+                    }
+                }
+
+                // Close the type
+                stringBuilder.AppendLine(";");
+
+                return stringBuilder.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Represents a property in typescript
+        /// Like key: value;
+        /// </summary>
+        internal struct TsProperty
+        {
+            public string Key;
+            public string Value;
+
+            public TsProperty(string key, string value)
+            {
+                Key = key;
+                Value = value;
+            }
+
+            public void WriteProperty(StringBuilder stringBuilder)
+            {
+                stringBuilder.Append(Key);
+                stringBuilder.Append(": ");
+                stringBuilder.Append(Value);
+                stringBuilder.Append(";");
+                stringBuilder.AppendLine();
+            }
+        }
+
+        /// <summary>
+        /// Represents a namespace in typescript
+        /// Allows to export the namespace like "export namespace ..."
+        /// </summary>
+        internal struct TsNamespaceDescriptor
+        {
+            public readonly string NamespaceName;
+
+            public void WriteStartExportNamespace(StringBuilder stringBuilder)
+            {
+                if (string.IsNullOrEmpty(NamespaceName))
+                    return;
+
+                stringBuilder.Append("export namespace ");
+                stringBuilder.Append(NamespaceName);
+                stringBuilder.AppendLine(" {");
+
+            }
+
+            public void WriteEndExportNamespace(StringBuilder stringBuilder)
+            {
+                if (string.IsNullOrEmpty(NamespaceName))
+                    return;
+                stringBuilder.AppendLine("}");
+            }
+
+            public void WriteStartNamespaceNameAsKey(StringBuilder stringBuilder)
+            {
+                if (string.IsNullOrEmpty(NamespaceName))
+                    return;
+
+                stringBuilder.Append($"\"{NamespaceName}\"");
+                stringBuilder.Append(": {");
+            }
+
+            public void WriteEndNamespaceNameAsKey(StringBuilder stringBuilder)
+            {
+                if (string.IsNullOrEmpty(NamespaceName))
+                    return;
+
+                stringBuilder.Append("},");
+            }
+
+            public bool Contains(Type type)
+            {
+                return type.Namespace == NamespaceName;
+            }
+
+            public static TsNamespaceDescriptor CreateFrom(Type type)
+            {
+                return new TsNamespaceDescriptor(type.Namespace);
+            }
+
+            public static TsNamespaceDescriptor Empty() => new TsNamespaceDescriptor(string.Empty);
+
+            private TsNamespaceDescriptor(string namespaceName)
+            {
+                NamespaceName = namespaceName;
+            }
+        }
+
+        /// <summary>
+        /// Generate the static module signature to expose all static classes (which is basically the entrypoint)
         /// </summary>
         private static string GenerateStaticModuleSignature()
         {
-            StringBuilder sb = new StringBuilder();
 
             // For each static method under each namespace > type > method, we want to create a nested object in the static module
             // For example, for static class ACoolObject under the namespace Nahoum.UnityJSInterop, we would have: Nahoum.UnityJSInterop.ACoolObject_static
-            var sortedMethods = ExposedWebAttributeEditorUtilities.GetExposedTypesByNamespace();
-            foreach (var namespaceEntry in sortedMethods)
+            ISet<Type> allTypes = TypescriptGenerationUtilities.GetTypesToGenerateTypesFileFrom(excludeTestsAssemblies: true);
+            Dictionary<TsNamespaceDescriptor, HashSet<TsProperty>> sortedTypes = new Dictionary<TsNamespaceDescriptor, HashSet<TsProperty>>();
+
+            foreach (Type type in allTypes)
             {
-                NamespaceDescriptor targetNamespace = namespaceEntry.Key;
-                HashSet<Type> types = namespaceEntry.Value;
+                TypescriptGenerationUtilities.GetExposedMethodsSorted(type, out ISet<MethodInfo> staticMethods, out _);
+                if (staticMethods.Count == 0)
+                    continue;
 
-                // First build for the namespace the nested entry
-                string[] namespaceSplit = string.IsNullOrEmpty(targetNamespace.name) ? new string[] { } : targetNamespace.name.Split('.');
-                for (int i = 0; i < namespaceSplit.Length; i++)
+                // Otheriwse we can expose the type
+                TsNamespaceDescriptor namespaceDescriptor = TsNamespaceDescriptor.CreateFrom(type);
+                if (!sortedTypes.ContainsKey(namespaceDescriptor))
+                    sortedTypes[namespaceDescriptor] = new HashSet<TsProperty>();
+
+                // Create the type descriptor
+                TsProperty staticTypeDescriptor = new TsProperty()
                 {
-                    sb.AppendLine($"{new string('\t', i)}{namespaceSplit[i]}: {{");
-                }
+                    Key = GenerateTsNameFromType(type, namespaceDescriptor),
+                    Value = GenerateTsNameFromType(type, TsNamespaceDescriptor.Empty()) + "_static",
+                };
+                sortedTypes[namespaceDescriptor].Add(staticTypeDescriptor);
+            }
 
-                // Expose static signatures here
-                foreach (Type type in types)
-                {
-                    // Get the exposed methods for this type
-                    ExposedWebAttributeEditorUtilities.GetExposedMethodsSorted(type, out Dictionary<MethodInfo, ExposeWebAttribute> staticMethods, out _);
+            StringBuilder sb = new StringBuilder();
+            foreach (KeyValuePair<TsNamespaceDescriptor, HashSet<TsProperty>> item in sortedTypes)
+            {
+                // Write the namespace
+                TsNamespaceDescriptor namespaceDescriptor = item.Key;
+                namespaceDescriptor.WriteStartNamespaceNameAsKey(sb);
 
-                    // If no static methods, skip
-                    if (staticMethods.Count == 0)
-                        continue;
+                // Write each static type in the namespace
+                foreach (TsProperty typeDesc in item.Value)
+                    typeDesc.WriteProperty(sb);
 
-                    // Otherwise, add the static type
-                    string simpleTypeName = type.Name;
-                    string fullyQualifiedTypeName = GenerateTsNameFromType(type, new NamespaceDescriptor());
-                    sb.AppendLine($"{simpleTypeName}: {fullyQualifiedTypeName}_static;");
-                }
-
-                // Close the namespace
-                for (int i = namespaceSplit.Length - 1; i >= 0; i--)
-                {
-                    sb.AppendLine($"{new string('\t', i)}}};");
-                }
+                // Close namespace
+                namespaceDescriptor.WriteEndNamespaceNameAsKey(sb);
             }
 
             // Get main template

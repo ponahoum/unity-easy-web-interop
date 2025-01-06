@@ -107,7 +107,7 @@ namespace Nahoum.UnityJSInterop
             IntPtr arrayPtr = MarshalUtilities.MarshalStringArray(pathToMethod, out int length, out Action freeArrayPtr);
             IntPtr functionSignature = MarshalUtilities.MarshalString(GetRegistrySignatureFromDelegate(registryData.asDelegate), out Action freeFunctionSignaturePtr);
 
-            RegisterMethodInRegistry(new IntPtr(targetId), registryData.registryPtr, new IntPtr(currentDelegateIndex), arrayPtr, length, functionSignature,  MarshalUtilities.EncodeBool(ReflectionUtilities.DelegateReturnsTask(method)));
+            RegisterMethodInRegistry(new IntPtr(targetId), registryData.registryPtr, new IntPtr(currentDelegateIndex), arrayPtr, length, functionSignature, MarshalUtilities.EncodeBool(ReflectionUtilities.DelegateReturnsTask(method)));
 
             // Free the allocated pointers except the function key which is needed to be called later on
             // The rest has been marshalled by js so we can free themÒ
@@ -167,9 +167,8 @@ namespace Nahoum.UnityJSInterop
         /// </summary>
         internal static void FreeDelegate(int delegateKey)
         {
-            if(methodsRegistry.Remove(delegateKey)){
-                Debug.Log("Removed delegate from registry: " + delegateKey);
-            } else {
+            if (!methodsRegistry.Remove(delegateKey))
+            {
                 throw new Exception("Delegate to delete not found in registry: " + delegateKey);
             }
         }

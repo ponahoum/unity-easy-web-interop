@@ -16,5 +16,13 @@ namespace Nahoum.UnityJSInterop.Tests
         public static readonly byte TestByte = 255;
         public static readonly byte[] TestByteArray = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         public static readonly string TestExceptionValue = "This is a test exception";
+
+        // Unity basic struct types
+        public static readonly UnityEngine.Vector2 TestVector2 = new UnityEngine.Vector2(1, 2);
+        public static readonly UnityEngine.Vector3 TestVector3 = new UnityEngine.Vector3(1, 2, 3);
+        public static readonly UnityEngine.Vector4 TestVector4 = new UnityEngine.Vector4(1, 2, 3, 4);
+        public static readonly UnityEngine.Quaternion TestQuaternion = new UnityEngine.Quaternion(1, 2, 3, 4);
+        public static readonly UnityEngine.Color TestColor = new UnityEngine.Color(1, 2, 3, 4);
+        public static readonly UnityEngine.Color32 TestColor32 = new UnityEngine.Color32(1, 2, 3, 4);
     }
 }

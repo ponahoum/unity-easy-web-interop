@@ -1,56 +1,51 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
-using NUnit.Framework;
 using UnityEngine.Scripting;
 
 namespace Nahoum.UnityJSInterop
 {
-    // Expose web attribute on methods and classes
-    [AttributeUsage(AttributeTargets.Method)]
+    /// <summary>
+    ///  Expose web attribute on methods and classes
+    ///  Inherited because for example if we put in an a interface, we want to expose the methods in all inheriting classes from the interface
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Interface, Inherited = true)]
     public class ExposeWebAttribute : PreserveAttribute
     {
         // Called once when the class is loaded
         static HashSet<Type> exposedTypesCache = null;
 
-        // For efficiency, we cache the exposed methods for each type, separated by static and instance methods
+        // An informative description of the method
+        public string description { get; set; }
+
+        // For efficiency, we cache the exposed methods for each method's containing type, separated by static and instance methods
         // We also have a dictionary with all the exposed methods grouped by type (static and instance together)
         // This way the reflection is only done once
-        readonly static Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>> allExposedMethodsCache = new Dictionary<Type, Dictionary<MethodInfo, ExposeWebAttribute>>();
+        readonly static Dictionary<Type, HashSet<MethodInfo>> allExposedMethodsCache = new Dictionary<Type, HashSet<MethodInfo>>();
 
         /// <summary>
         /// Returns a list of all the possibles types containing methods with the ExposeWebAttribute appearing on them
         /// Wether those methods are static or not
         /// </summary>
-        internal static IReadOnlyCollection<Type> GetAllTypesWithWebExposeMethods()
+        internal static IReadOnlyCollection<Type> GetAllTypesWithWebExposedMethods()
         {
-
             if (exposedTypesCache != null)
                 return exposedTypesCache;
 
             exposedTypesCache = new HashSet<Type>();
 
             // Cache all the types with exposed methods
-            List<Type> availableTypes = ReflectionUtilities.GetAllAssembliesTypes();
+            IReadOnlyCollection<Type> availableTypes = ReflectionUtilities.GetAllAssembliesTypes();
 
             // Get all the types in the assembly
             foreach (Type targetType in availableTypes)
             {
-                var exposedMethods = GetExposedMethods(targetType);
+                ISet<MethodInfo> exposedMethods = GetExposedMethods(targetType);
 
                 // Skip if no exposed methods
                 if (exposedMethods.Count == 0)
                     continue;
-
-                // Protect against all non supported types
-                if (targetType.IsGenericTypeDefinition)
-                    throw new Exception($"Cannot expose generic type {targetType}. Generic types are not supported.");
-
-                if (targetType.IsInterface)
-                    throw new Exception($"Cannot expose interface {targetType}. Interfaces are not supported.");
-
-                if (!targetType.IsClass)
-                    throw new Exception($"Cannot expose non class type {targetType}. Only classes are supported.");
 
                 exposedTypesCache.Add(targetType);
             }
@@ -66,11 +61,12 @@ namespace Nahoum.UnityJSInterop
         /// <summary>
         /// Get all the exposed methods of a type, wether they are static or not
         /// </summary>
-        internal static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedMethods(Type targetType)
+        internal static ISet<MethodInfo> GetExposedMethods(Type targetType)
         {
             if (allExposedMethodsCache.ContainsKey(targetType))
                 return allExposedMethodsCache[targetType];
-            var result = GetExposedMethods(targetType, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
+
+            HashSet<MethodInfo> result = GetExposedMethods(targetType, BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public);
             allExposedMethodsCache.Add(targetType, result);
             return result;
         }
@@ -79,16 +75,16 @@ namespace Nahoum.UnityJSInterop
         /// Given a type, return all the methods with the ExposeWebAttribute
         /// Wether those methods are static or not
         /// </summary>
-        private static Dictionary<MethodInfo, ExposeWebAttribute> GetExposedMethods(Type targetType, BindingFlags flags)
+        private static HashSet<MethodInfo> GetExposedMethods(Type targetType, BindingFlags flags)
         {
-            var result = new Dictionary<MethodInfo, ExposeWebAttribute>();
+            HashSet<MethodInfo> result = new HashSet<MethodInfo>();
 
-            // Get all static methods
+            // Get all methods with the ExposeWebAttribute directly in the type
             MethodInfo[] methods = targetType.GetMethods(flags);
             foreach (MethodInfo method in methods)
             {
                 if (HasWebExposeAttribute(method, out ExposeWebAttribute attr))
-                    result.Add(method, attr);
+                    result.Add(method);
             }
 
             return result;
@@ -100,15 +96,22 @@ namespace Nahoum.UnityJSInterop
         /// </summary>
         internal static bool HasWebExposeAttribute(MethodInfo method, out ExposeWebAttribute attribute)
         {
-            attribute = method.GetCustomAttribute<ExposeWebAttribute>();
+            attribute = method.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
 
-            if(attribute == null)
+            // If attribute is still null, try to get it from the method's containing class / type
+            // BETA - Might not work in all cases
+            if (attribute == null)
+                attribute = method.DeclaringType.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
+
+            // At this point, if the attribute is still null, the method is not exposed
+            if (attribute == null)
                 return false;
-            
-            if(!method.IsPublic)
+
+            if (!method.IsPublic)
                 throw new Exception($"Method {method.Name} in {method.DeclaringType} is not public. Only public methods can be exposed.");
 
-            if(method.IsGenericMethodDefinition)
+            // Case the method is Generic like Method<T> or returns T like T Method()
+            if (method.IsGenericMethod || method.ReturnType.IsGenericParameter)
                 throw new Exception($"Method {method.Name} in {method.DeclaringType} is a generic method. Generic methods are not supported and cannot be exposed.");
 
             return true;

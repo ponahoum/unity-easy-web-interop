@@ -18,19 +18,19 @@ namespace Nahoum.UnityJSInterop
 
         private static void RegisterAllStaticMethds()
         {
-            var allExposedTypes = ExposeWebAttribute.GetAllTypesWithWebExposeMethods();
+            var allExposedTypes = ExposeWebAttribute.GetAllTypesWithWebExposedMethods();
             foreach (var exposedType in allExposedTypes)
             {
-                var exposedStaticMethods = ExposeWebAttribute.GetExposedMethods(exposedType);
+                System.Collections.Generic.ISet<MethodInfo> exposedStaticMethods = ExposeWebAttribute.GetExposedMethods(exposedType);
 
                 // Get all the static and public methods
-                foreach (var method in exposedStaticMethods)
+                foreach (MethodInfo method in exposedStaticMethods)
                 {
-                    if (method.Key.IsStatic)
+                    if (method.IsStatic)
                     {
-                        MethodInfo staticMethod = method.Key;
+                        MethodInfo staticMethod = method;
                         Delegate del = ReflectionUtilities.CreateDelegate(staticMethod, null);
-                        MethodsRegistry.RegisterMethod(NamingUtility.GetMethodJSPath(method.Key), del);
+                        MethodsRegistry.RegisterMethod(NamingUtility.GetMethodJSPath(method), del);
                     }
                 }
             }
@@ -44,15 +44,13 @@ namespace Nahoum.UnityJSInterop
             var exposedMethods = ExposeWebAttribute.GetExposedMethods(instance.GetType());
 
             // Inject instance methods
-            foreach (var methodWithExposeWeb in exposedMethods)
+            foreach (MethodInfo methodWithExposeWeb in exposedMethods)
             {
-                MethodInfo method = methodWithExposeWeb.Key;
+                MethodInfo method = methodWithExposeWeb;
                 string[] servicePath = new string[] { method.Name };
                 Delegate del = ReflectionUtilities.CreateDelegate(method, method.IsStatic ? null : instance);
                 MethodsRegistry.RegisterMethod(servicePath, del, targetId.ToInt32());
-
             }
-
         }
     }
 }
