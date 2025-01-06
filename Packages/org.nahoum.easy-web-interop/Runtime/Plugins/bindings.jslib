@@ -27,12 +27,12 @@ var easyWebInteropLib = {
      */
     Module.internalJS.managedObjectsFinalizationRegistry = new FinalizationRegistry((ptrToGcHandle) => {
       Module.internal.CollectManagedPtr(ptrToGcHandle);
-      console.log("Collected object with ptr: " + ptrToGcHandle);
+      //console.log("Collected object with ptr: " + ptrToGcHandle);
     });
 
     Module.internalJS.delegateFinalizationRegistry = new FinalizationRegistry((delegateID) => {
       Module.internal.FreeDelegate(delegateID);
-      console.log("Collected delegate with key: " + delegateID);
+      //console.log("Collected delegate with key: " + delegateID);
     });
 
     /**

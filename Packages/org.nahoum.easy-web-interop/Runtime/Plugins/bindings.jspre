@@ -76,7 +76,8 @@ Module.internalJS.HandleResPtr = function (resPtr, injectDelegateInObject = true
 
     // Remove from tempReferences
     var timeEnd = performance.now();
-    console.log("Tool took " + (timeEnd - timeStart) + " milliseconds to populate pointer to native object of id " + resultingPtr.targetGcHandleObjectPtr);
+    // Debug time
+    //console.log("Tool took " + (timeEnd - timeStart) + " milliseconds to populate pointer to native object of id " + resultingPtr.targetGcHandleObjectPtr);
   }
 
   return resultingPtr;
