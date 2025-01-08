@@ -240,7 +240,7 @@ namespace Nahoum.UnityJSInterop
 
             // Ensure the object is a string array
             if (typesStringArray is not string[] managedTypes)
-                throw new Exception("The object is not an array");
+                throw new Exception("The object expected to be the array of types for the delegate is not an array of string");
 
             object actionWrapped = ManagedActionFactory.GetWrappedActionFromJsDelegate(managedTypes, actionJsPtr);
             return GCUtils.NewManagedObject(actionWrapped);

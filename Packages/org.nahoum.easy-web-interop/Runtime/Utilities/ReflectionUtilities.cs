@@ -147,12 +147,16 @@ namespace Nahoum.UnityJSInterop
         /// <summary>
         /// Returns a gigantic list of all the types in all the available assemblies
         /// </summary>
-        internal static IReadOnlyCollection<Type> GetAllAssembliesTypes()
+        internal static IReadOnlyCollection<Type> GetAllAssembliesTypes(bool excludeCommonAssemblies = true)
         {
-            List<Type> types = new List<Type>();
+            HashSet<Type> types = new HashSet<Type>();
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (Assembly assembly in assemblies)
             {
+                // Exclude common assemblies that are no utility to the user
+                if (excludeCommonAssemblies && excludeNamespace.Any(n => assembly.FullName.StartsWith(n)))
+                    continue;
+
                 // Get all the types in the assembly
                 Type[] allTypes = assembly.GetTypes();
                 foreach (Type targetType in allTypes)
@@ -163,5 +167,30 @@ namespace Nahoum.UnityJSInterop
             return types;
         }
 
+        /// <summary>
+        /// A collection of namespaces to exclude from the GetAllAssembliesTypes method. This is because those namespaces are not relevant to the user and cause performance issues when exploring them
+        /// </summary>
+        private static readonly HashSet<string> excludeNamespace = new HashSet<string>()
+        {
+            "System",
+            "UnityEngine",
+            "UnityEditor",
+            "Microsoft",
+            "Mono",
+            "JetBrains",
+            "Roslyn",
+            "NUnit",
+            "Newtonsoft",
+            "netstandard",
+            "Unity",
+            "nunit",
+            "I18N",
+            "mscorlib",
+            "Bee",
+            "ReportGeneratorMerged",
+            "unityplastic",
+            "Accessibility",
+            "log4net"
+        };
     }
 }
