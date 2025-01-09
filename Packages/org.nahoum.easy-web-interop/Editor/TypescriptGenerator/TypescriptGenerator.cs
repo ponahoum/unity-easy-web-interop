@@ -491,7 +491,6 @@ namespace Nahoum.UnityJSInterop.Editor
                 namespaceDescriptor.WriteEndNamespaceNameAsKey(sb);
             }
 
-            UnityEngine.Debug.Log(sb.ToString());
             return sb.ToString();
 
         }
