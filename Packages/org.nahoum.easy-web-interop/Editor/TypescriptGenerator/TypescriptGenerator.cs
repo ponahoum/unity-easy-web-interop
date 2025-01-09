@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
+using UnityEditorInternal;
 
 namespace Nahoum.UnityJSInterop.Editor
 {
@@ -420,6 +421,81 @@ namespace Nahoum.UnityJSInterop.Editor
         }
 
         /// <summary>
+        /// Generates the typescript signature for the delegate constructors on the JS side
+        /// This will allow to expose the constructors of delegates in JS
+        /// For example Action<string> will be able to be created via Module.utilities.extras['System']['Action<String>'].createDelegate((a) => console.log(a.value));
+        /// </summary>
+        private static string GenerateDelegateConstructorUtilitiesSignature()
+        {
+            ISet<Type> allTypes = TypescriptGenerationUtilities.GetTypesToGenerateTypesFileFrom(excludeTestsAssemblies: true);
+            Dictionary<TsNamespaceDescriptor, HashSet<TsProperty>> sortedTypes = new Dictionary<TsNamespaceDescriptor, HashSet<TsProperty>>();
+
+            // Generate delegate constructors
+            foreach (Type type in allTypes)
+            {
+                TypescriptGenerationUtilities.GetExposedMethodsSorted(type, out ISet<MethodInfo> staticMethods, out ISet<MethodInfo> instanceMethods);
+                if (staticMethods.Count == 0 && instanceMethods.Count == 0)
+                    continue;
+                HashSet<MethodInfo> methods = new HashSet<MethodInfo>();
+                methods.UnionWith(staticMethods);
+                methods.UnionWith(instanceMethods);
+
+                HashSet<Type> delegateTypesToGenerateConstructor = new();
+                foreach (var item in methods)
+                {
+                    if (ReflectionUtilities.MethodHasReturnlessDelegateParameter(item, out IReadOnlyList<ParameterInfo> delegateParameters))
+                    {
+                        foreach (var parameter in delegateParameters)
+                        {
+                            delegateTypesToGenerateConstructor.Add(parameter.ParameterType);
+                        }
+                    }
+                }
+
+                // Now we can generate the typescript
+                foreach (var delegateType in delegateTypesToGenerateConstructor)
+                {
+                    TsNamespaceDescriptor namespaceDescriptor = TsNamespaceDescriptor.CreateFrom(delegateType);
+                    if (!sortedTypes.ContainsKey(namespaceDescriptor))
+                        sortedTypes[namespaceDescriptor] = new HashSet<TsProperty>();
+
+                    // Get delegate type parameters
+                    var parameters = delegateType.GetMethod("Invoke").GetParameters();
+                    //string parametersString = string.Join(", ", parameters.Select(p => GenerateTsNameFromType(p.ParameterType, TsNamespaceDescriptor.Empty())));
+                    // join parameters so that args are named 0: string, 1: number, etc
+                    string[] alphabet = "abcdefghijklmnopqrstuvwxyz".Select(c => c.ToString()).ToArray();
+                    string parametersString = string.Join(", ", parameters.Select((p, i) => $"{alphabet[i]}: {GenerateTsNameFromType(p.ParameterType, TsNamespaceDescriptor.Empty())}"));
+
+                    // Create the type descriptor
+                    TsProperty staticTypeDescriptor = new TsProperty()
+                    {
+                        Key = $"\"{NamingUtility.GenerateWellFormattedJSNameForType(delegateType)}\"",
+                        Value = $"(callback: ({parametersString}) => void) => {GenerateTsNameFromType(delegateType, TsNamespaceDescriptor.Empty())}",
+                    };
+                    sortedTypes[namespaceDescriptor].Add(staticTypeDescriptor);
+                }
+            }
+
+            StringBuilder sb = new StringBuilder();
+            foreach (KeyValuePair<TsNamespaceDescriptor, HashSet<TsProperty>> item in sortedTypes)
+            {
+                // Write the namespace
+                TsNamespaceDescriptor namespaceDescriptor = item.Key;
+                namespaceDescriptor.WriteStartNamespaceNameAsKey(sb);
+
+                // Write each static type in the namespace
+                foreach (TsProperty typeDesc in item.Value)
+                    typeDesc.WriteProperty(sb);
+
+                // Close namespace
+                namespaceDescriptor.WriteEndNamespaceNameAsKey(sb);
+            }
+
+            UnityEngine.Debug.Log(sb.ToString());
+            return sb.ToString();
+
+        }
+        /// <summary>
         /// Generate the static module signature to expose all static classes (which is basically the entrypoint)
         /// </summary>
         private static string GenerateStaticModuleSignature()
@@ -470,6 +546,11 @@ namespace Nahoum.UnityJSInterop.Editor
 
             // Replace the placeholder with the generated static module
             hardcodedTs = hardcodedTs.Replace("/*STATIC_MODULE_PLACEHOLDER*/", sb.ToString());
+
+            // Also generate the delegate constructor part and replace /*EXTRAS_PLACEHOLDER*/ with it
+            string delegateConstructorUtilities = GenerateDelegateConstructorUtilitiesSignature();
+            hardcodedTs = hardcodedTs.Replace("/*EXTRAS_PLACEHOLDER*/", delegateConstructorUtilities);
+
             return hardcodedTs;
         }
     }

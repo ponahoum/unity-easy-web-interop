@@ -16,6 +16,9 @@ export type Utilities = {
     GetManagedLong(targetNumber: number): System.Int64,
     GetManagedString(jsStr: string): System.String,
     GetManagedStringArray(array: string[]): System.String_CSharpArray,
+    extras:{
+        /*EXTRAS_PLACEHOLDER*/
+    }
 }
 
 export type UnityInstance = {

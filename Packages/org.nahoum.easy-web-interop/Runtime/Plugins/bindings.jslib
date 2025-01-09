@@ -147,6 +147,37 @@ var easyWebInteropLib = {
     // Add the method to finalization registry so that if it's dereference in JS, it's also dereferenced in C#
     Module.internalJS.delegateFinalizationRegistry.register(moduleInjectedFunction, functionKeyPtr);
   },
+    /**
+   * Register a constructor that allows to create a managed delegate on the C# side from the JS side
+   * Typically, if in c# a method expose an Action<string> in of of the argments of the exposed methods, a constructor for this type will be made here
+   * In the case of Action<string>, it will be accessible via Module.utilities.DelegateConstructors["System"]["Action<string>"]
+   * And will be used like this: Module.utilities.DelegateConstructors["System"]["Action<string>"](function(arg){console.log(arg);}), where arg is a pointer to a string
+   */
+    RegisterDelegateConstructor: function(namespaceNamePtr, delegateNamePtr, stringArrayWithAllDelegateArgsTypesPtr, arrayManagedTypesLengthPtr) {
+      // Get name
+      const namespace = UTF8ToString(namespaceNamePtr);
+      const name = UTF8ToString(delegateNamePtr);
+  
+      // Define namespace and based paths if they don't exist
+      if (!Module.utilities.extras) Module.utilities.extras = {};
+      if(!Module.utilities.extras[namespace]) Module.utilities.extras[namespace] = {};
+      if(!Module.utilities.extras[namespace][name]) Module.utilities.extras[namespace][name] = {};
+      
+      // Get array of managed types
+      const managedTypesArray = Module.internalJS.stringArrayPtrToJSArray(stringArrayWithAllDelegateArgsTypesPtr, arrayManagedTypesLengthPtr);
+  
+      // Create a function that will allow to create a function that will be called from the C# side
+      Module.utilities.extras[namespace][name].createDelegate = (callback) => {
+  
+        // Check callback is a function
+        if (typeof callback !== "function") throw new Error("The callback must be a function.");
+  
+        // Check callback has the same number of args as managed types
+        if (callback.length !== managedTypesArray.length) throw new Error("The number of parameters of the callback must match the number of managed types. Found " + callback.length + " parameters for " + managedTypesArray.length + " managed types.");
+  
+        return Module.utilities.GetManagedAction(callback, managedTypesArray)
+      };
+    },
 };
 
 autoAddDeps(easyWebInteropLib, "$dependencies");

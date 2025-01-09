@@ -145,6 +145,37 @@ namespace Nahoum.UnityJSInterop
         }
 
         /// <summary>
+        /// Given a method, tells if it has at least one parameter that is a delegate (like and Action or Action<string> etc.) with no return type
+        /// </summary>
+        /// <param name="method">The method to inspect</param>
+        /// <param name="delegateParameterTypes">The list of parameters of the method that are delegates</param>
+        /// <returns></returns>
+        internal static bool MethodHasReturnlessDelegateParameter(MethodInfo method, out IReadOnlyList<ParameterInfo> delegateParameterTypes)
+        {
+            delegateParameterTypes = null;
+            var parameters = method.GetParameters();
+
+            // Skip immediatly if no parameters
+            if (parameters.Length == 0)
+                return false;
+
+            List<ParameterInfo> result = new List<ParameterInfo>();
+            delegateParameterTypes = result;
+
+            // Go through each parameter and check if it's a delegate
+            foreach (ParameterInfo parameter in parameters)
+            {
+                Type parameterType = parameter.ParameterType;
+                if (typeof(Delegate).IsAssignableFrom(parameterType) && parameterType.GetMethod("Invoke").ReturnType == typeof(void))
+                {
+                    result.Add(parameter);
+                }
+            }
+
+            return result.Count > 0;
+        }
+
+        /// <summary>
         /// Returns a gigantic list of all the types in all the available assemblies
         /// </summary>
         internal static IReadOnlyCollection<Type> GetAllAssembliesTypes(bool excludeCommonAssemblies = true)

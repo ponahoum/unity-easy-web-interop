@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using UnityEngine.Scripting;
 
 namespace Nahoum.UnityJSInterop
@@ -7,30 +11,38 @@ namespace Nahoum.UnityJSInterop
     /// <summary>
     /// Helps auto registering all the methods with the ExposeWebAttribute
     /// Will auto register all static methods with the ExposeWebAttribute
+    /// Will also expose some constructors of Delegate types
     /// </summary>
     [Preserve]
     public static class AutoRegister
     {
         internal static void Setup()
         {
-            RegisterAllStaticMethds();
+            RegisterAllStaticMethods();
         }
 
-        private static void RegisterAllStaticMethds()
+        private static void RegisterAllStaticMethods()
         {
-            var allExposedTypes = ExposeWebAttribute.GetAllTypesWithWebExposedMethods();
-            foreach (var exposedType in allExposedTypes)
+            IReadOnlyCollection<Type> allExposedTypes = ExposeWebAttribute.GetAllTypesWithWebExposedMethods();
+            foreach (Type exposedType in allExposedTypes)
             {
-                System.Collections.Generic.ISet<MethodInfo> exposedStaticMethods = ExposeWebAttribute.GetExposedMethods(exposedType);
+                ISet<MethodInfo> exposedMethods = ExposeWebAttribute.GetExposedMethods(exposedType);
 
-                // Get all the static and public methods
-                foreach (MethodInfo method in exposedStaticMethods)
+                foreach (MethodInfo method in exposedMethods)
                 {
+                    // Register static methods
                     if (method.IsStatic)
                     {
                         MethodInfo staticMethod = method;
                         Delegate del = ReflectionUtilities.CreateDelegate(staticMethod, null);
                         MethodsRegistry.RegisterMethod(NamingUtility.GetMethodJSPath(method), del);
+                    }
+
+                    // Also handles the registering of delegates constructors
+                    if (ReflectionUtilities.MethodHasReturnlessDelegateParameter(method, out IReadOnlyList<ParameterInfo> delegateParameters))
+                    {
+                        foreach (ParameterInfo parameter in delegateParameters)
+                            InternalInteropSetup.TryRegisterDelegateConstructor(parameter.ParameterType);
                     }
                 }
             }
