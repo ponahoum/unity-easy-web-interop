@@ -57,7 +57,7 @@ namespace Nahoum.UnityJSInterop
                 {
                     typeName += GenerateWellFormattedJSNameForType(genericArgument, type.Namespace);
                     if (index < type.GetGenericArguments().Length - 1)
-                        typeName += ", ";
+                        typeName += ",";
                     index++;
                 }
                 typeName += ">";

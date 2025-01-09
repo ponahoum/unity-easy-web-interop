@@ -423,9 +423,9 @@ namespace Nahoum.UnityJSInterop.Editor
         /// <summary>
         /// Generates the typescript signature for the delegate constructors on the JS side
         /// This will allow to expose the constructors of delegates in JS
-        /// For example Action<string> will be able to be created via Module.utilities.extras['System']['Action<String>'].createDelegate((a) => console.log(a.value));
+        /// For example Action<string> will be able to be created via Module.extras['System']['Action<String>'].createDelegate((a) => console.log(a.value));
         /// </summary>
-        private static string GenerateDelegateConstructorUtilitiesSignature()
+        private static string GenerateDelegateConstructorExtraSignature()
         {
             ISet<Type> allTypes = TypescriptGenerationUtilities.GetTypesToGenerateTypesFileFrom(excludeTestsAssemblies: true);
             Dictionary<TsNamespaceDescriptor, HashSet<TsProperty>> sortedTypes = new Dictionary<TsNamespaceDescriptor, HashSet<TsProperty>>();
@@ -470,7 +470,7 @@ namespace Nahoum.UnityJSInterop.Editor
                     TsProperty staticTypeDescriptor = new TsProperty()
                     {
                         Key = $"\"{NamingUtility.GenerateWellFormattedJSNameForType(delegateType)}\"",
-                        Value = $"(callback: ({parametersString}) => void) => {GenerateTsNameFromType(delegateType, TsNamespaceDescriptor.Empty())}",
+                        Value = $"{{ createDelegate: (callback: ({parametersString}) => void) => {GenerateTsNameFromType(delegateType, TsNamespaceDescriptor.Empty())} }}",
                     };
                     sortedTypes[namespaceDescriptor].Add(staticTypeDescriptor);
                 }
@@ -548,7 +548,7 @@ namespace Nahoum.UnityJSInterop.Editor
             hardcodedTs = hardcodedTs.Replace("/*STATIC_MODULE_PLACEHOLDER*/", sb.ToString());
 
             // Also generate the delegate constructor part and replace /*EXTRAS_PLACEHOLDER*/ with it
-            string delegateConstructorUtilities = GenerateDelegateConstructorUtilitiesSignature();
+            string delegateConstructorUtilities = GenerateDelegateConstructorExtraSignature();
             hardcodedTs = hardcodedTs.Replace("/*EXTRAS_PLACEHOLDER*/", delegateConstructorUtilities);
 
             return hardcodedTs;

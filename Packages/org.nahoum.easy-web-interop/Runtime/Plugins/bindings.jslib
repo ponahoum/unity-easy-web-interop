@@ -159,15 +159,15 @@ var easyWebInteropLib = {
       const name = UTF8ToString(delegateNamePtr);
   
       // Define namespace and based paths if they don't exist
-      if (!Module.utilities.extras) Module.utilities.extras = {};
-      if(!Module.utilities.extras[namespace]) Module.utilities.extras[namespace] = {};
-      if(!Module.utilities.extras[namespace][name]) Module.utilities.extras[namespace][name] = {};
+      if (!Module.extras) Module.extras = {};
+      if(!Module.extras[namespace]) Module.extras[namespace] = {};
+      if(!Module.extras[namespace][name]) Module.extras[namespace][name] = {};
       
       // Get array of managed types
       const managedTypesArray = Module.internalJS.stringArrayPtrToJSArray(stringArrayWithAllDelegateArgsTypesPtr, arrayManagedTypesLengthPtr);
   
       // Create a function that will allow to create a function that will be called from the C# side
-      Module.utilities.extras[namespace][name].createDelegate = (callback) => {
+      Module.extras[namespace][name].createDelegate = (callback) => {
   
         // Check callback is a function
         if (typeof callback !== "function") throw new Error("The callback must be a function.");

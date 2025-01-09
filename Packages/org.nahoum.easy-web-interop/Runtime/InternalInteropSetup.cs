@@ -17,7 +17,7 @@ namespace Nahoum.UnityJSInterop
 
         /// <summary>
         /// Allows to expose a constructor for a delegate type in the JS side
-        /// For example, one may create a Action<string> from the JS side calling Module.utilities.extras["System"]["Action<String>"].createDelegate(x)
+        /// For example, one may create a Action<string> from the JS side calling Module.extras["System"]["Action<String>"].createDelegate(x)
         /// </summary>
         [DllImport("__Internal")]
         static extern void RegisterDelegateConstructor(string namespaceConstructorPtr, string constructorMethodName, IntPtr arrayManagedTypesPtr, int arrayManagedTypesLength);
