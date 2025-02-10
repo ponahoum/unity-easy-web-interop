@@ -35,3 +35,6 @@ RunTestsGenericInheritance(unityModule);
 await RunTestsByteArrayTests(unityModule);
 await RunTestsAsyncMethods(unityModule);
 await RunTestsExceptionsHandling(unityModule);
+
+// Notice all tests passed in green and bold
+console.log("%cAll tests passed", "color: green; font-weight: bold;");
