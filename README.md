@@ -126,28 +126,77 @@ When building interop between two languages, everything starts with handling pri
 Here are some examples demonstrating how to create managed types:
 
 ```javascript
+
+const utilities = unityInstance.Module.utilities;
+
 // Convert a JavaScript string to a string on the C# side (string)
-const aString = unityInstance.Module.utilities.GetManagedString("hello world");
+const aString = utilities.GetManagedString("hello world");
 
 // Convert a JavaScript array of strings to a string array on the C# side (string[])
-const aStringArray = unityInstance.Module.utilities.GetManagedStringArray(["hello", "world"]);
+const aStringArray = utilities.GetManagedStringArray(["hello", "world"]);
 
 // Convert a JavaScript number to a float the C# side (float)
-const aFloat = unityInstance.Module.utilities.GetManagedFloat(1234);
+const aFloat = utilities.GetManagedFloat(1234);
 
 // Convert a JavaScript array of numbers to a float array on the C# side (float[])
-const aFloatArray = unityInstance.Module.utilities.GetManagedFloatArray([1, 2, 3, 4]);
+const aFloatArray = utilities.GetManagedFloatArray([1, 2, 3, 4]);
 
 // Efficiently pass binary data using a Uint8Array to the C# side (byte[])
-const aByteArray = unityInstance.Module.utilities.GetManagedByteArray(new Uint8Array([/* your binary data */]));
+const aByteArray = utilities.GetManagedByteArray(new Uint8Array([/* your binary data */]));
 ```
 
 For the best development experience, generate the corresponding TypeScript definitions to review the utility signatures and ensure type safety.
 
 ---
 
-### Using callbacks (Action, event)
-- Documentation coming soon
+### Using Callbacks (Action & Event)
+
+#### Using Actions with javascript callbacks
+You can leverage C# actions to bind them to JavaScript callbacks. This means that when an action is invoked on the C# side, a JavaScript callback can be executed.
+For example, consider a C# class that accepts a callback of type `Action<string>`:
+
+```csharp
+public class TestActionCallbacks
+{
+    [ExposeWeb]
+    public static TestActionCallbacks GetInstance()
+    {
+        return new TestActionCallbacks();
+    }
+
+    [ExposeWeb]
+    public void TestInvokeCallbackString(Action<string> action)
+    {
+        action("Hello world");
+    }
+}
+```
+
+Since you added the `[ExposeWeb]` attribute to the `TestInvokeCallbackString` method, a utility method for creating an `Action<string>` bound to a JavaScript callback is automatically added to `Module.extras` under the name of the action (`System.Action<String>`).
+
+Here's how you can create and use the callback in JavaScript / Typescript:
+
+```typescript
+const myAction = unityInstance.Module.extras["System"]["Action<String>"].createDelegate(
+  (myString: System.String) => {
+    console.log(myString.value);
+  }
+);
+
+// Now pass the action to C#. When C# invokes it, the JavaScript callback will be executed, and you can access the string's value via the `.value` property.
+const instance = unityInstance.Module.static["Nahoum.UnityJSInterop.Tests"].TestActionCallbacks.GetInstance();
+instance.TestInvokeCallbackString(myAction); // Should print "Hello world" in the JS console.
+```
+
+This example demonstrates how seamlessly you can connect C# delegate with JavaScript functions, enabling smooth interoperation between your Unity WebGL application and web interfaces.
+
+#### C# Events
+A powerfull feature of C# are events. Lets assume you have the following event in C#:
+
+```csharp
+public event Action<string> OnStringEvent;
+```
+INCOMPLTE - To be continued
 
 ### Asynchronous logic (Task vs Promises)
 - Documentation coming soon
