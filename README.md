@@ -10,7 +10,16 @@ It’s perfect for developing Unity applications that require a modern web UI ov
 
 - [Getting started](#getting-started)
 - [Installation & Supported Unity Versions](#installation--supported-unity-versions)
-- [Documentation](#how-to-use)
+ - [Documentation](#documentation)
+    - [Accessing Primitive Types](#accessing-primitive-types)
+    - [Using Callbacks (Action & Event)](#using-callbacks)
+    - [Asynchronous logic (Task / Promises)](#asynchronous-logic-task--promises)
+    - [Using Get/Set](#using-getset)
+    - [Exception handling](#exception-handling)
+    - [Handling lists & arrays](#handling-lists--arrays)
+    - [Inheritance, abstract classes and interfaces](#inheritance-abstract-classes-and-interfaces)
+    - [Custom TypeScript generation](#custom-typescript-generation)
+    - [Custom serialization](#custom-serialization)
 
 ## Getting started
 
@@ -145,11 +154,11 @@ const aFloatArray = utilities.GetManagedFloatArray([1, 2, 3, 4]);
 const aByteArray = utilities.GetManagedByteArray(new Uint8Array([/* your binary data */]));
 ```
 
-For the best development experience, generate the corresponding TypeScript definitions to review the utility signatures and ensure type safety.
+For the best development experience, generate the corresponding TypeScript definitions to know more about the available constructors for primitive types.
 
 ---
 
-### Using Callbacks (Action & Event)
+### Using Callbacks
 
 #### Using Actions with javascript callbacks
 You can leverage C# actions to bind them to JavaScript callbacks. This means that when an action is invoked on the C# side, a JavaScript callback can be executed.
@@ -320,7 +329,7 @@ instance.AsyncVoidMethod().then(voidResult => {
 
 This design allows you to write asynchronous C# code that can be easily managed and integrated within your JavaScript environment, leveraging the full power of Promises for smooth, non-blocking interoperation between Unity and web applications.
 
-### Using get/set on Properties
+### Using get/set
 
 You can apply the `[ExposeWeb]` attribute either directly to the property or individually on the getter and/or setter. Consider the following C# code, where two static properties are exposed:
 
