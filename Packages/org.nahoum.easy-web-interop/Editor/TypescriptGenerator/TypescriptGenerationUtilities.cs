@@ -3,11 +3,39 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Nahoum.UnityJSInterop.Editor
 {
     internal static class TypescriptGenerationUtilities
     {
+        /// <summary>
+        /// Generates a unique hash specific to a type
+        /// See https://stackoverflow.com/questions/3984138/hash-string-in-c-sharp
+        /// </summary>
+        internal static string GenerateHashForType(Type type)
+        {
+            // Get string has 
+            static byte[] GetHash(string inputString)
+            {
+                using (HashAlgorithm algorithm = SHA256.Create())
+                    return algorithm.ComputeHash(Encoding.UTF8.GetBytes(inputString));
+            }
+
+            static string GetHashString(string inputString)
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (byte b in GetHash(inputString))
+                    sb.Append(b.ToString("X2"));
+
+                return sb.ToString();
+            }
+
+            return GetHashString(type.FullName);
+
+        }
+
         /// <summary>
         /// Returns all types we should generate a type description for
         /// </summary>
@@ -21,11 +49,25 @@ namespace Nahoum.UnityJSInterop.Editor
                 if (type == typeof(void))
                     return false;
 
-                // Handle case in which the type is generic and the arguments must be added to ts file
+                // Skip if not a real type, like Action<T> is not a type that represents a real object, it's a type definition
+                if(type.IsGenericTypeDefinition)
+                    return false;
+
+                // Handle case of task, which is the only case where we only care about the return type and there need to skip their generation
+                // We never want to generate a task as its transformed as a promise on the ts side, only the return type
+                if (ReflectionUtilities.IsTypeTask(type, out bool hasReturnValue, out Type taskReturnType))
+                {
+                    if (hasReturnValue)
+                        return TryAdd(taskReturnType);
+                    else
+                        return false;
+                }
+
+                // Handle case in which the type is generic and the arguments must be added to ts file (for example Action<>)
                 if (type.IsGenericType)
                 {
                     Type[] genericArguments = type.GetGenericArguments();
-                    foreach (var genericArgument in genericArguments)
+                    foreach (Type genericArgument in genericArguments)
                         TryAdd(genericArgument);
                 }
 
