@@ -10,7 +10,7 @@ namespace Nahoum.UnityJSInterop
     ///  Expose web attribute on methods and classes
     ///  Inherited because for example if we put in an a interface, we want to expose the methods in all inheriting classes from the interface
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Interface, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Interface | AttributeTargets.Event | AttributeTargets.Property, Inherited = true)]
     public class ExposeWebAttribute : PreserveAttribute
     {
         // Called once when the class is loaded
@@ -96,7 +96,19 @@ namespace Nahoum.UnityJSInterop
         /// </summary>
         internal static bool HasWebExposeAttribute(MethodInfo method, out ExposeWebAttribute attribute)
         {
+            if (method.DeclaringType.Name.Contains("Blobby"))
+            {
+                UnityEngine.Debug.Log("Blobby and method: " + method.Name);
+            }
             attribute = method.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
+
+            // If the attribute is null but it's a get / set or and event, try to find expose attribute in the property or event containing the get/set/add/remove methods
+            // BETA - Might not work in all cases
+            if (attribute == null && method.IsSpecialName && TryGetMemberFromMethod(method, out MemberInfo member))
+            {
+                // Try get attribute from property
+                attribute = member.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
+            }
 
             // If attribute is still null, try to get it from the method's containing class / type
             // BETA - Might not work in all cases
@@ -115,6 +127,40 @@ namespace Nahoum.UnityJSInterop
                 throw new Exception($"Method {method.Name} in {method.DeclaringType} is a generic method. Generic methods are not supported and cannot be exposed.");
 
             return true;
+        }
+
+        /// <summary>
+        /// Given a method, try to find if the member it was declared in has the ExposeWebAttribute
+        /// Only work for properties and event for now
+        /// Typically used to support [ExposeWeb] on properties and events
+        /// </summary>
+        private static bool TryGetMemberFromMethod(MethodInfo method, out MemberInfo found)
+        {
+            // Check properties first.
+            foreach (PropertyInfo property in method.DeclaringType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
+            {
+                foreach (MethodInfo accessor in property.GetAccessors(true))
+                {
+                    if (accessor == method)
+                    {
+                        found = property;
+                        return true;
+                    }
+                }
+            }
+
+            // Then check events.
+            foreach (EventInfo evt in method.DeclaringType.GetEvents(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
+            {
+                if (evt.GetAddMethod(true) == method || evt.GetRemoveMethod(true) == method)
+                {
+                    found = evt;
+                    return true;
+                }
+            }
+
+            found = null;
+            return false;
         }
     }
 }

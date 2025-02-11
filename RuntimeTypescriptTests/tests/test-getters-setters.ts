@@ -21,4 +21,14 @@ export function RunTests(unityInstance: UnityInstance) {
 
     // Get the value of string and assert it is the new value
     assertEquals(module.static["Nahoum.UnityJSInterop.Tests"].TestGetSets.get_TestString().value, "123", "Setters work with set_TestString");
+
+
+    // Now try decorator on the property itself
+    assertEquals(module.static["Nahoum.UnityJSInterop.Tests"].TestGetSets.get_TestString2().value, SampleValues.TestString2, "Getters on properties work with get_TestString2");
+
+    // Now try to set the value
+    module.static["Nahoum.UnityJSInterop.Tests"].TestGetSets.set_TestString2(managedString);
+
+    // Get the value of string and assert it is the new value
+    assertEquals(module.static["Nahoum.UnityJSInterop.Tests"].TestGetSets.get_TestString2().value, "123", "Getters on properties work with set_TestString2");
 }
