@@ -6,7 +6,13 @@ It's build using direct bindings to the WASM side of Unity WebGL and **does not 
 
 It’s perfect for developing Unity applications that require a modern web UI overlay built with frameworks like **React, Vue, or Angular**.
 
-## Basic Example
+## Summary
+
+- [Getting started](#getting-started)
+- [Installation & Supported Unity Versions](#installation--supported-unity-versions)
+- [Documentation](#how-to-use)
+
+## Getting started
 
 Consider you want the following C# code directly to Javascript:
 
@@ -108,7 +114,7 @@ Alternatively, you can clone the repository and copy the package directly into y
 ### Supported Unity version
 The package has been tested in both Unity 2022 and Unity 6.
 
-## How to use
+## Documentation
 
 ### Accessing Primitive Types
 
