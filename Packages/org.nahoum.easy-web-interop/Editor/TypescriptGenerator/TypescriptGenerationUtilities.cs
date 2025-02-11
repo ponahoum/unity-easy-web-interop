@@ -21,13 +21,12 @@ namespace Nahoum.UnityJSInterop.Editor
                 if (type == typeof(void))
                     return false;
 
-                // Handle case of task, which is the only case where we only care about the return type
-                if (ReflectionUtilities.IsTypeTask(type, out bool hasReturnValue, out Type taskReturnType))
+                // Handle case in which the type is generic and the arguments must be added to ts file
+                if (type.IsGenericType)
                 {
-                    if (hasReturnValue)
-                        return TryAdd(taskReturnType);
-                    else
-                        return false;
+                    Type[] genericArguments = type.GetGenericArguments();
+                    foreach (var genericArgument in genericArguments)
+                        TryAdd(genericArgument);
                 }
 
                 // Add the type
