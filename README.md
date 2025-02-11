@@ -191,24 +191,204 @@ instance.TestInvokeCallbackString(myAction); // Should print "Hello world" in th
 This example demonstrates how seamlessly you can connect C# delegate with JavaScript functions, enabling smooth interoperation between your Unity WebGL application and web interfaces.
 
 #### C# Events
-A powerfull feature of C# are events. Lets assume you have the following event in C#:
+
+A powerful feature of C# is events. Let's assume you have the following event defined in C#:
 
 ```csharp
-public event Action<string> OnStringEvent;
-```
-INCOMPLTE - To be continued
+public class TestEvents
+{
+    // Using the "property style" to define an event (this could also work with add/remove style)
+    [ExposeWeb]
+    public event Action<string> TestEventString = delegate { };
 
-### Asynchronous logic (Task vs Promises)
-- Documentation coming soon
+    // Triggers the event for testing purposes.
+    [ExposeWeb]
+    public void InvokeEvent(string value)
+    {
+        TestEventString.Invoke(value);
+    }
+
+    [ExposeWeb]
+    public static TestEvents GetNewInstance() => new TestEvents();
+}
+```
+
+When you expose an event using `[ExposeWeb]`, the library automatically generates helper methods on the JavaScript side to manage event subscriptions. Specifically, for the `TestEventString` event, the following javascript methods are created:
+
+- **`add_TestEventString`**: Equivalent to the `+=` operator in C#. Use this method to subscribe a delegate (callback) to the event.
+- **`remove_TestEventString`**: Equivalent to the `-=` operator in C#. Use this method to unsubscribe the delegate from the event.
+
+Below is an example demonstrating this process:
+
+```typescript
+// Create a delegate for Action<string> using the extras API.
+const myDelegate = unityInstance.Module.extras["System"]["Action<String>"].createDelegate(
+  (message: System.String) => {
+    console.log("Event received: ", message.value);
+  }
+);
+
+//Get the instance of the C# class exposing the event.
+const instance = unityInstance.Module.static["YourNamespace"].TestEvents.GetInstance();
+
+// Subscribe to the event using the auto-generated add method.
+instance.add_TestEventString(myDelegate);
+
+// Trigger the event from C#.
+instance.InvokeEvent("Hello from C#!");
+
+// Later, to unsubscribe from the event, call the remove method:
+instance.remove_TestEventString(myDelegate);
+```
+
+This approach allows you to seamlessly subscribe and unsubscribe to C# events from JavaScript, just as you would use `+=` and `-=` in C#. The delegate created in JavaScript acts as a bridge, ensuring that when the event is raised on the C# side, your callback is executed on the JS side.
+
+### Asynchronous logic (Task / Promises)
+
+Unity Easy Web Interop seamlessly integrates C# asynchronous methods with JavaScript by converting C# `Task` and `Task<T>` objects into JavaScript `Promise`. This integration lets you call asynchronous C# methods from JavaScript and handle the results using familiar async/await or Promise chaining patterns.
+
+#### How It Works
+- You can use `ExposeWeb` on `async methods`, on methods returning `Task`, or on `Task<T>`, or on a combination of the three
+
+- **Task returning a value (`Task<T>`):**  
+  The asynchronous method resolves to a Promise<T> that returns a managed value.
+
+- **Task returning void (`Task`) or async void methods:**  
+  Since there is no return value, the corresponding Promise resolves to `undefined`.
+
+#### Example
+
+Consider the following C# example:
+
+```csharp
+public class TestTasks
+{
+    // Task returning a string
+    [ExposeWeb]
+    public async Task<string> TestTaskString()
+    {
+        await Task.Yield();
+        return "Hello from C#";
+    }
+
+    // Task returning nothing
+    [ExposeWeb]
+    public async Task TestTaskVoid()
+    {
+        await Task.Yield();
+    }
+
+    // Async method that returns void
+    [ExposeWeb]
+    public async void AsyncVoidMethod() => await Task.Yield();
+
+    // Constructor
+    [ExposeWeb]
+    public static TestTasks GetInstance() => new TestTasks();
+}
+```
+
+On the JavaScript side, you can invoke these methods and work with their results as follows:
+
+```javascript
+// Retrieve the instance of the C# class.
+const instance = unityInstance.Module.static["YourNamespace"].TestTasks.GetInstance();
+
+// Handling a Task that returns a value:
+instance.TestTaskString().then(result => {
+    // Access the actual string using the .value property.
+    console.log(result.value); // Should output: "Hello from C#"
+});
+
+// Alternatively, using async/await:
+async function callTestTaskString() {
+    const result = await instance.TestTaskString();
+    console.log(result.value);
+}
+callTestTaskString();
+
+// You may also need to handle a Task that returns void:
+instance.TestTaskVoid().then(voidResult => {
+    console.log(voidResult); // Outputs: undefined
+});
+
+// Handling an async void method (similar to a Task returning void):
+instance.AsyncVoidMethod().then(voidResult => {
+    console.log(voidResult); // Outputs: undefined
+});
+```
+
+This design allows you to write asynchronous C# code that can be easily managed and integrated within your JavaScript environment, leveraging the full power of Promises for smooth, non-blocking interoperation between Unity and web applications.
+
+### Using get/set on Properties
+
+You can apply the `[ExposeWeb]` attribute either directly to the property or individually on the getter and/or setter. Consider the following C# code, where two static properties are exposed:
+
+```csharp
+/// <summary>
+/// Test exposing getters and setters.
+/// </summary>
+public class TestGetSets
+{
+    /// <summary>
+    /// Exposes the getter and setter by applying [ExposeWeb] individually.
+    /// </summary>
+    public static string TestString { [ExposeWeb] get; [ExposeWeb] set; } = "Hello 12345";
+
+    /// <summary>
+    /// Exposes the property as a whole.
+    /// </summary>
+    [ExposeWeb]
+    public static string TestString2 { get; set; } = "Hello 123456";
+}
+```
+
+- **`TestString`**: The `[ExposeWeb]` attribute is applied to each accessor.  
+- **`TestString2`**: The attribute is applied to the entire property.  
+
+Both approaches result in generating two JavaScript methods per property:
+- **Getter:** `get_PropertyName()`
+- **Setter:** `set_PropertyName(managedValue)`
+
+#### JavaScript Usage
+
+On the JavaScript side, you can use these generated methods to interact with the C# properties. For example:
+
+```javascript
+// Access the TestGetSets class.
+const testGetSets = unityInstance.Module.static["YourNamespace"].TestGetSets;
+
+// Get the current value of TestString.
+const currentTestString = testGetSets.get_TestString();
+console.log("Current TestString:", currentTestString.value); // prints "Hello 12345"
+
+// Create a new managed string.
+const newManagedString = unityInstance.Module.utilities.GetManagedString("NewValue");
+
+// Set a new value for TestString.
+testGetSets.set_TestString(newManagedString);
+
+// Get the updated value of TestString.
+const updatedTestString = testGetSets.get_TestString();
+console.log("Updated TestString:", updatedTestString.value); // prints "NewValue"
+
+// Get the current value of TestString2.
+const currentTestString2 = testGetSets.get_TestString2();
+console.log("Current TestString2:", currentTestString2.value); // prints "Hello 123456"
+
+// Set a new value for TestString2.
+testGetSets.set_TestString2(newManagedString);
+
+// Get the updated value of TestString2.
+const updatedTestString2 = testGetSets.get_TestString2();
+console.log("Updated TestString2:", updatedTestString2.value); // prints "NewValue"
+```
 
 ###  Exception handling
 #### Limitations with unity configuration 
 - Documentation coming soon
 
 ### Handling lists & arrays
-- Documentation coming soon
-
-### Using get/set on properties
 - Documentation coming soon
 
 ### Inheritance, abstract classes and interfaces

@@ -219,6 +219,24 @@ DestroyTexture(tex: UnityEngine.Texture2D): void;
 GetByteArrayLength(byteArray: System.Byte_CSharpArray): System.Int32;
 };
 
+export type TestEvents_static = {
+fullTypeName_D6FD91B2082087F081F0F75528CD3D58372B985F8C2F5DD779BFEEBA93DFB91D: 'Nahoum.UnityJSInterop.Tests.TestEvents';
+assembly_D6FD91B2082087F081F0F75528CD3D58372B985F8C2F5DD779BFEEBA93DFB91D: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+GetNewInstance(): TestEvents;
+};
+
+export type TestEvents = {
+fullTypeName_D6FD91B2082087F081F0F75528CD3D58372B985F8C2F5DD779BFEEBA93DFB91D: 'Nahoum.UnityJSInterop.Tests.TestEvents';
+assembly_D6FD91B2082087F081F0F75528CD3D58372B985F8C2F5DD779BFEEBA93DFB91D: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+value: unknown;
+managedType: System.Type;
+add_TestEventStringAuto(value: System.Action1$String): void;
+remove_TestEventStringAuto(value: System.Action1$String): void;
+add_TestEventStringManual(value: System.Action1$String): void;
+remove_TestEventStringManual(value: System.Action1$String): void;
+InvokeEvent(value: System.String): void;
+}& TestEvents_static;
+
 export type TestExceptions_static = {
 fullTypeName_A1735008FA7264DEB323796B88783003C9089F88341F8417CCAC871F2B32E67A: 'Nahoum.UnityJSInterop.Tests.TestExceptions';
 assembly_A1735008FA7264DEB323796B88783003C9089F88341F8417CCAC871F2B32E67A: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
@@ -295,6 +313,8 @@ fullTypeName_7336151FCAB055BA4E5A69E66EC6819228C9A998D94D10806CA867706B678675: '
 assembly_7336151FCAB055BA4E5A69E66EC6819228C9A998D94D10806CA867706B678675: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 get_TestString(): System.String;
 set_TestString(value: System.String): void;
+get_TestString2(): System.String;
+set_TestString2(value: System.String): void;
 };
 
 export type TestGetSets = {
@@ -504,6 +524,7 @@ export type UnityInstance = {
 TestActionCallbacks: Nahoum.UnityJSInterop.Tests.TestActionCallbacks_static;
 TestTasks: Nahoum.UnityJSInterop.Tests.TestTasks_static;
 TestByteArray: Nahoum.UnityJSInterop.Tests.TestByteArray_static;
+TestEvents: Nahoum.UnityJSInterop.Tests.TestEvents_static;
 TestExceptions: Nahoum.UnityJSInterop.Tests.TestExceptions_static;
 TestGenericClass: Nahoum.UnityJSInterop.Tests.TestGenericClass_static;
 TestAnotherGenericClass: Nahoum.UnityJSInterop.Tests.TestAnotherGenericClass_static;

@@ -10,6 +10,7 @@ import { RunTests as RunTestsGenericInheritance } from "./tests/test-generic-inh
 import { RunTests as RunTestsByteArrayTests } from "./tests/test-byte-array.js";
 import { RunTests as RunTestsAsyncMethods } from "./tests/test-async-methods.js";
 import { RunTests as RunTestsExceptionsHandling } from "./tests/test-exceptions-handling.js";
+import {RunTests as RunTestsEvents} from "./tests/test-events.js";
 
 
 const waitForUnityInstance = async function (): Promise<UnityInstance> {
@@ -31,6 +32,8 @@ const runTests = async function(): Promise<void>{
     RunTestsGettersAndSetters(unityInstance);
     RunTestsStructs(unityInstance);
     RunTestsGenericInheritance(unityInstance);
+    RunTestsEvents(unityInstance);
+
 
     // Some tests are async, hence the await
     await RunTestsByteArrayTests(unityInstance);
