@@ -144,7 +144,7 @@ namespace Nahoum.UnityJSInterop.Editor
                     if (ObjectSerializer.TryGetSerializer(type, out IJsJsonSerializer serializer) && serializer.CanSerialize(type, out ITsTypeDescriptor tsDescriptor))
                         properties.Add(new TsProperty("value", tsDescriptor.GetTsTypeDefinition(type)));
                     else
-                        properties.Add(new TsProperty("value", "any"));
+                        properties.Add(new TsProperty("value", "unknown"));
 
                     // Get all exposed methods within this type
                     foreach (MethodInfo method in instanceMethods)

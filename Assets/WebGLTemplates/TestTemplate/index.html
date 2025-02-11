@@ -140,6 +140,7 @@
                 loadingBar.style.display = "none";
                 var module = unityInstance.Module;
                 window.Module = module;
+                window.UnityInstance = unityInstance;
 
 #if SHOW_DIAGNOSTICS
                 diagnostics_icon.onclick = () => {
@@ -157,6 +158,7 @@
       document.body.appendChild(script);
 
     </script>
-    <script type="module" src="./tests-entrypoint.js"></script>
+    
+    <script type="module" src="./typescript-tests/dist/index.js"></script>
   </body>
 </html>
