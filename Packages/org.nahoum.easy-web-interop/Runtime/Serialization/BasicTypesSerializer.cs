@@ -134,6 +134,8 @@ namespace Nahoum.UnityJSInterop
                 typeof(byte),
                 typeof(sbyte),
                 typeof(bool),
+                typeof(Type),
+                // Add this to get the "RuntimeType", which is the type of the type at runtime and is internel, so we cannot easily get it
                 typeof(Type).GetType(),
                 typeof(Vector2),
                 typeof(Vector3),

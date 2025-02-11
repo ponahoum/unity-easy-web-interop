@@ -22,6 +22,7 @@ namespace Nahoum.UnityJSInterop.Editor
             typeof(Single),
             typeof(Int64),
             typeof(Action),
+            typeof(Type),
             typeof(string[]),
             typeof(int[]),
             typeof(bool[]),
@@ -145,6 +146,9 @@ namespace Nahoum.UnityJSInterop.Editor
                         properties.Add(new TsProperty("value", tsDescriptor.GetTsTypeDefinition(type)));
                     else
                         properties.Add(new TsProperty("value", "unknown"));
+
+                    // For all object, also add the "managedType" property, which is the type in C#
+                    properties.Add(new TsProperty("managedType", GenerateTsNameFromType(typeof(System.Type), namespaceDescriptor)));
 
                     // Get all exposed methods within this type
                     foreach (MethodInfo method in instanceMethods)

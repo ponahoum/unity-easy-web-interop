@@ -15,21 +15,24 @@ public class TypescriptDefinitionPreBuild : IPreprocessBuildWithReport
 
     // Read-only variable that holds the base folder for TypeScript files.
     // This is relative to the project root.
-    private static readonly string TS_BASE_FOLDER = "WebGLTemplates/TestTemplate/typescript-tests";
+    private static readonly string TS_BASE_FOLDER = "RuntimeTypescriptTests";
+
+    // Get the absolute path of the TypeScript base folder.
+    public static string GetTsBasePath() => Path.Combine(Application.dataPath,"..", TS_BASE_FOLDER);
 
     // This method is called before the build starts.
     public void OnPreprocessBuild(BuildReport report)
     {
         GenerateAndSaveTypescriptDefinition();
         BuildTypescriptTests();
-        throw new Exception("PR NOT COMPLETED + WE MUST MAKE NPM INSTALL WORK AND FINISH WRITING TESTS");
     }
+
 
     // Build tests by running 'npm install' and 'npm run build' in the TypeScript base folder.
     private void BuildTypescriptTests()
     {
         // Get the absolute path of the directory by combining the project root with the base folder.
-        string npmDirectory = Path.Combine(Application.dataPath, TS_BASE_FOLDER);
+        string npmDirectory = GetTsBasePath();
 
         try
         {
@@ -49,6 +52,7 @@ public class TypescriptDefinitionPreBuild : IPreprocessBuildWithReport
         }
     }
 
+
     /// <summary>
     /// Executes a command using cmd.
     /// </summary>
@@ -61,15 +65,17 @@ public class TypescriptDefinitionPreBuild : IPreprocessBuildWithReport
         if (string.IsNullOrEmpty(workingDirectory))
             throw new ArgumentException("Working directory cannot be null or empty.");
 
-        System.Diagnostics.Process process = new System.Diagnostics.Process();
-        System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-        //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.;
-        startInfo.FileName = "cmd.exe";
-        startInfo.Arguments = $"/C {commandToRun}";
-        startInfo.WorkingDirectory = workingDirectory;
+        Process process = new Process();
+        ProcessStartInfo startInfo = new ProcessStartInfo
+        {
+            WindowStyle = ProcessWindowStyle.Hidden,
+            FileName = "cmd.exe",
+            Arguments = $"/C{commandToRun}",
+           WorkingDirectory = workingDirectory
+        };
         process.StartInfo = startInfo;
         process.Start();
-        //process.WaitForExit();
+        process.WaitForExit();
     }
 
 
@@ -79,7 +85,7 @@ public class TypescriptDefinitionPreBuild : IPreprocessBuildWithReport
         string tsDefinition = TypescriptGenerator.GenerateTypescript();
 
         // Define the target file path using the read-only base folder variable.
-        string filePath = Path.Combine(Application.dataPath, TS_BASE_FOLDER, "UnityInstance.d.ts");
+        string filePath = Path.Combine(GetTsBasePath(), "UnityInstance.d.ts");
 
         try
         {
