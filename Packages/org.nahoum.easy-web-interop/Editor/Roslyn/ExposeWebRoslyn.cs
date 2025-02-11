@@ -19,7 +19,10 @@ namespace Nahoum.UnityJSInterop
             sw.Start();
             AssertAllExposedMethodsFromInterfaceAreExposed();
             sw.Stop();
-            UnityEngine.Debug.LogWarning($"Sanity checks took {sw.ElapsedMilliseconds}ms. To be improved.");
+
+            // If time exceeds 30ms, we should improve the performance of the checks
+            if (sw.ElapsedMilliseconds > 30)
+                UnityEngine.Debug.LogWarning($"Sanity checks took {sw.ElapsedMilliseconds}ms. To be improved. Check that not too large assemblies are being explored");
         }
 
         /// <summary>
@@ -28,6 +31,10 @@ namespace Nahoum.UnityJSInterop
         public static void AssertAllExposedMethodsFromInterfaceAreExposed()
         {
             IReadOnlyCollection<Type> allExposedTypes = ExposeWebAttribute.GetAllTypesWithWebExposedMethods();
+
+            // Cache the types available in the assemblies to avoid performance issues
+            IReadOnlyCollection<Type> allTypes = ReflectionUtilities.GetAllAssembliesTypes();
+
             foreach (Type exposedType in allExposedTypes)
             {
                 if (!exposedType.IsInterface)
@@ -37,23 +44,24 @@ namespace Nahoum.UnityJSInterop
 
                 foreach (var method in exposedMethods)
                 {
-                    AssertMethodImplementedInAllInheritingTypes(method);
+                    AssertMethodImplementedInAllInheritingTypes(method, ref allTypes);
                 }
             }
         }
-        private static void AssertMethodImplementedInAllInheritingTypes(MethodInfo method)
+
+        /// <summary>
+        /// Given a method declared in an interface, ensures that it is well implemented in all implementing types, and that the implementation has the needed [ExposeWeb] attribute
+        /// </summary>
+        private static void AssertMethodImplementedInAllInheritingTypes(MethodInfo methodFromInterface, ref IReadOnlyCollection<Type> comparisonTypes)
         {
             // Check method is part of an interface, otherwise skip
-            if (!method.DeclaringType.IsInterface)
+            if (!methodFromInterface.DeclaringType.IsInterface)
                 return;
 
-            Type interfaceType = method.DeclaringType;
-
-            // If it is an interface, we need to gather all type implementing this interface
-            IReadOnlyCollection<Type> allTypes = ReflectionUtilities.GetAllAssembliesTypes();
+            Type interfaceType = methodFromInterface.DeclaringType;
 
             // Check if the method is implemented in all inheriting types
-            foreach (Type impl in allTypes)
+            foreach (Type impl in comparisonTypes)
             {
                 // Skip if the type does not implement the interface
                 if (!interfaceType.IsAssignableFrom(impl) || impl.IsInterface)
@@ -63,11 +71,11 @@ namespace Nahoum.UnityJSInterop
                 var interfaceMethods = impl.GetInterfaceMap(interfaceType).InterfaceMethods;
 
                 // Ensure that if the interface method has the ExposeWebAttribute, the implementing method also has it
-                if (ContainsMethod(method, interfaceMethods, out int index))
+                if (ContainsMethod(methodFromInterface, interfaceMethods, out int index))
                 {
                     MethodInfo implementingMethod = impl.GetInterfaceMap(interfaceType).TargetMethods[index];
                     if (!ExposeWebAttribute.HasWebExposeAttribute(implementingMethod, out ExposeWebAttribute attr))
-                        throw new Exception($"Exposed to the web method {implementingMethod.Name} in {implementingMethod.DeclaringType} is implemented from interface {interfaceType} but doesn't have the [ExposeWeb] attribute. Please add the [ExposeWeb] attribute to the method {method.Name} in {impl}");
+                        throw new Exception($"Exposed to the web method {implementingMethod.Name} in {implementingMethod.DeclaringType} is implemented from interface {interfaceType} but doesn't have the [ExposeWeb] attribute. Please add the [ExposeWeb] attribute to the method {methodFromInterface.Name} in {impl}");
                 }
             }
         }

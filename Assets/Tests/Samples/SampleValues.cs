@@ -6,6 +6,7 @@ namespace Nahoum.UnityJSInterop.Tests
     public static class SampleValues
     {
         public static readonly string TestString = "test string";
+        public static readonly string TestString2 = "test string 2";
         public static readonly double TestDouble = 2147483647125d;
         public static readonly int TestInt = 450050554;
         public static readonly float TestFloat = 1234567f;

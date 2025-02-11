@@ -135,7 +135,6 @@ namespace Nahoum.UnityJSInterop
             return parameterSignature;
         }
 
-
         /// <summary>
         /// Given a method and its arguments, invoke the method and return the result
         /// All the arguments are wrapped in GCHandles before

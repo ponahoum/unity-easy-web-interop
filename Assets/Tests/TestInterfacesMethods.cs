@@ -25,6 +25,9 @@ namespace Nahoum.UnityJSInterop.Tests
         /// This one is not exposed, but it is used by the interface
         /// </summary>
         public float GetSampleFloat() => SampleValues.TestFloat;
+
+        [ExposeWeb]
+        public string TestGetStringFromInterface() => SampleValues.TestString2;
     }
 
     [ExposeWeb]

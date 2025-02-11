@@ -1,10 +1,14 @@
-import { assertThrowsAsync, assertThrows, assertEquals, assert } from "./testing-utilities.js";
-import { DefaultExceptionMessage } from "./testing-utilities.js";
+import { UnityInstance } from "../UnityInstance.js";
+import { assertEquals } from "./test-utilities.js";
 
 /**
  * Few tests to check that we can call class inheriting from generic classes, and use the interfaces with it too
  */
-export async function RunTests(module) {
+export function RunTests(unityInstance: UnityInstance) {
+
+  // Get module
+  const module = unityInstance.Module;
+  
   // Get instance
   const instance = module.static["Nahoum.UnityJSInterop.Tests"].TestGenericClass.CreateInstance();
 

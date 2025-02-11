@@ -2,7 +2,10 @@
 // Contains all hardcoded utility types and functions for the generated TypeScript file to work correctly
 
 export type Utilities = {
-    GetManagedAction(callback: (actionParameters: any) => void, managedTypesArray: string[]): any,
+    GetManagedAction<T extends any[]>(
+        callback: (...actionParameters: T) => void,
+        managedTypesArray: { [K in keyof T]: string }
+      ): any,
     GetManagedAction(callback: () => void): System.Action,
     GetManagedBool(targetBool: boolean): System.Boolean,
     GetManagedBoolArray(array: boolean[]): System.Boolean_CSharpArray,
@@ -23,6 +26,9 @@ export type UnityInstance = {
         static: {
             /*STATIC_MODULE_PLACEHOLDER*/
         },
-        utilities: Utilities
+        utilities: Utilities,
+        extras:{
+            /*EXTRAS_PLACEHOLDER*/
+        }
     }
 }

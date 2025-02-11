@@ -145,14 +145,49 @@ namespace Nahoum.UnityJSInterop
         }
 
         /// <summary>
+        /// Given a method, tells if it has at least one parameter that is a delegate (like and Action or Action<string> etc.) with no return type
+        /// </summary>
+        /// <param name="method">The method to inspect</param>
+        /// <param name="delegateParameterTypes">The list of parameters of the method that are delegates</param>
+        /// <returns></returns>
+        internal static bool MethodHasReturnlessDelegateParameter(MethodInfo method, out IReadOnlyList<ParameterInfo> delegateParameterTypes)
+        {
+            delegateParameterTypes = null;
+            var parameters = method.GetParameters();
+
+            // Skip immediatly if no parameters
+            if (parameters.Length == 0)
+                return false;
+
+            List<ParameterInfo> result = new List<ParameterInfo>();
+            delegateParameterTypes = result;
+
+            // Go through each parameter and check if it's a delegate
+            foreach (ParameterInfo parameter in parameters)
+            {
+                Type parameterType = parameter.ParameterType;
+                if (typeof(Delegate).IsAssignableFrom(parameterType) && parameterType.GetMethod("Invoke").ReturnType == typeof(void))
+                {
+                    result.Add(parameter);
+                }
+            }
+
+            return result.Count > 0;
+        }
+
+        /// <summary>
         /// Returns a gigantic list of all the types in all the available assemblies
         /// </summary>
-        internal static IReadOnlyCollection<Type> GetAllAssembliesTypes()
+        internal static IReadOnlyCollection<Type> GetAllAssembliesTypes(bool excludeCommonAssemblies = true)
         {
-            List<Type> types = new List<Type>();
+            HashSet<Type> types = new HashSet<Type>();
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (Assembly assembly in assemblies)
             {
+                // Exclude common assemblies that are no utility to the user
+                if (excludeCommonAssemblies && excludeNamespace.Any(n => assembly.FullName.StartsWith(n)))
+                    continue;
+
                 // Get all the types in the assembly
                 Type[] allTypes = assembly.GetTypes();
                 foreach (Type targetType in allTypes)
@@ -163,5 +198,30 @@ namespace Nahoum.UnityJSInterop
             return types;
         }
 
+        /// <summary>
+        /// A collection of namespaces to exclude from the GetAllAssembliesTypes method. This is because those namespaces are not relevant to the user and cause performance issues when exploring them
+        /// </summary>
+        private static readonly HashSet<string> excludeNamespace = new HashSet<string>()
+        {
+            "System",
+            "UnityEngine",
+            "UnityEditor",
+            "Microsoft",
+            "Mono",
+            "JetBrains",
+            "Roslyn",
+            "NUnit",
+            "Newtonsoft",
+            "netstandard",
+            "Unity",
+            "nunit",
+            "I18N",
+            "mscorlib",
+            "Bee",
+            "ReportGeneratorMerged",
+            "unityplastic",
+            "Accessibility",
+            "log4net"
+        };
     }
 }

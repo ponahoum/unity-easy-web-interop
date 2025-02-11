@@ -15,6 +15,16 @@ namespace Nahoum.UnityJSInterop
         [DllImport("__Internal")]
         static extern void RegisterStaticMethodInternalRegistry(IntPtr methodPtr, string functionName, string functionSignature);
 
+        /// <summary>
+        /// Allows to expose a constructor for a delegate type in the JS side
+        /// For example, one may create a Action<string> from the JS side calling Module.extras["System"]["Action<String>"].createDelegate(x)
+        /// </summary>
+        [DllImport("__Internal")]
+        static extern void RegisterDelegateConstructor(string namespaceConstructorPtr, string constructorMethodName, IntPtr arrayManagedTypesPtr, int arrayManagedTypesLength);
+
+        // Keep track of all the constructors of delegates types that were already registered
+        static HashSet<Type> alreadyRegisteredDelegatesConstructors = new HashSet<Type>();
+
         [DllImport("__Internal")]
         static extern void Setup(IntPtr getIntPtrValueMethodPtr);
 
@@ -240,7 +250,7 @@ namespace Nahoum.UnityJSInterop
 
             // Ensure the object is a string array
             if (typesStringArray is not string[] managedTypes)
-                throw new Exception("The object is not an array");
+                throw new Exception("The object expected to be the array of types for the delegate is not an array of string");
 
             object actionWrapped = ManagedActionFactory.GetWrappedActionFromJsDelegate(managedTypes, actionJsPtr);
             return GCUtils.NewManagedObject(actionWrapped);
@@ -258,7 +268,13 @@ namespace Nahoum.UnityJSInterop
             {
                 if (target == IntPtr.Zero)
                     return;
+
+                // Get the object from the pointer 
                 object targetObject = GCUtils.GetManagedObjectFromPtr(target);
+
+                // If the object is null, no need to inject methods in it. We can just skip this step
+                if (targetObject == null)
+                    return;
 
                 // Check if object class has webexpose attribute
                 if (ExposeWebAttribute.HasExposedMethods(targetObject.GetType()))
@@ -295,6 +311,40 @@ namespace Nahoum.UnityJSInterop
         static IntPtr GetDelegateCount()
         {
             return GCUtils.NewManagedObject(MethodsRegistry.GetDelegateCount());
+        }
+
+        /// <summary>
+        /// Given the type of a delegate (such as Action or Action<string> etc, register a constructor for it in the JS side
+        /// This way, one may create lambdas on the JS side and pass those as argument to C#
+        /// If a constructor for this type was already registered, this method will do nothing
+        /// </summary>
+        public static void TryRegisterDelegateConstructor(Type delegateType)
+        {
+            // Skip if type is not delegate
+            if (!delegateType.IsSubclassOf(typeof(Delegate)))
+                throw new ArgumentException("The provided type must be a delegate");
+
+            // Check if the type is already registered
+            if (alreadyRegisteredDelegatesConstructors.Contains(delegateType))
+                return;
+            alreadyRegisteredDelegatesConstructors.Add(delegateType);
+
+            // Get the parameters of the delegate types names and put them in the string arr
+            MethodInfo invokeMethod = delegateType.GetMethod("Invoke");
+            string[] delegateInputTypes = new string[invokeMethod.GetParameters().Length];
+            for (int i = 0; i < delegateInputTypes.Length; i++)
+                delegateInputTypes[i] = invokeMethod.GetParameters()[i].ParameterType.FullName;
+
+            // Convert the array to intptr
+            IntPtr ptr = MarshalUtilities.MarshalStringArray(delegateInputTypes, out int length, out Action free);
+            string nameOfAction = delegateType.Name;
+            string namespaceOfAction = delegateType.Namespace == null ? "" : delegateType.Namespace;
+
+            // Notice javascript to create a constructor for this delegate
+            RegisterDelegateConstructor(namespaceOfAction, NamingUtility.GenerateWellFormattedJSNameForType(delegateType, namespaceOfAction), ptr, length);
+
+            // Free the memory allocated for the string[]
+            free();
         }
 
         #endregion

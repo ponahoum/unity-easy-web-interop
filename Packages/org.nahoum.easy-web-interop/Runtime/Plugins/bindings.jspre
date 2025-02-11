@@ -65,7 +65,7 @@ Module.internalJS.HandleResPtr = function (resPtr, injectDelegateInObject = true
   // If this object is an instance, we inject the methods in the object
   if (injectDelegateInObject) {
     // Timer to measure the time it takes
-    var timeStart = performance.now();
+    //var timeStart = performance.now();
 
     // Set the object to the temporary reference so that the method coming back from the C# side can be called
     // This way, methods will be populated in the object tempReferences
@@ -75,7 +75,7 @@ Module.internalJS.HandleResPtr = function (resPtr, injectDelegateInObject = true
     Module.internalJS.tempReferences = undefined;
 
     // Remove from tempReferences
-    var timeEnd = performance.now();
+    //var timeEnd = performance.now();
     // Debug time
     //console.log("Tool took " + (timeEnd - timeStart) + " milliseconds to populate pointer to native object of id " + resultingPtr.targetGcHandleObjectPtr);
   }

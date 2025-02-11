@@ -83,7 +83,7 @@ namespace Nahoum.UnityJSInterop
             MethodInfo[] methods = targetType.GetMethods(flags);
             foreach (MethodInfo method in methods)
             {
-                if (HasWebExposeAttribute(method, out ExposeWebAttribute attr))
+                if (HasWebExposeAttribute(method, out _))
                     result.Add(method);
             }
 

@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "scripts": {
+    "build": "rimraf ../Assets/WebGLTemplates/TestTemplate/dist & tsc"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.10",
+    "typescript": "^5.7.3"
+  }
+}

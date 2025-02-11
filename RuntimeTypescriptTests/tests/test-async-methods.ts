@@ -1,7 +1,11 @@
-import { assertEquals } from "./testing-utilities.js";
-import { SampleValues } from "./testing-utilities.js";
+import { UnityInstance } from "../UnityInstance.js";
+import { assertEquals, SampleValues } from "./test-utilities.js";
 
-export async function RunTests(module) {
+export async function RunTests(unityInstance: UnityInstance) {
+
+  // Get module
+  const module = unityInstance.Module;
+
   // Get instance
   const instance = module.static["Nahoum.UnityJSInterop.Tests"].TestTasks.GetInstance();
 

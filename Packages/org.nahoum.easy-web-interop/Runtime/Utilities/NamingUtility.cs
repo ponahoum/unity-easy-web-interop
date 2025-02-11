@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 
 namespace Nahoum.UnityJSInterop
@@ -31,6 +32,42 @@ namespace Nahoum.UnityJSInterop
             else
                 return new string[] { staticPrefix, className, methodName };
 
+        }
+
+        /// <summary>
+        /// Generates a well formatted name for a type relative to a provided namespace
+        /// Typically used to generate generic types names that look good (Action<string> instead of Action`1)
+        /// </summary>
+        public static string GenerateWellFormattedJSNameForType(Type type, string relativeNamespaceName = null)
+        {
+            // Get the default name
+            string typeName = type.Name;
+
+            // Take the namespace of the type if not provided
+            if (relativeNamespaceName == null)
+                relativeNamespaceName = type.Namespace;
+
+            // Case generic type: Action<string> -> "Action<string>"
+            if (type.IsGenericType)
+            {
+                typeName = type.Name.Substring(0, type.Name.IndexOf('`'));
+                typeName += "<";
+                int index = 0;
+                foreach (var genericArgument in type.GetGenericArguments())
+                {
+                    typeName += GenerateWellFormattedJSNameForType(genericArgument, type.Namespace);
+                    if (index < type.GetGenericArguments().Length - 1)
+                        typeName += ",";
+                    index++;
+                }
+                typeName += ">";
+            }
+
+            // If the type is in the same namespace, we don't need to prefix it
+            if (relativeNamespaceName == type.Namespace)
+                return typeName;
+            else
+                return type.Namespace + "." + typeName;
         }
     }
 }

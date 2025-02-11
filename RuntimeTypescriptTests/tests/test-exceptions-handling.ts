@@ -1,10 +1,13 @@
-import { assertThrowsAsync, assertThrows } from "./testing-utilities.js";
-import { DefaultExceptionMessage } from "./testing-utilities.js";
-
+import { UnityInstance } from "../UnityInstance.js";
+import { assertThrows, assertThrowsAsync, DefaultExceptionMessage } from "./test-utilities.js";
 /**
  * Few tests to check exception handling, in both sync and async methods
  */
-export async function RunTests(module) {
+export async function RunTests(unityInstance: UnityInstance) {
+
+  // Get module
+  const module = unityInstance.Module;
+  
   // Get static class
   const staticClass = module.static["Nahoum.UnityJSInterop.Tests"].TestExceptions;
 

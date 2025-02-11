@@ -1,11 +1,15 @@
-import { assertEquals, assertArrayContentsEquals } from "./testing-utilities.js";
-import { SampleValues } from "./testing-utilities.js";
+import { UnityEngine, UnityInstance } from "../UnityInstance.js";
+import { assertEquals } from "./test-utilities.js";
 
 /**
  * Few tests to check the byte array conversion from Unity to JS
  * Loading a texture as an example
  */
-export async function RunTests(module) {
+export async function RunTests(unityInstance: UnityInstance) {
+
+  // Get module
+  const module = unityInstance.Module;
+
   // Get static class
   const staticClass = module.static["Nahoum.UnityJSInterop.Tests"].TestByteArray;
 
@@ -21,7 +25,7 @@ export async function RunTests(module) {
   assertEquals(staticClass.GetByteArrayLength(uint8arrayUnity).value, imageUint8Array.length, "GetByteArrayLength");
 
   // Load texture from byte array
-  const unitySideTexture = staticClass.LoadTexture(uint8arrayUnity);
+  const unitySideTexture: UnityEngine.Texture2D = staticClass.LoadTexture(uint8arrayUnity);
   assertEquals(unitySideTexture.managedType.value, "UnityEngine.Texture2D", "LoadTexture");
 
   // Get texture resolution an ensure it is the same as the downloaded image
@@ -32,7 +36,7 @@ export async function RunTests(module) {
  *  Download sample image and return it as a Uint8Array
  */
 
-async function downloadJPGImageToUint8Array(resX, resY) {
+async function downloadJPGImageToUint8Array(resX: number, resY: number): Promise<Uint8Array> {
   try {
     // Fetch the image
     const url = "https://picsum.photos/" + resX + "/" + resY;
@@ -55,6 +59,6 @@ async function downloadJPGImageToUint8Array(resX, resY) {
     // Return the Uint8Array
     return uint8Array;
   } catch (error) {
-    console.error("Error downloading or converting the image:", error);
+    throw new Error("Error downloading or converting the image:"+ error);
   }
 }

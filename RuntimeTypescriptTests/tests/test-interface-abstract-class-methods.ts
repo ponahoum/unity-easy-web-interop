@@ -1,15 +1,18 @@
-import { assertEquals, assertArrayContentsEquals } from "./testing-utilities.js";
-import { SampleValues } from "./testing-utilities.js";
+
+import { UnityInstance } from "../UnityInstance.js";
+import { assertEquals, SampleValues } from "./test-utilities.js";
 
 /**
  * Test that inheritance works well for both abstract and interface classes
  */
-export function RunTests(module) {
-    RunTestAbstractClass(module);
-    RunTestInterfaceClass(module);
+export function RunTests(unityInstance: UnityInstance) {
+
+    RunTestAbstractClass(unityInstance);
+    RunTestInterfaceClass(unityInstance);
 }
 
-function RunTestAbstractClass(module){
+function RunTestAbstractClass(unityInstance: UnityInstance) {
+    const module = unityInstance.Module;
     // Get instance of a method that returns an abstract class
     const instance = module.static["Nahoum.UnityJSInterop.Tests"].TestAbstractClass.GetInstance();
 
@@ -17,11 +20,14 @@ function RunTestAbstractClass(module){
     assertEquals(instance.GetString().value, SampleValues.TestString, "TestAbstractMethod.GetString() to get a string from an instance works");
 }
 
-function RunTestInterfaceClass(module){
+function RunTestInterfaceClass(unityInstance: UnityInstance) {
+    const module = unityInstance.Module;
     const instance = module.static["Nahoum.UnityJSInterop.Tests"].TestClassImplementingInterface.GetNewInstanceOfInterface();
 
-    // Test calling interface declared methods (method is delcared in interface - aka explicit interface implementation)
-    assertEquals(instance.TestGetStringFromClass().value, SampleValues.TestString, "TestClassImplementingInterface.TestGetStringFromClass() to get a string from an implemented interface method in implementing class works");
+    // Test calling interface declared methods (method is declared in interface - aka explicit default interface implementation)
+    // This default implementation is not supported if not in the instance
+    console.log(instance);
+    assertEquals(instance.TestGetStringFromInterface().value, SampleValues.TestString2, "TestClassImplementingInterface.TestGetStringFromClass() to get a string from an implemented interface method in implementing class works");
 
     // Test getting string from interface method
     assertEquals(instance.TestGetStringFromInterfaceDeclaration().value, SampleValues.TestString, "TestClassImplementingInterface.TestGetStringFromInterfaceDeclaration() to get a string from an interface method in implementing class works");

@@ -24,6 +24,7 @@ namespace Nahoum.UnityJSInterop
         /// </summary>
         internal static object GetManagedObjectFromPtr(IntPtr targetObject)
         {
+            // Handle reference types
             if (targetObject == IntPtrExtension.Null)
                 return null;
 

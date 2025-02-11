@@ -1,11 +1,15 @@
-import { assertEquals, assertArrayContentsEquals, assertObjectEqualsByValues  } from "./testing-utilities.js";
-import { SampleValues } from "./testing-utilities.js";
 
-export function RunTests(module) {
+import { UnityInstance } from "../UnityInstance.js";
+import { assertEquals, SampleValues, assertArrayContentsEquals, assertObjectEqualsByValues } from "./test-utilities.js";
+
+export function RunTests(unityInstance: UnityInstance) {
+
+    // Get module
+    const module = unityInstance.Module;
 
     // Get instance
     const instance = module.static["Nahoum.UnityJSInterop.Tests"].TestInstanceMethods.GetNewInstance();
-    
+
     // Test methods of the instance
     // Regular values
     assertEquals(instance.TestGetString().value, SampleValues.TestString, "TestGetString to get a string from an instance works");
