@@ -2,7 +2,7 @@
 
 **Unity Easy Web Interop** is a library for Unity WebGL users that allows to expose **C# methods and class instances to JavaScript** using simple C# decorators. It also generates easy-to-use, strongly typed signatures for TypeScript.
 
-It's build using direct bindings to the WASM side of Unity WebGL and **does not rely on messaging or serialization systems** (such as Unity’s `SendMessage`). 
+It's build using direct bindings to the WASM side of Unity WebGL and **does NOT rely on messaging or serialization systems** (such as Unity’s `SendMessage`). 
 
 It’s perfect for developing Unity applications that require a modern web UI overlay built with frameworks like **React, Vue, or Angular**.
 
