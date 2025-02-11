@@ -81,8 +81,9 @@ export type UnityInstance = {
         }
     }
 }
-
 ```
+*In the example above, other typescript types (such as Int32) are auto-generated but not shown here for visibility*
+
 > **Note:** Typescript .d.ts file can be generated via the menu `UnityJsInterop > Generate Typescript`
 > **Warning:** Note that due to typescript limitations, the static part of classes is splitted in two different types.
 These definitions provide type safety and autocompletion when interacting with the exposed methods in TypeScript.
