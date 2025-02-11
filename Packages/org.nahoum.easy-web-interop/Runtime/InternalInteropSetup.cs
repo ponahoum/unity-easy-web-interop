@@ -268,7 +268,13 @@ namespace Nahoum.UnityJSInterop
             {
                 if (target == IntPtr.Zero)
                     return;
+
+                // Get the object from the pointer 
                 object targetObject = GCUtils.GetManagedObjectFromPtr(target);
+
+                // If the object is null, no need to inject methods in it. We can just skip this step
+                if (targetObject == null)
+                    return;
 
                 // Check if object class has webexpose attribute
                 if (ExposeWebAttribute.HasExposedMethods(targetObject.GetType()))
