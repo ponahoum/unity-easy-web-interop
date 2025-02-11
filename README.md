@@ -1,14 +1,14 @@
 # Unity Easy WebGL & Javascript Interop
 
-**Unity Easy Web Interop** is a library designed targetting Unity WebGL users that allows to expose **C# methods and class instances from Unity to JavaScript** using simple C# decorators. It also generates easy-to-use, strongly typed signatures for TypeScript.
+**Unity Easy Web Interop** is a library for Unity WebGL users that allows to expose **C# methods and class instances to JavaScript** using simple C# decorators. It also generates easy-to-use, strongly typed signatures for TypeScript.
 
-This library is built on a direct binding to the WASM side of Unity WebGL and does not rely on messaging or serialization systems (such as Unity’s `SendMessage`). 
+It's build using direct bindings to the WASM side of Unity WebGL and **does not rely on messaging or serialization systems** (such as Unity’s `SendMessage`). 
 
-It’s perfect for developing Unity applications that require a modern web UI overlay built with frameworks like React, Vue, or Angular.
+It’s perfect for developing Unity applications that require a modern web UI overlay built with frameworks like **React, Vue, or Angular**.
 
 ## Basic Example
 
-Consider the following C# code:
+Consider you want the following C# code directly to Javascript:
 
 ```csharp
 namespace Nahoum.UnityJSInterop.Tests
@@ -27,7 +27,7 @@ namespace Nahoum.UnityJSInterop.Tests
 }
 ```
 
-By applying the `[ExposeWeb]` attribute to these methods, they become accessible in your JavaScript WebGL build. Static methods are accessed via the path `static[namespace][className][methodName]`. Static methods allow you to expose instances, meaning both static and instance methods are available to JavaScript.
+By applying the `[ExposeWeb]` attribute to these methods, they become accessible in your JavaScript WebGL build. Static methods are accessed via the path `unityInstance.Module.static[namespace][className][methodName]`. Static methods allow you to expose instances, meaning both static and instance methods are available to JavaScript.
 
 ### Using the Exposed Methods in JavaScript
 
