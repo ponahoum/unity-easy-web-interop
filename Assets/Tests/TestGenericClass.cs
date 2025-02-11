@@ -12,16 +12,16 @@
         public static TestAnotherGenericClass CreateInstance() => new TestAnotherGenericClass();
     }
 
-    public class GenericClassBase<T> : TestInterfaceInGenericClass
+    public class GenericClassBase<T> : ITestInterfaceInGenericClass
     {
         [ExposeWeb]
         public string GetTypeName() => typeof(T).Name;
 
         [ExposeWeb]
-        public string GetTypeNameFromExternal(TestInterfaceInGenericClass input) => input.GetTypeName();
+        public string GetTypeNameFromExternal(ITestInterfaceInGenericClass input) => input.GetTypeName();
     }
 
-    public interface TestInterfaceInGenericClass
+    public interface ITestInterfaceInGenericClass
     {
         string GetTypeName();
     }

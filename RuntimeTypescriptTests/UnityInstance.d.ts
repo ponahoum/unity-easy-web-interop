@@ -1,7 +1,7 @@
 export namespace AnotherNamespace {
 export type SomeClass = {
-fullTypeName_1962c1e23ece44a08d616fb66344f7a2: 'AnotherNamespace.SomeClass';
-assembly_5d9fdaa95cdc498bb4d07ae69506ba08: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_71BF8987A338C4DC4B658B027493459F2251552D58D81FDE3553739A2D21AA29: 'AnotherNamespace.SomeClass';
+assembly_71BF8987A338C4DC4B658B027493459F2251552D58D81FDE3553739A2D21AA29: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 TestGetSimpleValue(): System.Int32;
@@ -10,141 +10,141 @@ TestGetSimpleValue(): System.Int32;
 }
 export namespace System {
 export type Int32 = {
-fullTypeName_2f0bf9c7779a4235ba9ff1e1e6dde90b: 'System.Int32';
-assembly_e35d462ee19245b1a005ca8761238f3a: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_1A4C5B3F3707B26139928EEC75D4FAF76764837AD07C75D4E6A90E8A01EF7889: 'System.Int32';
+assembly_1A4C5B3F3707B26139928EEC75D4FAF76764837AD07C75D4E6A90E8A01EF7889: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: number;
 managedType: Type;
 };
 
 export type String = {
-fullTypeName_bf1e65b3f3df4a1494612d268312955f: 'System.String';
-assembly_2110611a2a4b41e595739ea0fb06308d: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_7BE15EEA31A4F99C8B95EC61E38A8FD3E5D739B015836086C4AADACE3B2F8D51: 'System.String';
+assembly_7BE15EEA31A4F99C8B95EC61E38A8FD3E5D739B015836086C4AADACE3B2F8D51: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: string | null;
 managedType: Type;
 }& System.Collections.IEnumerable;
 
 export type Action = {
-fullTypeName_26a5b26a3f274d4699af83731e4bd7a7: 'System.Action';
-assembly_33ccd8586a0a40cda074270f748ceccf: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_F4B6DD8B3E8E06AE6753665C6F85AEC59D351F83B0D4E77775E0C0A3ECECD3B2: 'System.Action';
+assembly_F4B6DD8B3E8E06AE6753665C6F85AEC59D351F83B0D4E77775E0C0A3ECECD3B2: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: unknown;
 managedType: Type;
 };
 
 export type Action1$Int32 = {
-fullTypeName_590f13681b2a4965ba1f306a26980ad1: 'System.Action`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
-assembly_46b3e6d047a742adaad22503fec0de3b: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_CA470E7D9BF41124EB70B26CA12E1D848B34F9CCE89CA3D20B8D87DE9425B0F5: 'System.Action`1[[System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
+assembly_CA470E7D9BF41124EB70B26CA12E1D848B34F9CCE89CA3D20B8D87DE9425B0F5: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: unknown;
 managedType: Type;
 };
 
 export type Action1$String = {
-fullTypeName_8cb54b4510264dcba88b0c950217499c: 'System.Action`1[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
-assembly_9bc768faceda4d559c1234c2b55a813b: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
-value: unknown;
-managedType: Type;
-};
-
-export type Action1$Single = {
-fullTypeName_3250a4a2a7de438db33fec874676a03e: 'System.Action`1[[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
-assembly_a4d29036003c4c77aedced52db22a6cf: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
-value: unknown;
-managedType: Type;
-};
-
-export type Action2$Double$String = {
-fullTypeName_9a16f1d716f34279a9d4dbeba823e7b0: 'System.Action`2[[System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
-assembly_fa32cce78bcc407797dbb3e6bdf1ceb1: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
-value: unknown;
-managedType: Type;
-};
-
-export type Action1$AnotherNamespace_SomeClass = {
-fullTypeName_347e5d0532c04c1698e62d9bef6e8521: 'System.Action`1[[AnotherNamespace.SomeClass, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]';
-assembly_b9d124b8d848496ea84240748a258e30: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_31480652899900BFEEC0D7ABA8CB669E6FCEC6D81BB5582D51F85B36E92881F6: 'System.Action`1[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
+assembly_31480652899900BFEEC0D7ABA8CB669E6FCEC6D81BB5582D51F85B36E92881F6: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: unknown;
 managedType: Type;
 };
 
 export type Single = {
-fullTypeName_66c350474d6c4427a605512ec2247218: 'System.Single';
-assembly_4ad39e52325f424c8d03fa77e0b9ba98: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_E730956F5BB0C4808E8103222463441E929747F209558E35B4BBEC499BB5BF87: 'System.Single';
+assembly_E730956F5BB0C4808E8103222463441E929747F209558E35B4BBEC499BB5BF87: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: number;
+managedType: Type;
+};
+
+export type Action1$Single = {
+fullTypeName_B2AF6431FBE2BB67C507907708A697C2C2BC8F1AC6C063A7BB1460B704638149: 'System.Action`1[[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
+assembly_B2AF6431FBE2BB67C507907708A697C2C2BC8F1AC6C063A7BB1460B704638149: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+value: unknown;
+managedType: Type;
+};
+
+export type Double = {
+fullTypeName_1783640C653535228BACC4755D3982C1554DE9A4E804D673862B95330D8B0E2D: 'System.Double';
+assembly_1783640C653535228BACC4755D3982C1554DE9A4E804D673862B95330D8B0E2D: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+value: number;
+managedType: Type;
+};
+
+export type Action2$Double$String = {
+fullTypeName_D346F5D34218E398F683F7AB20318E40359711A581143736E8284B150FA567A7: 'System.Action`2[[System.Double, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
+assembly_D346F5D34218E398F683F7AB20318E40359711A581143736E8284B150FA567A7: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+value: unknown;
+managedType: Type;
+};
+
+export type Action1$AnotherNamespace_SomeClass = {
+fullTypeName_84F7FB51B17C143ECBC426B5A47328798B9CA5609EFBCC31EDDD562B942C6CFD: 'System.Action`1[[AnotherNamespace.SomeClass, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]';
+assembly_84F7FB51B17C143ECBC426B5A47328798B9CA5609EFBCC31EDDD562B942C6CFD: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+value: unknown;
 managedType: Type;
 };
 
 export type Byte_CSharpArray = {
-fullTypeName_c9e49141731e4bac81acdd6ab38c5214: 'System.Byte[]';
-assembly_07fc365dddc8446c8d2de080df0a33df: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_F731B51747BB7D72E94AA746D30E597ECDB9B4B7100B3F57BE27A03AE8EB5623: 'System.Byte[]';
+assembly_F731B51747BB7D72E94AA746D30E597ECDB9B4B7100B3F57BE27A03AE8EB5623: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: (number)[];
 managedType: Type;
 }& System.Collections.ICollection& System.Collections.IEnumerable& System.Collections.IList;
 
-export type Double = {
-fullTypeName_1d485986ab0f40d2bb5446f742b1975c: 'System.Double';
-assembly_e2d2fb7b402d4b0c82258b476bd250be: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
-value: number;
-managedType: Type;
-};
-
 export type Boolean = {
-fullTypeName_732f6ab4b96e4877a2f1434082768509: 'System.Boolean';
-assembly_00e4373259264f69b7bdb6930dd0bf57: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_5A0C2631BF09F7B05CFEC50008C8A444FFB8400D35CE416697905239202C2C8C: 'System.Boolean';
+assembly_5A0C2631BF09F7B05CFEC50008C8A444FFB8400D35CE416697905239202C2C8C: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: boolean;
 managedType: Type;
 };
 
 export type Single_CSharpArray = {
-fullTypeName_eefcc504cb094eb38abdb60c716b42c0: 'System.Single[]';
-assembly_34ec04f4a8f84950a56fb73d069c5062: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_8EB6F50137B9346FFBF2C9C331BF1FC521986B895BFB3FC10A7FA6E26843F68C: 'System.Single[]';
+assembly_8EB6F50137B9346FFBF2C9C331BF1FC521986B895BFB3FC10A7FA6E26843F68C: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: (number)[];
 managedType: Type;
 }& System.Collections.ICollection& System.Collections.IEnumerable& System.Collections.IList;
 
 export type Double_CSharpArray = {
-fullTypeName_6db2bb94a1bf4beebaa8b413288eb454: 'System.Double[]';
-assembly_03f722301e99452bab55d1831a994b01: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_C09C8EEEFE5FFEAC2A25267D447D9167739A879C1B7B3863A64F523080EECA4D: 'System.Double[]';
+assembly_C09C8EEEFE5FFEAC2A25267D447D9167739A879C1B7B3863A64F523080EECA4D: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: (number)[];
 managedType: Type;
 }& System.Collections.ICollection& System.Collections.IEnumerable& System.Collections.IList;
 
 export type Byte = {
-fullTypeName_8b085cb1a1e94f87bc46b4c3786ff64e: 'System.Byte';
-assembly_66fa03ad959a4bbdba8fa68e3fefcaf5: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_4AD3B2A48D1EF7EACF91204DF53E60BAD740058CADA1243650CA2D2443ED2BDA: 'System.Byte';
+assembly_4AD3B2A48D1EF7EACF91204DF53E60BAD740058CADA1243650CA2D2443ED2BDA: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: number;
 managedType: Type;
 };
 
 export type Int64 = {
-fullTypeName_613e0d45f8214ece8228f7471f2b8a2c: 'System.Int64';
-assembly_44a328e596914e5fac753f26c830f1a0: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_0AD0717715C52D6D5810FA9E519C27301C17E161102E8AB16EA6146D1DC83490: 'System.Int64';
+assembly_0AD0717715C52D6D5810FA9E519C27301C17E161102E8AB16EA6146D1DC83490: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: number;
 managedType: Type;
 };
 
 export type Type = {
-fullTypeName_28f4d6fa4a05418698128191b09834e8: 'System.Type';
-assembly_a5b5dc27010b427b87ddaefc2b24bffa: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_28EFCA72142AE647F1622B9BBF17C18C9D1AFC67EFD6489E0BA5781715E8F224: 'System.Type';
+assembly_28EFCA72142AE647F1622B9BBF17C18C9D1AFC67EFD6489E0BA5781715E8F224: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: string;
 managedType: Type;
 };
 
 export type String_CSharpArray = {
-fullTypeName_1a6a4c4fdb2a455aaef2b86fed17a61d: 'System.String[]';
-assembly_f3f15415199345c08eb99be092fdbdb1: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_D9B03C5908E5F69C8D15F26A6595B198EE1438F2401575D0E9FFF1F32CE6A387: 'System.String[]';
+assembly_D9B03C5908E5F69C8D15F26A6595B198EE1438F2401575D0E9FFF1F32CE6A387: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: (string | null)[];
 managedType: Type;
 }& System.Collections.ICollection& System.Collections.IEnumerable& System.Collections.IList;
 
 export type Int32_CSharpArray = {
-fullTypeName_4563e8e082b44021b8754c8c96dd1c2c: 'System.Int32[]';
-assembly_7d7ed1cec45f42d0ab204755c311d9b9: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_3D2652DD050837302D168A719C23EEF8DB0057C12981BAC52677167754DF7A96: 'System.Int32[]';
+assembly_3D2652DD050837302D168A719C23EEF8DB0057C12981BAC52677167754DF7A96: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: (number)[];
 managedType: Type;
 }& System.Collections.ICollection& System.Collections.IEnumerable& System.Collections.IList;
 
 export type Boolean_CSharpArray = {
-fullTypeName_e3781f910c224c8fb7201920f505ead3: 'System.Boolean[]';
-assembly_e99d0389db8e474b83ee16d3c054bd8c: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_A803FF90FCEFA9EF3CB901099863B9BEF8412FD0663C498142316FE9EE2C89C4: 'System.Boolean[]';
+assembly_A803FF90FCEFA9EF3CB901099863B9BEF8412FD0663C498142316FE9EE2C89C4: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: (boolean)[];
 managedType: Type;
 }& System.Collections.ICollection& System.Collections.IEnumerable& System.Collections.IList;
@@ -152,36 +152,36 @@ managedType: Type;
 }
 export namespace Nahoum.UnityJSInterop.Tests {
 export type TestAbstractClass_static = {
-fullTypeName_aa4b3f11ef2a4701a0cc53ecdcd31fb1: 'Nahoum.UnityJSInterop.Tests.TestAbstractClass';
-assembly_3b9d87af38704c4083f3ae207de0f673: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_FCC6C7871F4910A296CB2448940DA8F5D3A2F074814852111931019D88489038: 'Nahoum.UnityJSInterop.Tests.TestAbstractClass';
+assembly_FCC6C7871F4910A296CB2448940DA8F5D3A2F074814852111931019D88489038: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 GetInstance(): TestAbstractClassAbstract;
 };
 
 export type TestAbstractClass = {
-fullTypeName_46fa508596624c6b8f35f88700519ed1: 'Nahoum.UnityJSInterop.Tests.TestAbstractClass';
-assembly_ec5f0ea731404e4da3984fcdfd9dabf5: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_FCC6C7871F4910A296CB2448940DA8F5D3A2F074814852111931019D88489038: 'Nahoum.UnityJSInterop.Tests.TestAbstractClass';
+assembly_FCC6C7871F4910A296CB2448940DA8F5D3A2F074814852111931019D88489038: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 GetString(): System.String;
 }& TestAbstractClassAbstract& TestAbstractClass_static;
 
 export type TestAbstractClassAbstract = {
-fullTypeName_b63aff97d04349cc9ed829545a8c4b98: 'Nahoum.UnityJSInterop.Tests.TestAbstractClassAbstract';
-assembly_9b9ba121520e45a0a9fc238fd6592f3b: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_1C60D0CCA05C43674C8824D1D531C9E98F560142F77B1FC79C47BCC1D8E55603: 'Nahoum.UnityJSInterop.Tests.TestAbstractClassAbstract';
+assembly_1C60D0CCA05C43674C8824D1D531C9E98F560142F77B1FC79C47BCC1D8E55603: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 GetString(): System.String;
 };
 
 export type TestActionCallbacks_static = {
-fullTypeName_8f997d9e0d39498e8b02524552cbe606: 'Nahoum.UnityJSInterop.Tests.TestActionCallbacks';
-assembly_b4566e5fc32d445bb2ae9ed993e8f530: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_4D003D21C580B46619180C8A29C1F73A04C37A5C57AB58EBAD96EBEA6BA4639E: 'Nahoum.UnityJSInterop.Tests.TestActionCallbacks';
+assembly_4D003D21C580B46619180C8A29C1F73A04C37A5C57AB58EBAD96EBEA6BA4639E: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 GetInstance(): TestActionCallbacks;
 };
 
 export type TestActionCallbacks = {
-fullTypeName_3d18737c18044835b874e4379976f64e: 'Nahoum.UnityJSInterop.Tests.TestActionCallbacks';
-assembly_ace8301e36994e6d980ec698616adaea: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_4D003D21C580B46619180C8A29C1F73A04C37A5C57AB58EBAD96EBEA6BA4639E: 'Nahoum.UnityJSInterop.Tests.TestActionCallbacks';
+assembly_4D003D21C580B46619180C8A29C1F73A04C37A5C57AB58EBAD96EBEA6BA4639E: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 TestInvokeCallbackVoid(action: System.Action): void;
@@ -193,14 +193,14 @@ TestInvokeActionWithClassOutsideNamespace(action: System.Action1$AnotherNamespac
 }& TestActionCallbacks_static;
 
 export type TestTasks_static = {
-fullTypeName_270bd6e7a91646efaa88c0151d3e95f9: 'Nahoum.UnityJSInterop.Tests.TestTasks';
-assembly_43c239da6c304436a26dae4d3fd786a8: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_B839AB15D3AC2BC63D5BBB5835FE5F73E10D073E978155746C413FBCFC136A56: 'Nahoum.UnityJSInterop.Tests.TestTasks';
+assembly_B839AB15D3AC2BC63D5BBB5835FE5F73E10D073E978155746C413FBCFC136A56: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 GetInstance(): TestTasks;
 };
 
 export type TestTasks = {
-fullTypeName_87b1c3e4cf7d4c68882f9b594a95a13e: 'Nahoum.UnityJSInterop.Tests.TestTasks';
-assembly_334bec7c1e43442996608333e6051cc5: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_B839AB15D3AC2BC63D5BBB5835FE5F73E10D073E978155746C413FBCFC136A56: 'Nahoum.UnityJSInterop.Tests.TestTasks';
+assembly_B839AB15D3AC2BC63D5BBB5835FE5F73E10D073E978155746C413FBCFC136A56: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 TestTaskVoid(): Promise<void>;
@@ -211,8 +211,8 @@ AsyncVoidMethod(): void;
 }& TestTasks_static;
 
 export type TestByteArray_static = {
-fullTypeName_c1d5993b78ea49419f351d9672dfec5d: 'Nahoum.UnityJSInterop.Tests.TestByteArray';
-assembly_0b558b40870c4c19a936d666c90ad5da: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_561ACD64EBC54DCB272D409F44805D8661504025B58A06F50C0D733DF68E0575: 'Nahoum.UnityJSInterop.Tests.TestByteArray';
+assembly_561ACD64EBC54DCB272D409F44805D8661504025B58A06F50C0D733DF68E0575: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 LoadTexture(imageBytes: System.Byte_CSharpArray): UnityEngine.Texture2D;
 GetTextureResolution(tex: UnityEngine.Texture2D): System.String;
 DestroyTexture(tex: UnityEngine.Texture2D): void;
@@ -220,8 +220,8 @@ GetByteArrayLength(byteArray: System.Byte_CSharpArray): System.Int32;
 };
 
 export type TestExceptions_static = {
-fullTypeName_aa9410963f3c4d0ca55cdfbe795911f2: 'Nahoum.UnityJSInterop.Tests.TestExceptions';
-assembly_df99c93b0a5b46c4ba10c671edf1a72b: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_A1735008FA7264DEB323796B88783003C9089F88341F8417CCAC871F2B32E67A: 'Nahoum.UnityJSInterop.Tests.TestExceptions';
+assembly_A1735008FA7264DEB323796B88783003C9089F88341F8417CCAC871F2B32E67A: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 ThrowSimpleException(): void;
 TestUnraisedException(): void;
 ThrowSimpleExceptionAsync(): Promise<void>;
@@ -229,61 +229,52 @@ TestUnraisedExceptionAsync(): Promise<void>;
 };
 
 export type TestExceptions = {
-fullTypeName_d404a4391f984506b714cbbf608395ed: 'Nahoum.UnityJSInterop.Tests.TestExceptions';
-assembly_ead2e5fff9934378a92b890b2ff28f5f: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_A1735008FA7264DEB323796B88783003C9089F88341F8417CCAC871F2B32E67A: 'Nahoum.UnityJSInterop.Tests.TestExceptions';
+assembly_A1735008FA7264DEB323796B88783003C9089F88341F8417CCAC871F2B32E67A: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 }& TestExceptions_static;
 
 export type TestGenericClass_static = {
-fullTypeName_9f7d683eb0364b50927f5f8eed1e3953: 'Nahoum.UnityJSInterop.Tests.TestGenericClass';
-assembly_aee3aea369d648e6b6b7cbc1f01a9c83: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_6E09F0E1ED8AEF700828861257EEC58317E53F244F82336E0C9B6136B706F0DB: 'Nahoum.UnityJSInterop.Tests.TestGenericClass';
+assembly_6E09F0E1ED8AEF700828861257EEC58317E53F244F82336E0C9B6136B706F0DB: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 CreateInstance(): TestGenericClass;
 };
 
 export type TestGenericClass = {
-fullTypeName_5b938cdd8b5d40249c08af5a88b9c72c: 'Nahoum.UnityJSInterop.Tests.TestGenericClass';
-assembly_a46cb57d47d748cea96957d8572a7c07: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_6E09F0E1ED8AEF700828861257EEC58317E53F244F82336E0C9B6136B706F0DB: 'Nahoum.UnityJSInterop.Tests.TestGenericClass';
+assembly_6E09F0E1ED8AEF700828861257EEC58317E53F244F82336E0C9B6136B706F0DB: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 GetTypeName(): System.String;
-GetTypeNameFromExternal(input: TestInterfaceInGenericClass): System.String;
-}& TestInterfaceInGenericClass& TestGenericClass_static;
+GetTypeNameFromExternal(input: ITestInterfaceInGenericClass): System.String;
+}& ITestInterfaceInGenericClass& TestGenericClass_static;
 
-export type TestInterfaceInGenericClass = {
-fullTypeName_a375d1873b994322813b76b88d4004b6: 'Nahoum.UnityJSInterop.Tests.TestInterfaceInGenericClass';
-assembly_b1709a71db0d463382f9f14c127ebb56: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+export type ITestInterfaceInGenericClass = {
+fullTypeName_017E506FD4692089C84D6F8110B02773E001FC2ED139B13AAC583CA934A09A03: 'Nahoum.UnityJSInterop.Tests.ITestInterfaceInGenericClass';
+assembly_017E506FD4692089C84D6F8110B02773E001FC2ED139B13AAC583CA934A09A03: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 };
 
 export type TestAnotherGenericClass_static = {
-fullTypeName_55965f3c942f442ba8bed45b6f23caa7: 'Nahoum.UnityJSInterop.Tests.TestAnotherGenericClass';
-assembly_e767c5815c30403791b4d781a0cc9bd0: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_22BF149C1205E39FC3FE1B2F950C8032D0A2684BE4B385E86C77569737862566: 'Nahoum.UnityJSInterop.Tests.TestAnotherGenericClass';
+assembly_22BF149C1205E39FC3FE1B2F950C8032D0A2684BE4B385E86C77569737862566: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 CreateInstance(): TestAnotherGenericClass;
 };
 
 export type TestAnotherGenericClass = {
-fullTypeName_5993d6babd1240f585ad7028b6b094f5: 'Nahoum.UnityJSInterop.Tests.TestAnotherGenericClass';
-assembly_99d70a3f15e04816958673c4d9cf98ca: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_22BF149C1205E39FC3FE1B2F950C8032D0A2684BE4B385E86C77569737862566: 'Nahoum.UnityJSInterop.Tests.TestAnotherGenericClass';
+assembly_22BF149C1205E39FC3FE1B2F950C8032D0A2684BE4B385E86C77569737862566: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 GetTypeName(): System.String;
-GetTypeNameFromExternal(input: TestInterfaceInGenericClass): System.String;
-}& TestInterfaceInGenericClass& TestAnotherGenericClass_static;
-
-export type GenericClassBase1$T = {
-fullTypeName_9f1debd420ac40fca46c1f5b4b58d1d0: 'Nahoum.UnityJSInterop.Tests.GenericClassBase`1';
-assembly_d2970dff843f4fab845ebb356a5e61e6: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
-value: unknown;
-managedType: System.Type;
-GetTypeName(): System.String;
-GetTypeNameFromExternal(input: TestInterfaceInGenericClass): System.String;
-}& TestInterfaceInGenericClass;
+GetTypeNameFromExternal(input: ITestInterfaceInGenericClass): System.String;
+}& ITestInterfaceInGenericClass& TestAnotherGenericClass_static;
 
 export type TestGetBasicValues_static = {
-fullTypeName_27e668cd03854e7aa99d5d647ee8eee4: 'Nahoum.UnityJSInterop.Tests.TestGetBasicValues';
-assembly_e793d2bc0cd640cd857a50bcfe72e5b0: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_41B2D7FC3E0E1CD9D3982F854A7792947F77A00BBC4CAC5B43AF6FED949B1D9B: 'Nahoum.UnityJSInterop.Tests.TestGetBasicValues';
+assembly_41B2D7FC3E0E1CD9D3982F854A7792947F77A00BBC4CAC5B43AF6FED949B1D9B: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 GetTestString(): System.String;
 GetTestDouble(): System.Double;
 GetTestInt(): System.Int32;
@@ -293,35 +284,35 @@ GetNullString(): System.String;
 };
 
 export type TestGetBasicValues = {
-fullTypeName_2e6ff0160e41475fb9924f2eadc81e02: 'Nahoum.UnityJSInterop.Tests.TestGetBasicValues';
-assembly_e93d7b74679d4ab1bb495b84e62a739f: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_41B2D7FC3E0E1CD9D3982F854A7792947F77A00BBC4CAC5B43AF6FED949B1D9B: 'Nahoum.UnityJSInterop.Tests.TestGetBasicValues';
+assembly_41B2D7FC3E0E1CD9D3982F854A7792947F77A00BBC4CAC5B43AF6FED949B1D9B: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 }& TestGetBasicValues_static;
 
 export type TestGetSets_static = {
-fullTypeName_a6beb4485dd84d06a4397074752961dd: 'Nahoum.UnityJSInterop.Tests.TestGetSets';
-assembly_7fc4f4f10edb4ae5a96a5ef19c465508: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_7336151FCAB055BA4E5A69E66EC6819228C9A998D94D10806CA867706B678675: 'Nahoum.UnityJSInterop.Tests.TestGetSets';
+assembly_7336151FCAB055BA4E5A69E66EC6819228C9A998D94D10806CA867706B678675: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 get_TestString(): System.String;
 set_TestString(value: System.String): void;
 };
 
 export type TestGetSets = {
-fullTypeName_5b26458a486b4d65af227f3c2f95cf64: 'Nahoum.UnityJSInterop.Tests.TestGetSets';
-assembly_af339d8291df4b6da400950df81362a5: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_7336151FCAB055BA4E5A69E66EC6819228C9A998D94D10806CA867706B678675: 'Nahoum.UnityJSInterop.Tests.TestGetSets';
+assembly_7336151FCAB055BA4E5A69E66EC6819228C9A998D94D10806CA867706B678675: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 }& TestGetSets_static;
 
 export type TestInstanceMethods_static = {
-fullTypeName_5b421d525f2c4dfbbc1587e805239032: 'Nahoum.UnityJSInterop.Tests.TestInstanceMethods';
-assembly_7b8dca67745549c5a310833d2d042ec4: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_47220AC5AD3CDDE831DF1421B56F1E94FBA0AC907ADE78FE9D9D42697D6BB63F: 'Nahoum.UnityJSInterop.Tests.TestInstanceMethods';
+assembly_47220AC5AD3CDDE831DF1421B56F1E94FBA0AC907ADE78FE9D9D42697D6BB63F: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 GetNewInstance(): TestInstanceMethods;
 };
 
 export type TestInstanceMethods = {
-fullTypeName_ce462ae6a16d4b08bc0e64834dfdfbb3: 'Nahoum.UnityJSInterop.Tests.TestInstanceMethods';
-assembly_97e3c4ad8c23420cbcc72c8794790f05: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_47220AC5AD3CDDE831DF1421B56F1E94FBA0AC907ADE78FE9D9D42697D6BB63F: 'Nahoum.UnityJSInterop.Tests.TestInstanceMethods';
+assembly_47220AC5AD3CDDE831DF1421B56F1E94FBA0AC907ADE78FE9D9D42697D6BB63F: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 TestGetString(): System.String;
@@ -347,14 +338,14 @@ TestGetColor32(): UnityEngine.Color32;
 }& TestInstanceMethods_static;
 
 export type TestClassImplementingInterface_static = {
-fullTypeName_b070ae6b32e149b89a05a24c16d3e2b7: 'Nahoum.UnityJSInterop.Tests.TestClassImplementingInterface';
-assembly_b69df7e995f64147ac825449ce095d02: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_54CCDDBE4FD6F8CC590C262925B21D9FBD4468B989068554887F8E271314B25B: 'Nahoum.UnityJSInterop.Tests.TestClassImplementingInterface';
+assembly_54CCDDBE4FD6F8CC590C262925B21D9FBD4468B989068554887F8E271314B25B: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 GetNewInstanceOfInterface(): ITestInterface;
 };
 
 export type TestClassImplementingInterface = {
-fullTypeName_9fd02b10cf294bb485ef6ce26257a5b5: 'Nahoum.UnityJSInterop.Tests.TestClassImplementingInterface';
-assembly_dd9c5e515b584d589c8669be860e46b5: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_54CCDDBE4FD6F8CC590C262925B21D9FBD4468B989068554887F8E271314B25B: 'Nahoum.UnityJSInterop.Tests.TestClassImplementingInterface';
+assembly_54CCDDBE4FD6F8CC590C262925B21D9FBD4468B989068554887F8E271314B25B: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 TestGetStringFromClass(): System.String;
@@ -364,14 +355,14 @@ TestGetStringFromInterface(): System.String;
 }& ITestInterface& TestClassImplementingInterface_static;
 
 export type ITestInterface_static = {
-fullTypeName_29b11feb338c4afcada20d18e46e9b9c: 'Nahoum.UnityJSInterop.Tests.ITestInterface';
-assembly_45af9868422e40c2a2f697192b432959: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_7785F7D66212B156A32F754BA29C35A64B0817A5F66FB5A2B7A11B846354BAFB: 'Nahoum.UnityJSInterop.Tests.ITestInterface';
+assembly_7785F7D66212B156A32F754BA29C35A64B0817A5F66FB5A2B7A11B846354BAFB: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 TestGetStringFromInterfaceStatic(): System.String;
 };
 
 export type ITestInterface = {
-fullTypeName_70789ec6d12d49689216038eef2dbe94: 'Nahoum.UnityJSInterop.Tests.ITestInterface';
-assembly_bbee1aed56cf4a30bf44b8fcaea9eb98: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_7785F7D66212B156A32F754BA29C35A64B0817A5F66FB5A2B7A11B846354BAFB: 'Nahoum.UnityJSInterop.Tests.ITestInterface';
+assembly_7785F7D66212B156A32F754BA29C35A64B0817A5F66FB5A2B7A11B846354BAFB: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 GetSampleFloat(): System.Single;
@@ -380,14 +371,14 @@ TestGetStringFromInterfaceDeclaration(): System.String;
 }& ITestInterface_static;
 
 export type TestStructExpose_static = {
-fullTypeName_39acdd10fe2f441fa7e21ee15e389f42: 'Nahoum.UnityJSInterop.Tests.TestStructExpose';
-assembly_354fd89c2d1e46288437a02bdfec11a2: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_FA34B0BB0A662BAF058B325D67DA35C3D17329E0BA12250B83910B480F793691: 'Nahoum.UnityJSInterop.Tests.TestStructExpose';
+assembly_FA34B0BB0A662BAF058B325D67DA35C3D17329E0BA12250B83910B480F793691: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 GetExposeInstance(): TestStructExpose;
 };
 
 export type TestStructExpose = {
-fullTypeName_379d25ac6e7e49b786eccf47c1babcf8: 'Nahoum.UnityJSInterop.Tests.TestStructExpose';
-assembly_700e5e5789164be7954053f31030dec1: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_FA34B0BB0A662BAF058B325D67DA35C3D17329E0BA12250B83910B480F793691: 'Nahoum.UnityJSInterop.Tests.TestStructExpose';
+assembly_FA34B0BB0A662BAF058B325D67DA35C3D17329E0BA12250B83910B480F793691: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: {A: number, F: number, Name: string};
 managedType: System.Type;
 }& TestStructExpose_static;
@@ -395,50 +386,50 @@ managedType: System.Type;
 }
 export namespace UnityEngine {
 export type Texture2D = {
-fullTypeName_73586a6008ca4df4a470c1a025d02cd9: 'UnityEngine.Texture2D';
-assembly_2685900cb8484e259db8cd68b817c3fa: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_7762A4A3A4088C5B99D2DB41578DD6E726D5FBB727C9C4E41524E08C1EA7B25A: 'UnityEngine.Texture2D';
+assembly_7762A4A3A4088C5B99D2DB41578DD6E726D5FBB727C9C4E41524E08C1EA7B25A: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: unknown;
 managedType: System.Type;
 };
 
 export type Vector2 = {
-fullTypeName_c184fe4bcf194eaab166b4042bea68b3: 'UnityEngine.Vector2';
-assembly_7f093ba8ac7e4e59a53220f746918eba: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_1073C1923544E4B1897AA86D17D73DD78E72B7F113049DE6ED42359C5814F398: 'UnityEngine.Vector2';
+assembly_1073C1923544E4B1897AA86D17D73DD78E72B7F113049DE6ED42359C5814F398: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: {x: number, y: number};
 managedType: System.Type;
 };
 
 export type Vector3 = {
-fullTypeName_1f6a69b70563424eb6c0545ebc2b59ea: 'UnityEngine.Vector3';
-assembly_ea64d6d1bedc4f9ab067ad3edbe5e632: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_7C3FFFF188C53DAE3CC5B9A843621336618668A20350FFF8F26659556D0B1C8A: 'UnityEngine.Vector3';
+assembly_7C3FFFF188C53DAE3CC5B9A843621336618668A20350FFF8F26659556D0B1C8A: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: {x: number, y: number, z: number};
 managedType: System.Type;
 };
 
 export type Vector4 = {
-fullTypeName_36d9c7279a7d45a8bb476722f4cf1b94: 'UnityEngine.Vector4';
-assembly_dddc03dddbd64655a430fe47a515dcb2: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_1CF0FAC87540967A4A340914D5AC49E982F15541B0AFDC965A6FE76A36FB31F9: 'UnityEngine.Vector4';
+assembly_1CF0FAC87540967A4A340914D5AC49E982F15541B0AFDC965A6FE76A36FB31F9: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: {x: number, y: number, z: number, w: number};
 managedType: System.Type;
 };
 
 export type Quaternion = {
-fullTypeName_6d5a6d3823004321860864db863980c1: 'UnityEngine.Quaternion';
-assembly_e619274a2caa492c99478222179b2e9a: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_30498154C951D387EEFC678967EB600BD4E738C8379AA9B0FD2D7D9405E3E911: 'UnityEngine.Quaternion';
+assembly_30498154C951D387EEFC678967EB600BD4E738C8379AA9B0FD2D7D9405E3E911: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: {x: number, y: number, z: number, w: number};
 managedType: System.Type;
 };
 
 export type Color = {
-fullTypeName_862971bc182241bf8324296f2b078df1: 'UnityEngine.Color';
-assembly_143ea2cc3706422c95cba69ad42c24f2: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_219494579F6DC7815DE9F25C2BB8044EB8C76EBDBF9CB7A60D79E0AE4F2491AA: 'UnityEngine.Color';
+assembly_219494579F6DC7815DE9F25C2BB8044EB8C76EBDBF9CB7A60D79E0AE4F2491AA: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: {r: number, g: number, b: number, a: number};
 managedType: System.Type;
 };
 
 export type Color32 = {
-fullTypeName_c99ebe5c377943a6b7e07b46e153233a: 'UnityEngine.Color32';
-assembly_bc1358fb4a47425787e3e9f5e2f04044: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+fullTypeName_30CFDD6A0B0068CB896367EFCCC6BE2653FC5F8DBD7F65EA84C1815847E9A7DE: 'UnityEngine.Color32';
+assembly_30CFDD6A0B0068CB896367EFCCC6BE2653FC5F8DBD7F65EA84C1815847E9A7DE: 'UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
 value: {r: number, g: number, b: number, a: number};
 managedType: System.Type;
 };
@@ -446,8 +437,8 @@ managedType: System.Type;
 }
 export namespace System.Collections.Generic {
 export type List1$System_Single = {
-fullTypeName_8bf9a6b1ea9a4de3b419e8c8a36d9c30: 'System.Collections.Generic.List`1[[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
-assembly_a04a072ca31343f6a5bd88da14ce96b0: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_6E9D7A8B0275D90AAEDF253871594BF8033BFC62D5BEBF3726248FF1C5D256A4: 'System.Collections.Generic.List`1[[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]';
+assembly_6E9D7A8B0275D90AAEDF253871594BF8033BFC62D5BEBF3726248FF1C5D256A4: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: number[];
 managedType: System.Type;
 }& System.Collections.ICollection& System.Collections.IEnumerable& System.Collections.IList;
@@ -455,29 +446,29 @@ managedType: System.Type;
 }
 export namespace System.Collections {
 export type IList = {
-fullTypeName_994698d050aa44d883fe415303961204: 'System.Collections.IList';
-assembly_67d14f830b27497183abf171e6313e89: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_8DCFD2C8BA207E862FBCECF81423971CD71682BD2E99E84D6479BFFC596D749A: 'System.Collections.IList';
+assembly_8DCFD2C8BA207E862FBCECF81423971CD71682BD2E99E84D6479BFFC596D749A: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: unknown;
 managedType: System.Type;
 }& ICollection& IEnumerable;
 
 export type ICollection = {
-fullTypeName_8e7af05e3b9d4bbb971b9c301c54448f: 'System.Collections.ICollection';
-assembly_f0d83ca14b944845afed90ded6527c10: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_711A53EF0F58166FF23D8CA3FCA55B585DBC5EF5403BFD2A1B972CBC8CC6613A: 'System.Collections.ICollection';
+assembly_711A53EF0F58166FF23D8CA3FCA55B585DBC5EF5403BFD2A1B972CBC8CC6613A: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: unknown;
 managedType: System.Type;
 }& IEnumerable;
 
 export type IEnumerable = {
-fullTypeName_368fd287f8534d0bb2e45b5660170166: 'System.Collections.IEnumerable';
-assembly_a25c57cfc734484c8452d2ba954ed1b2: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_AC4D3005F7591CD3E71CFFA64FE3408BA36352369B8CF6F49599272E4B17EAA9: 'System.Collections.IEnumerable';
+assembly_AC4D3005F7591CD3E71CFFA64FE3408BA36352369B8CF6F49599272E4B17EAA9: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: unknown;
 managedType: System.Type;
 };
 
 export type IEnumerator = {
-fullTypeName_a62141b6a6884d0f99ac8f9f8538bd3c: 'System.Collections.IEnumerator';
-assembly_b34cc17705834f059ddc74269b8e5401: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
+fullTypeName_6D788DFC0E92CEE235FDCE483C1E40EB7F29C72AF3D6CE2F2C5A6D32926E6EE2: 'System.Collections.IEnumerator';
+assembly_6D788DFC0E92CEE235FDCE483C1E40EB7F29C72AF3D6CE2F2C5A6D32926E6EE2: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
 value: unknown;
 managedType: System.Type;
 };

@@ -26,7 +26,6 @@ function RunTestInterfaceClass(unityInstance: UnityInstance) {
 
     // Test calling interface declared methods (method is declared in interface - aka explicit default interface implementation)
     // This default implementation is not supported if not in the instance
-    console.log(instance);
     assertEquals(instance.TestGetStringFromInterface().value, SampleValues.TestString2, "TestClassImplementingInterface.TestGetStringFromClass() to get a string from an implemented interface method in implementing class works");
 
     // Test getting string from interface method

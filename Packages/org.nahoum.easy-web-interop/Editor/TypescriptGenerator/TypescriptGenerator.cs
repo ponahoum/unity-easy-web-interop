@@ -106,6 +106,7 @@ namespace Nahoum.UnityJSInterop.Editor
                 bool isStaticType = type.IsAbstract && type.IsSealed;
                 bool hasStaticMethods = staticMethods.Count > 0;
                 string typeName = GenerateTsNameFromType(type, namespaceDescriptor);
+                string hashForType = TypescriptGenerationUtilities.GenerateHashForType(type);
 
                 // Handle static methods
                 if (hasStaticMethods)
@@ -117,8 +118,8 @@ namespace Nahoum.UnityJSInterop.Editor
 
                     HashSet<TsProperty> properties = new HashSet<TsProperty>
                     {
-                        new TsProperty($"fullTypeName_{GetGuid()}", $"'{type.FullName}'"),
-                        new TsProperty($"assembly_{GetGuid()}", $"'{type.Assembly.FullName}'")
+                        new TsProperty($"fullTypeName_{hashForType}", $"'{type.FullName}'"),
+                        new TsProperty($"assembly_{hashForType}", $"'{type.Assembly.FullName}'")
                     };
 
                     foreach (MethodInfo method in staticMethods)
@@ -137,8 +138,8 @@ namespace Nahoum.UnityJSInterop.Editor
                     };
                     HashSet<TsProperty> properties = new HashSet<TsProperty>
                     {
-                        new TsProperty($"fullTypeName_{GetGuid()}", $"'{type.FullName}'"),
-                        new TsProperty($"assembly_{GetGuid()}", $"'{type.Assembly.FullName}'")
+                        new TsProperty($"fullTypeName_{hashForType}", $"'{type.FullName}'"),
+                        new TsProperty($"assembly_{hashForType}", $"'{type.Assembly.FullName}'")
                     };
 
                     // For all objects, we may gather the value of the serializer instance object
@@ -204,11 +205,6 @@ namespace Nahoum.UnityJSInterop.Editor
 
             return result;
         }
-
-        /// <summary>
-        /// Generates a random GUID
-        /// </summary>
-        private static string GetGuid() => Guid.NewGuid().ToString().Replace("-", "");
 
         /// <summary>
         /// Get the hardcoded typescript file to be appended to the generated typescript file
