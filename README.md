@@ -403,14 +403,6 @@ console.log("Updated TestString2:", updatedTestString2.value); // prints "NewVal
 ### Custom serialization 
 - Documentation coming soon
 
-## Samples
-
-Some unit tests that also serve as samples for each supported case are available in the development environment:
-
-- The C# code for each test is located at [devenv~/Assets/Tests](devenv~/Assets/Tests).
-- The corresponding TypeScript code for each test is located at [devenv~/RuntimeTypescriptTests](devenv~/RuntimeTypescriptTests).
-
-
 ### Performance considerations
 #### How it works
 The library is built using direct bindings to the WASM side of Unity WebGL and **does NOT rely on messaging or serialization systems** (such as Unity’s `SendMessage`). 
@@ -425,6 +417,13 @@ The library is built using direct bindings to the WASM side of Unity WebGL and *
 - Documentation coming soon
 #### Must use ExposeWeb on class AND interfaces, when class implement an interface
 - Documentation coming soon
+
+## Samples
+
+Some unit tests that also serve as samples for each supported case are available in the development environment:
+
+- The C# code for each test is located at [devenv~/Assets/Tests](devenv~/Assets/Tests).
+- The corresponding TypeScript code for each test is located at [devenv~/RuntimeTypescriptTests](devenv~/RuntimeTypescriptTests).
 
 ### TODO
 - [Repo] CI & versions
