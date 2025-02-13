@@ -127,9 +127,9 @@
       "url": "https://packages.unity.com"
     },
     "org.nahoum.easy-web-interop": {
-      "version": "file:org.nahoum.easy-web-interop",
+      "version": "file:../../",
       "depth": 0,
-      "source": "embedded",
+      "source": "local",
       "dependencies": {}
     },
     "com.unity.modules.accessibility": {
