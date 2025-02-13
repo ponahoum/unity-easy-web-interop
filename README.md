@@ -1,16 +1,16 @@
 # Unity Easy WebGL & Javascript Interop
 
-**Unity Easy Web Interop** is a library for Unity WebGL users that allows to expose **C# methods and class instances to JavaScript** using simple C# decorators. It also generates easy-to-use, strongly typed signatures for TypeScript.
-
-It's build using direct bindings to the WASM side of Unity WebGL and **does NOT rely on messaging or serialization systems** (such as Unity’s `SendMessage`). 
+**Unity Easy Web Interop** is a library for **Unity WebGL** users that allows to expose **C# methods and class instances to JavaScript** using simple C# decorators. It also generates easy-to-use, strongly typed signatures for TypeScript.
 
 It’s perfect for developing Unity applications that require a modern web UI overlay built with frameworks like **React, Vue, or Angular**.
+
+> **Note**: This library is not meant to execute Javascript in Unity Editor/Standalone builds. It's specifically designed to interact with **Unity WebGL builds** in a web browser context.
 
 ## Summary
 
 - [Getting started](#getting-started)
 - [Installation & Supported Unity Versions](#installation--supported-unity-versions)
- - [Documentation](#documentation)
+- [Documentation](#documentation)
     - [Accessing Primitive Types](#accessing-primitive-types)
     - [Using Callbacks (Action & Event)](#using-callbacks)
     - [Asynchronous logic (Task / Promises)](#asynchronous-logic-task--promises)
@@ -20,6 +20,7 @@ It’s perfect for developing Unity applications that require a modern web UI ov
     - [Inheritance, abstract classes and interfaces](#inheritance-abstract-classes-and-interfaces)
     - [Custom TypeScript generation](#custom-typescript-generation)
     - [Custom serialization](#custom-serialization)
+- [Samples & tests](#samples)
 
 ## Getting started
 
@@ -93,7 +94,10 @@ export type UnityInstance = {
 ```
 *In the example above, other typescript types (such as Int32) are auto-generated but not shown here for visibility*
 
-> **Note:** Typescript .d.ts file can be generated via the menu `UnityJsInterop > Generate Typescript`
+**Note:** Typescript .d.ts file can be generated either:
+- Via the menu `UnityJsInterop > Generate Typescript`
+- From code (for postbuild needs for example) using the `GenerateTypescript` method in `Editor/TypescriptGenerator/TypescriptGenerator,cs`
+
 > **Warning:** Note that due to typescript limitations, the static part of classes is splitted in two different types.
 These definitions provide type safety and autocompletion when interacting with the exposed methods in TypeScript.
 
@@ -102,24 +106,14 @@ These definitions provide type safety and autocompletion when interacting with t
 To install **Unity Easy Web Interop**, use Unity's Package Manager. You can choose one of the following methods:
 
 ### Using the Git URL
-
-1. In Unity **Window > Package Manager**.
-3. Click the **+** button in the top left corner and select **"Add package from git URL..."**.
-4. Enter the following URL and click **Add**:
+In Unity **Window > Package Manager**. > **"Add package from git URL..."**: enter the following URL and click **Add**:
 
    ```text
-   https://github.com/ponahoum/unity-easy-web-interop.git?path=/Packages/org.nahoum.easy-web-interop
+   https://github.com/ponahoum/unity-easy-web-interop.git
    ```
 
 ### Manual Installation
-
-Alternatively, you can clone the repository and copy the package directly into your project's package directory:
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/ponahoum/unity-easy-web-interop.git
-   ```
-2. Copy the folder located at `Packages/org.nahoum.easy-web-interop` from the cloned repository into your project's package directory.
+Alternatively, you can clone the repository and copy the package directly into your project's package directory.
 
 ### Supported Unity version
 The package has been tested in both Unity 2022 and Unity 6.
@@ -409,7 +403,18 @@ console.log("Updated TestString2:", updatedTestString2.value); // prints "NewVal
 ### Custom serialization 
 - Documentation coming soon
 
+## Samples
+
+Some unit tests that also serve as samples for each supported case are available in the development environment:
+
+- The C# code for each test is located at [devenv~/Assets/Tests](devenv~/Assets/Tests).
+- The corresponding TypeScript code for each test is located at [devenv~/RuntimeTypescriptTests](devenv~/RuntimeTypescriptTests).
+
+
 ### Performance considerations
+#### How it works
+The library is built using direct bindings to the WASM side of Unity WebGL and **does NOT rely on messaging or serialization systems** (such as Unity’s `SendMessage`). 
+
 #### Garbage collection
 - Documentation coming soon
 
