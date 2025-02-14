@@ -10,39 +10,38 @@ import { RunTests as RunTestsGenericInheritance } from "./tests/test-generic-inh
 import { RunTests as RunTestsByteArrayTests } from "./tests/test-byte-array.js";
 import { RunTests as RunTestsAsyncMethods } from "./tests/test-async-methods.js";
 import { RunTests as RunTestsExceptionsHandling } from "./tests/test-exceptions-handling.js";
-import {RunTests as RunTestsEvents} from "./tests/test-events.js";
-
+import { RunTests as RunTestsEvents } from "./tests/test-events.js";
+import { RunTests as RunTestsEnums } from "./tests/test-enums.js";
 
 const waitForUnityInstance = async function (): Promise<UnityInstance> {
-    while (!(window as any).UnityInstance) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    return (window as any).UnityInstance;
-  };
-  
-const runTests = async function(): Promise<void>{
-    const unityInstance = await waitForUnityInstance();
+  while (!(window as any).UnityInstance) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  return (window as any).UnityInstance;
+};
 
-    // Run all tests sequentially
-    RunTestsPrimitiveGetters(unityInstance);
-    RunTestsGetBasicValues(unityInstance);
-    RunTestsInstanceMethods(unityInstance);
-    RunTestsDelegates(unityInstance);
-    RunTestsAbstractAndInterfaces(unityInstance);
-    RunTestsGettersAndSetters(unityInstance);
-    RunTestsStructs(unityInstance);
-    RunTestsGenericInheritance(unityInstance);
-    RunTestsEvents(unityInstance);
+const runTests = async function (): Promise<void> {
+  const unityInstance = await waitForUnityInstance();
 
+  // Run all tests sequentially
+  RunTestsPrimitiveGetters(unityInstance);
+  RunTestsGetBasicValues(unityInstance);
+  RunTestsInstanceMethods(unityInstance);
+  RunTestsDelegates(unityInstance);
+  RunTestsAbstractAndInterfaces(unityInstance);
+  RunTestsGettersAndSetters(unityInstance);
+  RunTestsStructs(unityInstance);
+  RunTestsGenericInheritance(unityInstance);
+  RunTestsEvents(unityInstance);
+  RunTestsEnums(unityInstance);
 
-    // Some tests are async, hence the await
-    await RunTestsByteArrayTests(unityInstance);
-    await RunTestsAsyncMethods(unityInstance);
-    await RunTestsExceptionsHandling(unityInstance);
+  // Some tests are async, hence the await
+  await RunTestsByteArrayTests(unityInstance);
+  await RunTestsAsyncMethods(unityInstance);
+  await RunTestsExceptionsHandling(unityInstance);
 
   // Notice all tests passed in green and bold
   console.log("%cAll tests passed", "color: green; font-weight: bold;");
-
-}
+};
 
 runTests();

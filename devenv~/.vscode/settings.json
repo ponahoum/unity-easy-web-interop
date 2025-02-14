@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Test WASM.sln"
+    "dotnet.defaultSolution": "devenv~.sln"
 }

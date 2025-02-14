@@ -45,15 +45,18 @@ namespace Nahoum.UnityJSInterop
                     return "{r: number, g: number, b: number, a: number}";
                 else if (targetType == typeof(Bounds))
                     return "{center: " + GetTsTypeDefinition(typeof(Vector3)) + ", extents: " + GetTsTypeDefinition(typeof(Vector3)) + "}";
-                // Case enum
+                // Case enum get a style of like { val0 | val1 | val }
                 else if (targetType.IsEnum)
                 {
-                    string result = "{";
-                    foreach (string name in Enum.GetNames(targetType))
+
+                    string result = "";
+                    string[] names = Enum.GetNames(targetType);
+                    for (int i = 0; i < names.Length; i++)
                     {
-                        result += $"{name}: {targetType}.{name},";
+                        result += "\"" + names[i] + "\"";
+                        if (i < names.Length - 1)
+                            result += " | ";
                     }
-                    result += "}";
                     return result;
                 }
                 else
@@ -64,7 +67,7 @@ namespace Nahoum.UnityJSInterop
         public bool CanSerialize(Type targetType, out ITsTypeDescriptor typeDescriptor)
         {
             typeDescriptor = null;
-            if (supportedTypes.Contains(targetType))
+            if (supportedPrimitiveTypes.Contains(targetType) || targetType.IsEnum)
             {
                 typeDescriptor = new BasicTypesDescriptorTsGenerator();
                 return true;
@@ -107,7 +110,7 @@ namespace Nahoum.UnityJSInterop
             // Enum
             else if (targetObject.GetType().IsEnum)
             {
-                return targetObject.ToString();
+                return $"\"{targetObject.ToString()}\"";
             }
             else
                 throw new Exception($"Type {targetObject.GetType()} is not supported by the BasicTypesSerializer");
@@ -115,16 +118,16 @@ namespace Nahoum.UnityJSInterop
 
         internal static bool CanSerialize(Type targetType)
         {
-            return supportedTypes.Contains(targetType);
+            return supportedPrimitiveTypes.Contains(targetType);
         }
 
         internal static HashSet<Type> GetSupportedTypes()
         {
             // Copy the hashset to avoid modification. In c# 9 we could use a readonly hashset "ReadOnlySet"
-            return new HashSet<Type>(supportedTypes);
+            return new HashSet<Type>(supportedPrimitiveTypes);
         }
 
-        private static readonly HashSet<Type> supportedTypes = new HashSet<Type>()
+        private static readonly HashSet<Type> supportedPrimitiveTypes = new HashSet<Type>()
             {
                 typeof(int),
                 typeof(float),
