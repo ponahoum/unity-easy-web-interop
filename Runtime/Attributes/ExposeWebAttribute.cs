@@ -96,10 +96,6 @@ namespace Nahoum.UnityJSInterop
         /// </summary>
         internal static bool HasWebExposeAttribute(MethodInfo method, out ExposeWebAttribute attribute)
         {
-            if (method.DeclaringType.Name.Contains("Blobby"))
-            {
-                UnityEngine.Debug.Log("Blobby and method: " + method.Name);
-            }
             attribute = method.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
 
             // If the attribute is null but it's a get / set or and event, try to find expose attribute in the property or event containing the get/set/add/remove methods
