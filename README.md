@@ -390,7 +390,7 @@ console.log("Updated TestString2:", updatedTestString2.value); // prints "NewVal
 
 ### Enums
 
-Enums are treated like any other type and can be returned by exposed methods. To work with enums in your interop layer, you can provide a static method that parses a string into the enum value. For example:
+Enums are treated like any other type and can be returned by exposed methods. To work with enums, you can provide a static method that parses a string into the enum value. For example:
 
 ```csharp
 public enum MyEnum
