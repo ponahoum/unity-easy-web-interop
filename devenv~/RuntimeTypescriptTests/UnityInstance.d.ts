@@ -219,6 +219,30 @@ DestroyTexture(tex: UnityEngine.Texture2D): void;
 GetByteArrayLength(byteArray: System.Byte_CSharpArray): System.Int32;
 };
 
+export type TestEnums_static = {
+fullTypeName_9F3457E50A35122DA915D46D16E1DEA0F4D05733A576C36FAB6C475866491943: 'Nahoum.UnityJSInterop.Tests.TestEnums';
+assembly_9F3457E50A35122DA915D46D16E1DEA0F4D05733A576C36FAB6C475866491943: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+GetInstance(): TestEnums;
+};
+
+export type TestEnums = {
+fullTypeName_9F3457E50A35122DA915D46D16E1DEA0F4D05733A576C36FAB6C475866491943: 'Nahoum.UnityJSInterop.Tests.TestEnums';
+assembly_9F3457E50A35122DA915D46D16E1DEA0F4D05733A576C36FAB6C475866491943: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+value: unknown;
+managedType: System.Type;
+GetEnumFirstValue(): MyEnum;
+GetEnumSecondValue(): MyEnum;
+GetEnumThirdValue(): MyEnum;
+GetEnumValueAsString(value: MyEnum): System.String;
+}& TestEnums_static;
+
+export type MyEnum = {
+fullTypeName_CDA0929EB8DDEA02F7C8D606EBAFC0979C7BBFF1563B2D2BC1D7CE74F147AD0B: 'Nahoum.UnityJSInterop.Tests.MyEnum';
+assembly_CDA0929EB8DDEA02F7C8D606EBAFC0979C7BBFF1563B2D2BC1D7CE74F147AD0B: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+value: "Red" | "Green" | "Blue";
+managedType: System.Type;
+};
+
 export type TestEvents_static = {
 fullTypeName_D6FD91B2082087F081F0F75528CD3D58372B985F8C2F5DD779BFEEBA93DFB91D: 'Nahoum.UnityJSInterop.Tests.TestEvents';
 assembly_D6FD91B2082087F081F0F75528CD3D58372B985F8C2F5DD779BFEEBA93DFB91D: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
@@ -524,6 +548,7 @@ export type UnityInstance = {
 TestActionCallbacks: Nahoum.UnityJSInterop.Tests.TestActionCallbacks_static;
 TestTasks: Nahoum.UnityJSInterop.Tests.TestTasks_static;
 TestByteArray: Nahoum.UnityJSInterop.Tests.TestByteArray_static;
+TestEnums: Nahoum.UnityJSInterop.Tests.TestEnums_static;
 TestEvents: Nahoum.UnityJSInterop.Tests.TestEvents_static;
 TestExceptions: Nahoum.UnityJSInterop.Tests.TestExceptions_static;
 TestGenericClass: Nahoum.UnityJSInterop.Tests.TestGenericClass_static;
