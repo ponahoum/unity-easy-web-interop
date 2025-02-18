@@ -1,7 +1,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
+
+[assembly: InternalsVisibleTo("Nahoum.UnityJSInterop.Tests")]
+
 namespace Nahoum.UnityJSInterop
 {
 
