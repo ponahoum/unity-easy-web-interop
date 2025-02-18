@@ -108,19 +108,20 @@ namespace Nahoum.UnityJSInterop
 
             // If attribute is still null, try to get it from the method's containing class / type
             // BETA - Might not work in all cases
+            // We can use reflected type here because inherit is set to true
             if (attribute == null)
-                attribute = method.DeclaringType.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
+                attribute = method.ReflectedType.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
 
             // At this point, if the attribute is still null, the method is not exposed
             if (attribute == null)
                 return false;
 
             if (!method.IsPublic)
-                throw new Exception($"Method {method.Name} in {method.DeclaringType} is not public. Only public methods can be exposed.");
+                throw new Exception($"Method {method.Name} in {method.ReflectedType} is not public. Only public methods can be exposed.");
 
             // Case the method is Generic like Method<T> or returns T like T Method()
             if (method.IsGenericMethod || method.ReturnType.IsGenericParameter)
-                throw new Exception($"Method {method.Name} in {method.DeclaringType} is a generic method. Generic methods are not supported and cannot be exposed.");
+                throw new Exception($"Method {method.Name} in {method.ReflectedType} is a generic method. Generic methods are not supported and cannot be exposed.");
 
             return true;
         }
@@ -133,7 +134,7 @@ namespace Nahoum.UnityJSInterop
         private static bool TryGetMemberFromMethod(MethodInfo method, out MemberInfo found)
         {
             // Check properties first.
-            foreach (PropertyInfo property in method.DeclaringType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
+            foreach (PropertyInfo property in method.ReflectedType.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
             {
                 foreach (MethodInfo accessor in property.GetAccessors(true))
                 {
@@ -146,7 +147,7 @@ namespace Nahoum.UnityJSInterop
             }
 
             // Then check events.
-            foreach (EventInfo evt in method.DeclaringType.GetEvents(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
+            foreach (EventInfo evt in method.ReflectedType.GetEvents(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static))
             {
                 if (evt.GetAddMethod(true) == method || evt.GetRemoveMethod(true) == method)
                 {

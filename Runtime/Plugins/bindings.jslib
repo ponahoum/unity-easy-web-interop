@@ -16,10 +16,17 @@ var easyWebInteropLib = {
      */
     Module.internalJS.getJsonValueFromGCHandlePtr = (ptrToGcHandle) => {
       const resPtr = dynCall("ii", getIntPtrValueMethodPtr, [ptrToGcHandle]);
-      const asJsonObject = JSON.parse(UTF8ToString(resPtr)).value;
+      let asJsonObject;
+      try {
+        asJsonObject = JSON.parse(UTF8ToString(resPtr));
+      }
+      catch (e) {
+        asJsonObject = { value: {} }
+        console.error("Error when parsing JSON object from C# side. Returning default empty value. Ensure your json serializer returns good json value: ", e);
+      }
       // Free the memory allocated by the C# side
       _free(resPtr);
-      return asJsonObject;
+      return asJsonObject.value;
     };
 
     /**

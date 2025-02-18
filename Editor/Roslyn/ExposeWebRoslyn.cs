@@ -55,10 +55,10 @@ namespace Nahoum.UnityJSInterop
         private static void AssertMethodImplementedInAllInheritingTypes(MethodInfo methodFromInterface, ref IReadOnlyCollection<Type> comparisonTypes)
         {
             // Check method is part of an interface, otherwise skip
-            if (!methodFromInterface.DeclaringType.IsInterface)
+            if (!methodFromInterface.ReflectedType.IsInterface)
                 return;
 
-            Type interfaceType = methodFromInterface.DeclaringType;
+            Type interfaceType = methodFromInterface.ReflectedType;
 
             // Check if the method is implemented in all inheriting types
             foreach (Type impl in comparisonTypes)
@@ -74,8 +74,10 @@ namespace Nahoum.UnityJSInterop
                 if (ContainsMethod(methodFromInterface, interfaceMethods, out int index))
                 {
                     MethodInfo implementingMethod = impl.GetInterfaceMap(interfaceType).TargetMethods[index];
-                    if (!ExposeWebAttribute.HasWebExposeAttribute(implementingMethod, out ExposeWebAttribute attr))
-                        throw new Exception($"Exposed to the web method {implementingMethod.Name} in {implementingMethod.DeclaringType} is implemented from interface {interfaceType} but doesn't have the [ExposeWeb] attribute. Please add the [ExposeWeb] attribute to the method {methodFromInterface.Name} in {impl}");
+                    if (!ExposeWebAttribute.HasWebExposeAttribute(implementingMethod, out ExposeWebAttribute attr)){
+UnityEngine.Debug.Log(impl + " "+interfaceType);
+                        throw new Exception($"Exposed to the web method {implementingMethod.Name} in {implementingMethod.ReflectedType} is implemented from interface {interfaceType} but doesn't have the [ExposeWeb] attribute. Please add the [ExposeWeb] attribute to the method {methodFromInterface.Name} in {impl}");
+                    }
                 }
             }
         }

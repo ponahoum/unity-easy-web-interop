@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 namespace Nahoum.UnityJSInterop
 {
@@ -80,10 +81,15 @@ namespace Nahoum.UnityJSInterop
         {
             if (targetObject == null)
                 return "null";
-            else if (targetObject is int || targetObject is float || targetObject is double || targetObject is long)
-                return targetObject.ToString().Replace(",", ".");
-            else if (targetObject is string)
-                return "\"" + targetObject.ToString() + "\"";
+            else if (targetObject is int || targetObject is float || targetObject is double || targetObject is long){
+                // Parse to invariant culture because json number format is invariant (for examples there is not 3,14 but 3.14 instead)
+                return Convert.ToString(targetObject, CultureInfo.InvariantCulture);
+            }
+            else if (targetObject is string asString){
+                // We need to use this class to escape the string properly
+                // Escaping json string is not trivial, see https://stackoverflow.com/questions/1242118/how-to-escape-json-string
+                return $"\"{System.Web.HttpUtility.JavaScriptStringEncode(asString)}\"";
+            }
             else if (targetObject is byte || targetObject is sbyte)
                 return targetObject.ToString();
             else if (targetObject is sbyte)
