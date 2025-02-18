@@ -109,7 +109,7 @@ namespace Nahoum.UnityJSInterop
             // If attribute is still null, try to get it from the method's containing class / type
             // BETA - Might not work in all cases
             if (attribute == null)
-                attribute = method.ReflectedType.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
+                attribute = method.DeclaringType.GetCustomAttribute<ExposeWebAttribute>(inherit: true);
 
             // At this point, if the attribute is still null, the method is not exposed
             if (attribute == null)
