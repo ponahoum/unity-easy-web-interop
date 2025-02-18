@@ -74,7 +74,6 @@ namespace Nahoum.UnityJSInterop
                 if (ContainsMethod(methodFromInterface, interfaceMethods, out int index))
                 {
                     MethodInfo implementingMethod = impl.GetInterfaceMap(interfaceType).TargetMethods[index];
-                    UnityEngine.Debug.Log(implementingMethod.Name);
                     if (!ExposeWebAttribute.HasWebExposeAttribute(implementingMethod, out ExposeWebAttribute attr)){
 UnityEngine.Debug.Log(impl + " "+interfaceType);
                         throw new Exception($"Exposed to the web method {implementingMethod.Name} in {implementingMethod.ReflectedType} is implemented from interface {interfaceType} but doesn't have the [ExposeWeb] attribute. Please add the [ExposeWeb] attribute to the method {methodFromInterface.Name} in {impl}");
