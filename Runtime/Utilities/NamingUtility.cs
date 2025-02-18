@@ -18,12 +18,12 @@ namespace Nahoum.UnityJSInterop
             if (!method.IsStatic)
                 throw new System.Exception("Method must be static");
 
-            string namespaceName = method.DeclaringType.Namespace;
+            string namespaceName = method.ReflectedType.Namespace;
             bool hasNamespace = !string.IsNullOrEmpty(namespaceName);
 
             // Split the namespace to get the class name
             string staticPrefix = "static";
-            string className = method.DeclaringType.Name;
+            string className = method.ReflectedType.Name;
             string methodName = method.Name;
 
             // Add aggregate path (concat namespace split and classname and method name)
