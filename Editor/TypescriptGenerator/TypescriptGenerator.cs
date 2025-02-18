@@ -144,12 +144,12 @@ namespace Nahoum.UnityJSInterop.Editor
 
                     // For all objects, we may gather the value of the serializer instance object
                     if (ObjectSerializer.TryGetSerializer(type, out IJsJsonSerializer serializer) && serializer.CanSerialize(type, out ITsTypeDescriptor tsDescriptor))
-                        properties.Add(new TsProperty("value", tsDescriptor.GetTsTypeDefinition(type)));
+                        properties.Add(new TsProperty("get value()", tsDescriptor.GetTsTypeDefinition(type)));
                     else
-                        properties.Add(new TsProperty("value", "unknown"));
+                        properties.Add(new TsProperty("get value()", "unknown"));
 
                     // For all object, also add the "managedType" property, which is the type in C#
-                    properties.Add(new TsProperty("managedType", GenerateTsNameFromType(typeof(System.Type), namespaceDescriptor)));
+                    properties.Add(new TsProperty("get managedType()", GenerateTsNameFromType(typeof(System.Type), namespaceDescriptor)));
 
                     // Get all exposed methods within this type
                     foreach (MethodInfo method in instanceMethods)
