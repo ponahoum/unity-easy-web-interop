@@ -451,6 +451,28 @@ TestGetStringFromInterface(): System.String;
 TestGetStringFromInterfaceDeclaration(): System.String;
 }& ITestInterface_static;
 
+export type TestMethodWithALotOfArguments_static = {
+fullTypeName_F1198DCCB90D88C2AB4AE9A403FA82F0D6C923D3AD89F2355BFF1866C249EDE0: 'Nahoum.UnityJSInterop.Tests.TestMethodWithALotOfArguments';
+assembly_F1198DCCB90D88C2AB4AE9A403FA82F0D6C923D3AD89F2355BFF1866C249EDE0: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+OneArgument(firstArg: System.Int32): System.Int32;
+TwoArguments(firstArg: System.Int32, secondArg: System.Int32): System.Int32;
+ThreeArguments(firstArg: System.Int32, secondArg: System.Int32, thirdArg: System.Int32): System.Int32;
+FourArguments(firstArg: System.Int32, secondArg: System.Int32, thirdArg: System.Int32, fourthArg: System.Int32): System.Int32;
+FiveArguments(firstArg: System.Int32, secondArg: System.Int32, thirdArg: System.Int32, fourthArg: System.Int32, fifthArg: System.Int32): System.Int32;
+SixArguments(firstArg: System.Int32, secondArg: System.Int32, thirdArg: System.Int32, fourthArg: System.Int32, fifthArg: System.Int32, sixthArg: System.Int32): System.Int32;
+SevenArguments(firstArg: System.Int32, secondArg: System.Int32, thirdArg: System.Int32, fourthArg: System.Int32, fifthArg: System.Int32, sixthArg: System.Int32, seventhArg: System.Int32): System.Int32;
+EightArguments(firstArg: System.Int32, secondArg: System.Int32, thirdArg: System.Int32, fourthArg: System.Int32, fifthArg: System.Int32, sixthArg: System.Int32, seventhArg: System.Int32, eighthArg: System.Int32): System.Int32;
+NineArguments(firstArg: System.Int32, secondArg: System.Int32, thirdArg: System.Int32, fourthArg: System.Int32, fifthArg: System.Int32, sixthArg: System.Int32, seventhArg: System.Int32, eighthArg: System.Int32, ninthArg: System.Int32): System.Int32;
+TenArguments(firstArg: System.Int32, secondArg: System.Int32, thirdArg: System.Int32, fourthArg: System.Int32, fifthArg: System.Int32, sixthArg: System.Int32, seventhArg: System.Int32, eighthArg: System.Int32, ninthArg: System.Int32, tenthArg: System.Int32): System.Int32;
+};
+
+export type TestMethodWithALotOfArguments = {
+fullTypeName_F1198DCCB90D88C2AB4AE9A403FA82F0D6C923D3AD89F2355BFF1866C249EDE0: 'Nahoum.UnityJSInterop.Tests.TestMethodWithALotOfArguments';
+assembly_F1198DCCB90D88C2AB4AE9A403FA82F0D6C923D3AD89F2355BFF1866C249EDE0: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
+get value(): unknown;
+get managedType(): System.Type;
+}& TestMethodWithALotOfArguments_static;
+
 export type TestStructExpose_static = {
 fullTypeName_FA34B0BB0A662BAF058B325D67DA35C3D17329E0BA12250B83910B480F793691: 'Nahoum.UnityJSInterop.Tests.TestStructExpose';
 assembly_FA34B0BB0A662BAF058B325D67DA35C3D17329E0BA12250B83910B480F793691: 'Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null';
@@ -597,6 +619,7 @@ TestGetSets: Nahoum.UnityJSInterop.Tests.TestGetSets_static;
 TestInstanceMethods: Nahoum.UnityJSInterop.Tests.TestInstanceMethods_static;
 TestClassImplementingInterface: Nahoum.UnityJSInterop.Tests.TestClassImplementingInterface_static;
 ITestInterface: Nahoum.UnityJSInterop.Tests.ITestInterface_static;
+TestMethodWithALotOfArguments: Nahoum.UnityJSInterop.Tests.TestMethodWithALotOfArguments_static;
 TestStructExpose: Nahoum.UnityJSInterop.Tests.TestStructExpose_static;
 },
         },
