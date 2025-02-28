@@ -1,7 +1,7 @@
 {
     "name": "org.nahoum.easy-web-interop",
     "displayName": "Unity Easy Web Interop",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "unity": "2020.2",
     "keywords": ["web", "javascript", "interop", "typescript", "expose", "webgl", "unity", "binding", "webassembly", "wasm", "ts", "emscripten"],
     "description": "A simple package that allows you to expose C# methods (both static and instance methods) to Unity WebGL builds via JavaScript. Includes TypeScript generation.",

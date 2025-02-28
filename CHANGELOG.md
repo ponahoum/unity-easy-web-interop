@@ -1,3 +1,8 @@
+Release 1.0.6 - 28 feb 2025
+- Increased the supported limit of arguments for exposed methods from 4 to 10
+- Added a more comprehensive message telling the limit of arguments is reached
+- Added tests
+
 Release 1.0.5 - 18 feb 2025
 
 - Fixed an issue in the code analyzer where inheritance was not properly taken into account, as it used the declared type instead of the reflected type. Reflected type is now correctly used since inheritance is enabled when retrieving attributes.  

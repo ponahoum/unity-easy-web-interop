@@ -18,5 +18,11 @@ namespace Nahoum.UnityJSInterop
         public delegate IntPtr IIII(IntPtr inputA, IntPtr inputB, IntPtr inputC);
         public delegate IntPtr IIIII(IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD);
         public delegate IntPtr IIIIII(IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD, IntPtr inputE);
+        public delegate IntPtr IIIIIII(IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD, IntPtr inputE, IntPtr inputF);
+        public delegate IntPtr IIIIIIII(IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD, IntPtr inputE, IntPtr inputF, IntPtr inputG);
+        public delegate IntPtr IIIIIIIII(IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD, IntPtr inputE, IntPtr inputF, IntPtr inputG, IntPtr inputH);
+        public delegate IntPtr IIIIIIIIII(IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD, IntPtr inputE, IntPtr inputF, IntPtr inputG, IntPtr inputH, IntPtr inputI);
+        public delegate IntPtr IIIIIIIIIII(IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD, IntPtr inputE, IntPtr inputF, IntPtr inputG, IntPtr inputH, IntPtr inputI, IntPtr inputJ);
+        public delegate IntPtr IIIIIIIIIIII(IntPtr inputA, IntPtr inputB, IntPtr inputC, IntPtr inputD, IntPtr inputE, IntPtr inputF, IntPtr inputG, IntPtr inputH, IntPtr inputI, IntPtr inputJ, IntPtr inputK);
     }
 }

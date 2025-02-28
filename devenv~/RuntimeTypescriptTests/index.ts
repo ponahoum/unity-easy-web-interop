@@ -13,6 +13,7 @@ import { RunTests as RunTestsExceptionsHandling } from "./tests/test-exceptions-
 import { RunTests as RunTestsEvents } from "./tests/test-events.js";
 import { RunTests as RunTestsEnums } from "./tests/test-enums.js";
 import { RunTests as RunTestsBasicInheritance } from "./tests/test-basic-inheritance.js";
+import { RunTests as RunTestMethodWithALotOfArguments } from "./tests/test-method-with-a-lot-of-arguments.js";
 
 const waitForUnityInstance = async function (): Promise<UnityInstance> {
   while (!(window as any).UnityInstance) {
@@ -36,6 +37,7 @@ const runTests = async function (): Promise<void> {
   RunTestsEvents(unityInstance);
   RunTestsEnums(unityInstance);
   RunTestsBasicInheritance(unityInstance);
+  RunTestMethodWithALotOfArguments(unityInstance);
 
   // Some tests are async, hence the await
   await RunTestsByteArrayTests(unityInstance);

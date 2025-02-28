@@ -444,6 +444,11 @@ The library is built using direct bindings to the WASM side of Unity WebGL and *
 - Documentation coming soon
 
 ### Limitations
+#### Number of argument on methods
+- Methods can be exposed with a maximum of 10 arguments
+- Delegates (notably Action) can be created with a maximum of 4 arguments
+Those limitations can easily be lifted by updating the methods registry, but it has been decided that a method with more than 10 arguments is probably reflecting a bad design, hence why we put this limitation in place.
+
 #### Cannot directly use constructors
 - Documentation coming soon
 #### Cannot use default interface implementations (C# feature)
