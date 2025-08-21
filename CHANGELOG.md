@@ -1,3 +1,7 @@
+Release 1.0.7 - 21 aug 2025
+- Default array/list converters now uses StringBuilder for better memory efficiency. (See https://docs.unity3d.com/Manual/webgl-memory.html)
+- Implemented efficient byte[] serializer to handle large byte[] serialization better
+
 Release 1.0.6 - 28 feb 2025
 - Increased the supported limit of arguments for exposed methods from 4 to 10
 - Added a more comprehensive message telling the limit of arguments is reached
