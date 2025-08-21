@@ -18,8 +18,10 @@ namespace Nahoum.UnityJSInterop
 
         static ObjectSerializer()
         {
+            // The order is important here, cause the first will be selected if multiple serializers of the same type are registered
             // Add basic serializers for primitive types and arrays of primitive types
             RegisterSerializer(new BasicTypesSerializer());
+            RegisterSerializer(new ByteArraySerializer());
             RegisterSerializer(new BasicArraySerializer());
             RegisterSerializer(new BasicListSerializer());
         }

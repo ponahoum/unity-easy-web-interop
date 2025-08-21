@@ -82,7 +82,7 @@ get managedType(): Type;
 export type Byte_CSharpArray = {
 fullTypeName_F731B51747BB7D72E94AA746D30E597ECDB9B4B7100B3F57BE27A03AE8EB5623: 'System.Byte[]';
 assembly_F731B51747BB7D72E94AA746D30E597ECDB9B4B7100B3F57BE27A03AE8EB5623: 'mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089';
-get value(): (number)[];
+get value(): number[];
 get managedType(): Type;
 }& System.Collections.ICollection& System.Collections.IEnumerable& System.Collections.IList;
 

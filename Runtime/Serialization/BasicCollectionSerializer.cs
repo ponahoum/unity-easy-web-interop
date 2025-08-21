@@ -1,6 +1,8 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
 namespace Nahoum.UnityJSInterop
 {
     /// <summary>
@@ -38,18 +40,19 @@ namespace Nahoum.UnityJSInterop
                 throw new ArgumentException("Object is not a List<T>", nameof(listObj));
 
             // Enumerate the list items
-            var asList = (System.Collections.IEnumerable)listObj;
-            string result = "[";
+            var asList = (System.Collections.IList)listObj;
+            StringBuilder result = new StringBuilder();
+            result.Append("[");
             foreach (var item in asList)
             {
-                result += basicTypesSerializer.Serialize(item) + ",";
+                result.Append(basicTypesSerializer.Serialize(item) + ",");
             }
 
             if (result.Length > 1) // means we added at least one item
-                result = result.Remove(result.Length - 1); // remove trailing comma
+                result = result.Remove(result.Length - 1, 1); // remove trailing comma
 
-            result += "]";
-            return result;
+            result.Append("]");
+            return result.ToString();
         }
 
         public bool CanSerialize(Type targetType, out ITsTypeDescriptor typeDescriptor)
@@ -114,17 +117,18 @@ namespace Nahoum.UnityJSInterop
             if (!array.GetType().IsArray)
                 throw new ArgumentException("Object is not an array");
 
-            string result = "[";
             var asArray = (Array)array;
+            StringBuilder result = new StringBuilder();
+            result.Append("[");
             foreach (var item in asArray)
             {
-                result += basicTypesSerializer.Serialize(item) + ",";
+                result.Append(basicTypesSerializer.Serialize(item) + ",");
             }
             if (asArray.Length > 0)
-                result = result.Remove(result.Length - 1);
+                result = result.Remove(result.Length - 1, 1);
 
-            result += "]";
-            return result;
+            result.Append("]");
+            return result.ToString();
         }
 
         public bool CanSerialize(Type targetType, out ITsTypeDescriptor typeDescriptor)
