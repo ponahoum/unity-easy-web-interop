@@ -15,7 +15,7 @@ var easyWebInteropLib = {
      * Given a managed C# object pointer, return a serialized JSON object
      */
     Module.internalJS.getJsonValueFromGCHandlePtr = (ptrToGcHandle) => {
-      const resPtr = dynCall("ii", getIntPtrValueMethodPtr, [ptrToGcHandle]);
+      const resPtr = Module.internalJS.dynCallCompat("ii", getIntPtrValueMethodPtr, [ptrToGcHandle])
       let asJsonObject;
       try {
         asJsonObject = JSON.parse(UTF8ToString(resPtr));
@@ -28,6 +28,44 @@ var easyWebInteropLib = {
       _free(resPtr);
       return asJsonObject.value;
     };
+
+    // Runtime replacement for dynCall
+    Module.internalJS.dynCallCompat = function(signatureAsString, functionPtr, targetArgs) {
+      targetArgs = Array.isArray(targetArgs) ? targetArgs : [];
+
+    if (typeof signatureAsString !== 'string') {
+        throw new Error('signatureAsString must be a string, got: ' + typeof signatureAsString);
+    }
+
+    const retType = signatureAsString[0];
+    const paramTypes = Array.from(signatureAsString.slice(1)); // convert to array of chars
+
+    const args = paramTypes.map((t, i) => {
+        const val = targetArgs[i];
+        switch (t) {
+            case 'i':
+            case 'p': return val | 0;
+            case 'f':
+            case 'd': return Number(val);
+            case 'j': return BigInt(val);
+            default: return val;
+        }
+    });
+
+    let result = wasmTable.get(functionPtr)(...args);
+
+    switch (retType) {
+        case 'i':
+        case 'p': return result | 0;
+        case 'f':
+        case 'd': return Number(result);
+        case 'j': return BigInt(result);
+        case 'v':
+        default: return result;
+    }
+};
+
+
 
     /**
      * Setup callback registerer, This allows to create javascript callbacks that can be called from C#
@@ -63,7 +101,6 @@ var easyWebInteropLib = {
   RegisterStaticMethodInternalRegistry: function (functionPtr, functionNamePtr, functionParamSignaturePtr) {
     const functionNameAsString = UTF8ToString(functionNamePtr);
     const signatureAsString = UTF8ToString(functionParamSignaturePtr);
-
     Module.internal[functionNameAsString] = (...args) => {
       const targetArgs = [...args];
       // For simplificy, if element is Module.internalJS.PointerToNativeObject, just replace the element with the targetGcHandleObjectPtr directly
@@ -73,7 +110,7 @@ var easyWebInteropLib = {
       for (var i = 0; i < targetArgs.length; i++) {
         if (targetArgs[i] instanceof Module.internalJS.PointerToNativeObject) targetArgs[i] = targetArgs[i].targetGcHandleObjectPtr;
       }
-      return Module.internalJS.HandleResPtr(dynCall(signatureAsString, functionPtr, targetArgs), false);
+      return Module.internalJS.HandleResPtr(Module.internalJS.dynCallCompat(signatureAsString, functionPtr, targetArgs), false);
     };
   },
   RegisterMethodInRegistry: function (
@@ -102,7 +139,7 @@ var easyWebInteropLib = {
       // Call the function. Handle any uncaught errors (typically exceptions not thrown by the user, which is an option in the Unity build);
       let resultOfCall = undefined;
       try {
-        resultOfCall = dynCall(signatureAsString, functionPtr, targetArgs);
+        resultOfCall = Module.internalJS.dynCallCompat(signatureAsString, functionPtr, targetArgs);
       } catch (e) {
         // Manually marks this as an exception pointer as it's undefined otherwise
         resultOfCall = -3;
